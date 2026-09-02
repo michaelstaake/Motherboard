@@ -2,8 +2,6 @@
 
 Motherboard is a work order and customer management app for computer repair shops. It is a fork of LibreWO with a module system and localization.
 
-Version: **26.8.14.1**
-
 ## Requirements
 
 - PHP 8.4+
