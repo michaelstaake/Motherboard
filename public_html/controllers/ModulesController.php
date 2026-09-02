@@ -69,7 +69,7 @@ class ModulesController extends Controller {
         $viewFile = $module['path'] . '/views/settings.php';
         $this->viewPath($viewFile, [
             'module' => $module,
-            'settings' => $this->settingsModel->getAllSettings(),
+            'settings' => $this->settingsModel->getAllSettingsForModule($module['settings_keys'] ?? []),
             'error' => $error,
             'message' => $message,
             'csrf_token' => $this->generateCSRF(),

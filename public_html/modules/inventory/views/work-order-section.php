@@ -66,7 +66,7 @@ $totals = motherboard_inventory_work_order_totals($assigned);
                                     <td class="px-2 py-3 text-sm text-gray-900"><?= htmlspecialchars(motherboard_inventory_format_price($line['line_total'])) ?></td>
                                     <?php if ($canEdit): ?>
                                         <td class="px-2 py-3 text-right">
-                                            <form method="POST" action="<?= BASE_URL ?>/work-orders/view/<?= $workOrderId ?>/products/<?= (int) $line['id'] ?>/delete" onsubmit="return confirm(<?= json_encode(t('inventory.wo_confirm_remove')) ?>)">
+                                            <form method="POST" action="<?= BASE_URL ?>/work-orders/view/<?= $workOrderId ?>/products/<?= (int) $line['id'] ?>/delete" onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('inventory.wo_confirm_remove')), ENT_QUOTES) ?>)">
                                                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                                                 <button type="submit" class="text-sm text-red-600 hover:text-red-500"><?= t('common.delete') ?></button>
                                             </form>

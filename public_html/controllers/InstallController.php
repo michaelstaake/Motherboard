@@ -101,7 +101,7 @@ class InstallController extends Controller {
         $data['companyLogoUrl'] = '';
         $data['locale'] = I18n::getInstance()->getLocale();
         
-        extract($data);
+        extract($data, EXTR_SKIP);
         $viewFile = 'views/' . $viewName . '.php';
         
         if (file_exists($viewFile)) {

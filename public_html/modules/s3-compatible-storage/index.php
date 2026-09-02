@@ -8,6 +8,7 @@ return [
     'min_php_version' => '8.1',
     'default_enabled' => false,
     'settings' => true,
+    'settings_keys' => ['s3_access_key', 's3_secret_key'],
     'author' => 'Napa AI',
     'boot' => function (array $definition): void {
         require $definition['path'] . '/boot.php';

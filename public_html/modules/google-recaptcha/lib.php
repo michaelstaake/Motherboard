@@ -16,6 +16,9 @@ function motherboard_verify_captcha(string $url, string $secret, string $respons
             'header' => "Content-type: application/x-www-form-urlencoded\r\n",
             'method' => 'POST',
             'content' => http_build_query($data),
+            // Without this a stalled provider holds the login request open for
+            // default_socket_timeout (60s). Verification fails closed on timeout.
+            'timeout' => 5,
         ],
     ];
     $result = @file_get_contents($url, false, stream_context_create($options));

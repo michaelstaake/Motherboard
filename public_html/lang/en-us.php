@@ -250,6 +250,7 @@ return [
     'wo.attachment_required' => 'Please choose a file to upload.',
     'wo.attachment_too_large' => 'The file exceeds the maximum size of {size}.',
     'wo.attachment_type_denied' => 'This file type is not allowed. Allowed types: {types}.',
+    'wo.attachment_content_mismatch' => 'This file’s contents do not match its .{ext} extension.',
     'wo.attachment_upload_fail' => 'The file could not be uploaded.',
     'wo.attachment_storage_unavailable' => 'The selected storage destination is not available. Enable the storage module or choose a different destination.',
     'wo.attachment_not_found' => 'Attachment not found.',

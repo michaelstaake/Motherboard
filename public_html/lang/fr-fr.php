@@ -243,6 +243,7 @@ return [
     'wo.attachment_required' => 'Veuillez choisir un fichier à téléverser.',
     'wo.attachment_too_large' => 'Le fichier dépasse la taille maximale de {size}.',
     'wo.attachment_type_denied' => 'Ce type de fichier n’est pas autorisé. Types autorisés : {types}.',
+    'wo.attachment_content_mismatch' => 'Le contenu de ce fichier ne correspond pas à son extension .{ext}.',
     'wo.attachment_upload_fail' => 'Le fichier n’a pas pu être téléversé.',
     'wo.attachment_storage_unavailable' => 'La destination de stockage sélectionnée n’est pas disponible. Activez le module de stockage ou choisissez une autre destination.',
     'wo.attachment_not_found' => 'Pièce jointe introuvable.',

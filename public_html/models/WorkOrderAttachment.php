@@ -5,6 +5,53 @@ require_once 'models/Settings.php';
 class WorkOrderAttachment extends Model {
     protected $table = 'work_order_attachments';
 
+    /**
+     * Extensions that are never accepted, regardless of the configured allow list.
+     * These are either executable by a web server or able to alter its configuration,
+     * so allowing them would turn the attachment store into a code execution path.
+     */
+    private const DENIED_EXTENSIONS = [
+        'php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phps', 'phpt',
+        'pht', 'phtm', 'phtml', 'phar', 'inc',
+        'htaccess', 'htpasswd', 'user', 'ini', 'conf',
+        'htm', 'html', 'xhtml', 'shtml', 'shtm', 'svg', 'svgz', 'xml', 'xsl',
+        'cgi', 'pl', 'py', 'rb', 'sh', 'bash', 'exe', 'dll', 'so',
+        'jsp', 'jspx', 'asp', 'aspx', 'ashx', 'asmx', 'cfm', 'hta',
+    ];
+
+    /**
+     * Acceptable detected MIME types per extension. An extension listed here must have
+     * content matching one of its types; an extension absent from the map is not
+     * content-checked, so uncommon but legitimate file types still upload.
+     */
+    private const EXTENSION_MIME_MAP = [
+        'png'  => ['image/png'],
+        'jpg'  => ['image/jpeg'],
+        'jpeg' => ['image/jpeg'],
+        'gif'  => ['image/gif'],
+        'webp' => ['image/webp'],
+        'bmp'  => ['image/bmp', 'image/x-ms-bmp'],
+        'tif'  => ['image/tiff'],
+        'tiff' => ['image/tiff'],
+        'heic' => ['image/heic', 'image/heif'],
+        'pdf'  => ['application/pdf'],
+        'txt'  => ['text/plain'],
+        'csv'  => ['text/csv', 'text/plain'],
+        'log'  => ['text/plain'],
+        'zip'  => ['application/zip'],
+        'gz'   => ['application/gzip', 'application/x-gzip'],
+        'doc'  => ['application/msword', 'application/x-ole-storage'],
+        'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/zip'],
+        'xls'  => ['application/vnd.ms-excel', 'application/x-ole-storage'],
+        'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip'],
+        'ppt'  => ['application/vnd.ms-powerpoint', 'application/x-ole-storage'],
+        'pptx' => ['application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/zip'],
+    ];
+
+    public static function isDeniedExtension(string $ext): bool {
+        return in_array(strtolower(ltrim($ext, '.')), self::DENIED_EXTENSIONS, true);
+    }
+
     public static function storagePath(): string {
         return ROOT_PATH . '/attachments';
     }
@@ -163,7 +210,28 @@ class WorkOrderAttachment extends Model {
     }
 
     public function absolutePath(array $attachment): string {
-        return self::storagePath() . '/' . ltrim(str_replace('\\', '/', $attachment['stored_path']), '/');
+        return self::storagePath() . '/' . self::safeRelativeKey($attachment['stored_path'] ?? '');
+    }
+
+    /**
+     * Normalises a stored_path into a relative key that cannot escape the storage root.
+     *
+     * stored_path is server-generated today, so this is not currently reachable — but it is
+     * the only thing between a buggy attachment.storage.* module and arbitrary file
+     * read/delete through downloadAttachment()/deleteAttachment().
+     */
+    private static function safeRelativeKey(string $storedPath): string {
+        $path = ltrim(str_replace('\\', '/', $storedPath), '/');
+
+        $safe = [];
+        foreach (explode('/', $path) as $segment) {
+            if ($segment === '' || $segment === '.' || $segment === '..') {
+                continue;
+            }
+            $safe[] = $segment;
+        }
+
+        return implode('/', $safe);
     }
 
     public function localReadablePath(array $attachment): ?string {
@@ -175,7 +243,17 @@ class WorkOrderAttachment extends Model {
 
         if ($destination === 'local') {
             $path = $this->absolutePath($attachment);
-            return is_file($path) ? $path : null;
+            if (!is_file($path)) {
+                return null;
+            }
+            // Final containment assertion: resolve symlinks and confirm the file really
+            // sits under the storage root before handing the path to a reader.
+            $real = realpath($path);
+            $root = realpath(self::storagePath());
+            if ($real === false || $root === false || !str_starts_with($real, $root . DIRECTORY_SEPARATOR)) {
+                return null;
+            }
+            return $real;
         }
 
         $result = Hooks::applyFilters('attachment.storage.fetch', [
@@ -405,6 +483,10 @@ class WorkOrderAttachment extends Model {
         if (!$this->isExtensionAllowed($ext)) {
             throw new Exception(t('wo.attachment_type_denied', ['types' => $this->allowedExtensionsLabel()]));
         }
+
+        if (!$this->isMimeConsistent($ext, $file['tmp_name'])) {
+            throw new Exception(t('wo.attachment_content_mismatch', ['ext' => $ext]));
+        }
     }
 
     public static function normalizeExtensions(string $raw): string {
@@ -423,6 +505,9 @@ class WorkOrderAttachment extends Model {
                 continue;
             }
             if (!preg_match('/^[a-z0-9]{1,16}$/', $part)) {
+                continue;
+            }
+            if (self::isDeniedExtension($part)) {
                 continue;
             }
             if (!in_array($part, $normalized, true)) {
@@ -494,13 +579,33 @@ class WorkOrderAttachment extends Model {
     }
 
     private function isExtensionAllowed(string $ext): bool {
-        if ($this->allowsAllTypes()) {
-            return true;
-        }
         if ($ext === '') {
             return false;
         }
+        // Checked before the allow-all shortcut so "%" can never admit an executable type.
+        if (self::isDeniedExtension($ext)) {
+            return false;
+        }
+        if ($this->allowsAllTypes()) {
+            return true;
+        }
         return in_array(strtolower($ext), $this->allowedExtensions(), true);
+    }
+
+    /**
+     * Rejects files whose contents disagree with the extension they claim. Only
+     * extensions present in EXTENSION_MIME_MAP are checked; anything else is left alone.
+     */
+    private function isMimeConsistent(string $ext, string $path): bool {
+        $ext = strtolower($ext);
+        if (!isset(self::EXTENSION_MIME_MAP[$ext])) {
+            return true;
+        }
+        $mime = $this->detectMime($path);
+        if ($mime === 'application/octet-stream') {
+            return true;
+        }
+        return in_array($mime, self::EXTENSION_MIME_MAP[$ext], true);
     }
 
     private function extensionOf(string $filename): string {

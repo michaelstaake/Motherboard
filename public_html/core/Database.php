@@ -23,7 +23,10 @@ class Database {
                     PDO::ATTR_EMULATE_PREPARES => false
                 ]);
             } catch (PDOException $e) {
-                throw new Exception("Database connection failed: " . $e->getMessage());
+                // The driver message carries the host, database name and username.
+                // Keep it in the log; hand the caller something safe to render.
+                error_log('Database connection failed: ' . $e->getMessage());
+                throw new Exception('Database connection failed.');
             }
         }
         return $this->connection;

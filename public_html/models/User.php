@@ -36,9 +36,22 @@ class User extends Model {
         return $this->findOneWhere('email = ?', [$email]);
     }
     
+    /**
+     * Reset tokens are stored as a SHA-256 digest so that read access to the users table
+     * (a backup, a log, a stray dump) does not hand over live reset links. The token is
+     * high-entropy and single-use, so a plain digest is sufficient here.
+     */
+    public static function hashResetToken(string $token): string {
+        return hash('sha256', $token);
+    }
+
     public function findByResetToken($token) {
+        if (!is_string($token) || $token === '') {
+            return null;
+        }
+
         // First, find the user with the token regardless of expiration
-        $user = $this->findOneWhere('reset_token = ?', [$token]);
+        $user = $this->findOneWhere('reset_token = ?', [self::hashResetToken($token)]);
         
         if (!$user) {
             return null; // No user found with this token
@@ -139,13 +152,35 @@ class User extends Model {
         }
     }
     
+    private function attemptWindowSeconds(): int {
+        $window = defined('LOGIN_ATTEMPT_TIMEOUT') ? (int) LOGIN_ATTEMPT_TIMEOUT : 900;
+        return max(60, $window);
+    }
+
     public function getLoginAttempts($ip) {
         $stmt = $this->db->prepare("
             SELECT COUNT(*) as count 
             FROM login_attempts 
-            WHERE ip_address = ? AND success = 0 AND attempted_at > DATE_SUB(NOW(), INTERVAL 15 MINUTE)
+            WHERE ip_address = ? AND success = 0 AND attempted_at > DATE_SUB(NOW(), INTERVAL ? SECOND)
         ");
-        $stmt->execute([$ip]);
+        $stmt->execute([$ip, $this->attemptWindowSeconds()]);
+        return $stmt->fetch()['count'];
+    }
+
+    /**
+     * Counted separately from the per-IP budget so that credential stuffing spread across
+     * many source addresses still trips a limit on the account being targeted.
+     */
+    public function getLoginAttemptsForUsername($username) {
+        if (!is_string($username) || $username === '') {
+            return 0;
+        }
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) as count 
+            FROM login_attempts 
+            WHERE username = ? AND success = 0 AND attempted_at > DATE_SUB(NOW(), INTERVAL ? SECOND)
+        ");
+        $stmt->execute([$username, $this->attemptWindowSeconds()]);
         return $stmt->fetch()['count'];
     }
     
@@ -183,7 +218,7 @@ class User extends Model {
     public function getAllUsers($limit = null, $offset = 0) {
         $sql = "SELECT id, username, name, email, user_group, is_active, created_at, last_login FROM users";
         if ($limit) {
-            $sql .= " LIMIT $limit OFFSET $offset";
+            $sql .= ' LIMIT ' . (int) $limit . ' OFFSET ' . max(0, (int) $offset);
         }
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();

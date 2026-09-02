@@ -16,7 +16,9 @@ class Model {
     protected function findAll($limit = null, $offset = 0) {
         $sql = "SELECT * FROM {$this->table}";
         if ($limit) {
-            $sql .= " LIMIT $limit OFFSET $offset";
+            // Cast here rather than trusting every caller: this is the one place in the
+            // codebase where a value is interpolated into SQL instead of bound.
+            $sql .= ' LIMIT ' . (int) $limit . ' OFFSET ' . max(0, (int) $offset);
         }
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll();

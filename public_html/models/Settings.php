@@ -4,6 +4,8 @@ require_once 'core/Crypto.php';
 
 class Settings extends Model {
     protected $table = 'settings';
+    public const REDACTED = '********';
+
     private const SENSITIVE_KEYS = [
         'turnstile_secret_key',
         'recaptcha_secret_key',
@@ -57,6 +59,27 @@ class Settings extends Model {
         return $result;
     }
     
+    /**
+     * Settings for a module settings view. Secrets belonging to other modules are replaced
+     * with a mask: still truthy, so an "is it configured?" check keeps working, but the
+     * plaintext never reaches a third-party module's view. A module receives its own
+     * secrets in the clear by naming them in its definition's `settings_keys`.
+     */
+    public function getAllSettingsForModule(array $ownedKeys = []) {
+        $settings = $this->getAllSettings();
+
+        foreach (self::SENSITIVE_KEYS as $key) {
+            if (in_array($key, $ownedKeys, true)) {
+                continue;
+            }
+            if (!empty($settings[$key])) {
+                $settings[$key] = self::REDACTED;
+            }
+        }
+
+        return $settings;
+    }
+
     public function getCompanyInfo() {
         return [
             'company_name' => $this->getSetting('company_name', APP_NAME),

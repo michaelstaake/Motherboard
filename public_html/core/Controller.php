@@ -15,22 +15,55 @@ class Controller {
         $this->settingsModel = new Settings();
     }
     
+    /**
+     * Renders operator-authored rich text. strip_tags() keeps the attributes of any tag it
+     * retains, so "<p onmouseover=...>" survives it; escape everything first, then restore
+     * only the bare tags we intend to support.
+     */
+    public static function safeBasicHtml(?string $html, array $allowed = ['p', 'b', 'strong', 'i', 'em', 'br', 'ul', 'ol', 'li']): string {
+        $escaped = htmlspecialchars((string) $html, ENT_QUOTES, 'UTF-8');
+
+        foreach ($allowed as $tag) {
+            $tag = preg_quote($tag, '/');
+            $escaped = preg_replace('/&lt;' . $tag . '&gt;/i', '<' . $tag . '>', $escaped);
+            $escaped = preg_replace('/&lt;\/' . $tag . '&gt;/i', '</' . $tag . '>', $escaped);
+            $escaped = preg_replace('/&lt;' . $tag . '\s*\/&gt;/i', '<' . $tag . ' />', $escaped);
+        }
+
+        return $escaped;
+    }
+
     protected function requireAuth() {
         if (!isset($_SESSION['user_id'])) {
             header('Location: ' . BASE_URL . '/login');
             exit;
         }
         
-        // Check if user is still active
+        // Re-read the account on every request: both the active flag and the group are
+        // authorization inputs, and a session snapshot would let a demoted or deactivated
+        // user keep their old rights until the session expired.
         require_once 'models/User.php';
         $userModel = new User();
-        if (!$userModel->isUserActive($_SESSION['user_id'])) {
+        $user = $userModel->findById($_SESSION['user_id']);
+        if (!$user || (int) $user['is_active'] !== 1) {
             // User has been deactivated, destroy session and redirect
-            session_destroy();
+            self::destroySession();
             header('HTTP/1.1 403 Forbidden');
             header('Location: ' . BASE_URL . '/403?reason=account_deactivated');
             exit;
         }
+
+        // A password change rewrites the stored hash, so sessions minted against the old
+        // one stop validating here. Sessions predating this check have no fingerprint and
+        // are retired once, at upgrade.
+        $fingerprint = hash('sha256', (string) $user['password']);
+        if (!isset($_SESSION['auth_fingerprint']) || !hash_equals($fingerprint, (string) $_SESSION['auth_fingerprint'])) {
+            self::destroySession();
+            header('Location: ' . BASE_URL . '/login');
+            exit;
+        }
+
+        $_SESSION['user_group'] = $user['user_group'];
     }
     
     protected function requireAdmin() {
@@ -43,7 +76,7 @@ class Controller {
     
     protected function requireTechnician() {
         $this->requireAuth();
-        if (!in_array($_SESSION['user_group'], ['Admin', 'Technician'])) {
+        if (!in_array($_SESSION['user_group'], ['Admin', 'Technician'], true)) {
             header('Location: ' . BASE_URL . '/403');
             exit;
         }
@@ -74,7 +107,7 @@ class Controller {
     }
 
     private function renderViewFile($viewFile, $viewName, $data) {
-        extract($data);
+        extract($data, EXTR_SKIP);
         if (file_exists($viewFile)) {
             require $viewFile;
             Hooks::doAction('view.render.after', $viewName, $data);
@@ -139,5 +172,27 @@ class Controller {
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         }
         return $_SESSION['csrf_token'];
+    }
+
+    /**
+     * Issues a fresh CSRF token. Called when the session crosses a privilege boundary, so
+     * that a token captured before authentication is not still valid afterwards.
+     */
+    protected function rotateCSRF() {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        return $_SESSION['csrf_token'];
+    }
+
+    /**
+     * Fully tears down the session: contents, cookie, and server-side record. Mirrors the
+     * idle-timeout path in index.php.
+     */
+    public static function destroySession() {
+        $_SESSION = [];
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
+        }
+        session_destroy();
     }
 }

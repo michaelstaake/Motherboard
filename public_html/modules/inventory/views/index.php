@@ -54,7 +54,7 @@ $searchQuery = $search ?? '';
                                 </a>
                                 <div class="flex items-center space-x-2">
                                     <button type="button" class="text-sm text-primary-600 hover:text-primary-500" onclick="openCategoryModal(<?= (int) $category['id'] ?>, <?= htmlspecialchars(json_encode($category['name']), ENT_QUOTES) ?>)"><?= t('common.edit') ?></button>
-                                    <form method="POST" action="<?= BASE_URL ?>/inventory/categories/<?= (int) $category['id'] ?>/delete" onsubmit="return confirm(<?= json_encode(t('inventory.confirm_delete_category')) ?>)">
+                                    <form method="POST" action="<?= BASE_URL ?>/inventory/categories/<?= (int) $category['id'] ?>/delete" onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('inventory.confirm_delete_category')), ENT_QUOTES) ?>)">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                                         <button type="submit" class="text-sm text-red-600 hover:text-red-500"><?= t('common.delete') ?></button>
                                     </form>
@@ -135,7 +135,7 @@ $searchQuery = $search ?? '';
                                             'stock' => (int) $product['stock'],
                                             'taxable' => !empty($product['taxable']),
                                         ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>)'><?= t('common.edit') ?></button>
-                                        <form method="POST" action="<?= BASE_URL ?>/inventory/products/<?= (int) $product['id'] ?>/delete" class="inline" onsubmit="return confirm(<?= json_encode(t('inventory.confirm_delete_product')) ?>)">
+                                        <form method="POST" action="<?= BASE_URL ?>/inventory/products/<?= (int) $product['id'] ?>/delete" class="inline" onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('inventory.confirm_delete_product')), ENT_QUOTES) ?>)">
                                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                                             <button type="submit" class="text-red-600 hover:text-red-900"><?= t('common.delete') ?></button>
                                         </form>

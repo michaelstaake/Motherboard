@@ -243,6 +243,7 @@ return [
     'wo.attachment_required' => 'Pick a chew-file first.',
     'wo.attachment_too_large' => 'That chew is bigger than {size}.',
     'wo.attachment_type_denied' => 'That treat is not allowed. Allowed treats: {types}.',
+    'wo.attachment_content_mismatch' => 'That treat does not smell like a .{ext} treat.',
     'wo.attachment_upload_fail' => 'Could not stick that file.',
     'wo.attachment_storage_unavailable' => 'That sticker den is missing. Wake the storage module or pick another den.',
     'wo.attachment_not_found' => 'Sticker went missing.',

@@ -243,6 +243,7 @@ return [
     'wo.attachment_required' => 'Elige un archivo para subir.',
     'wo.attachment_too_large' => 'El archivo supera el tamaño máximo de {size}.',
     'wo.attachment_type_denied' => 'Este tipo de archivo no está permitido. Tipos permitidos: {types}.',
+    'wo.attachment_content_mismatch' => 'El contenido de este archivo no coincide con su extensión .{ext}.',
     'wo.attachment_upload_fail' => 'No se pudo subir el archivo.',
     'wo.attachment_storage_unavailable' => 'El destino de almacenamiento seleccionado no está disponible. Activa el módulo de almacenamiento o elige otro destino.',
     'wo.attachment_not_found' => 'Adjunto no encontrado.',

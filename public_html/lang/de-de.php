@@ -243,6 +243,7 @@ return [
     'wo.attachment_required' => 'Bitte wählen Sie eine Datei zum Hochladen.',
     'wo.attachment_too_large' => 'Die Datei überschreitet die maximale Größe von {size}.',
     'wo.attachment_type_denied' => 'Dieser Dateityp ist nicht erlaubt. Erlaubte Typen: {types}.',
+    'wo.attachment_content_mismatch' => 'Der Inhalt dieser Datei passt nicht zu ihrer Endung .{ext}.',
     'wo.attachment_upload_fail' => 'Die Datei konnte nicht hochgeladen werden.',
     'wo.attachment_storage_unavailable' => 'Das gewählte Speicherziel ist nicht verfügbar. Aktivieren Sie das Speichermodul oder wählen Sie ein anderes Ziel.',
     'wo.attachment_not_found' => 'Anhang nicht gefunden.',

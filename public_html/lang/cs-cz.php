@@ -243,6 +243,7 @@ return [
     'wo.attachment_required' => 'Vyberte soubor k nahrání.',
     'wo.attachment_too_large' => 'Soubor překračuje maximální velikost {size}.',
     'wo.attachment_type_denied' => 'Tento typ souboru není povolen. Povolené typy: {types}.',
+    'wo.attachment_content_mismatch' => 'Obsah tohoto souboru neodpovídá jeho příponě .{ext}.',
     'wo.attachment_upload_fail' => 'Soubor se nepodařilo nahrát.',
     'wo.attachment_storage_unavailable' => 'Vybraný cíl uložení není dostupný. Povolte modul úložiště nebo zvolte jiný cíl.',
     'wo.attachment_not_found' => 'Příloha nebyla nalezena.',

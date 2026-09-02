@@ -2,7 +2,7 @@
 
 Motherboard loads every subdirectory of `public_html/modules/` that contains an `index.php`. No sample modules ship with the core; this file is the contract for building them.
 
-Core version: **26.8.17.5**. Compare versions with PHP `version_compare()`.
+Version constraints are compared with PHP `version_compare()`, against the `$version` value in `public_html/version.php`.
 
 ## Module layout
 
@@ -28,7 +28,7 @@ return [
     'description' => 'Short summary',
     'min_motherboard_version' => '26.8.14.1', // required
     'max_motherboard_version' => null,        // optional
-    'min_php_version' => '8.4.0',             // required
+    'min_php_version' => '8.1',               // required
     'max_php_version' => null,                // optional
     'boot' => function (array $module) {
         Hooks::addAction('app.ready', function () {
@@ -344,6 +344,12 @@ For new UI strings, either ship language files the shop copies into `lang/`, or 
 ## Compatibility rules
 
 - Always set `min_motherboard_version` and `min_php_version`.
+- `index.php` must only build and return the definition array. It is included for **every**
+  module directory during discovery, including disabled ones, so that the module manager can
+  list what is available. Put all side effects behind the `boot` callable, which runs only
+  for enabled modules.
+- Declare any sensitive settings your module owns in `settings_keys`. Settings views receive
+  other modules' secrets masked as `********`; only the keys you declare arrive in the clear.
 - Set `max_*` only when a breaking change is known.
 - Do not assume write access outside the module directory.
 - Do not replace core files; use hooks.

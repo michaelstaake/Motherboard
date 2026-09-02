@@ -22,7 +22,13 @@ if (defined('FORCE_HTTPS') && FORCE_HTTPS) {
         || (isset($_SERVER['SERVER_PORT']) && (int) $_SERVER['SERVER_PORT'] === 443)
         || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
     if (!$https) {
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        // Take the host from configuration rather than the Host header, which the
+        // client controls and could point at an attacker-chosen origin.
+        $host = parse_url(BASE_URL, PHP_URL_HOST) ?: 'localhost';
+        $port = parse_url(BASE_URL, PHP_URL_PORT);
+        if ($port && (int) $port !== 80 && (int) $port !== 443) {
+            $host .= ':' . (int) $port;
+        }
         header('Location: https://' . $host . ($_SERVER['REQUEST_URI'] ?? '/'));
         exit;
     }

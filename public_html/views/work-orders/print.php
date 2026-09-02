@@ -173,7 +173,7 @@ $hideNavigation = true;
             <div class="border-t border-gray-300 pt-3 mt-4 print-avoid-break">
                 <h3 class="text-xs font-semibold text-gray-900 mb-2"><?= t('wo.terms') ?></h3>
                 <div class="text-xs text-gray-600 leading-tight">
-                    <?= strip_tags($companyInfo['work_order_disclaimer'], '<p><b>') ?>
+                    <?= Controller::safeBasicHtml($companyInfo['work_order_disclaimer']) ?>
                 </div>
             </div>
         <?php endif; ?>

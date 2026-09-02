@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:80"
+      - "127.0.0.1:8080:80"
     volumes:
       - ./public_html:/var/www/html
     environment:
@@ -21,6 +21,9 @@ services:
       SMTP_USER: ""
       SMTP_PASS: ""
       FROM_EMAIL: noreply@motherboard.local
+      # Development key only. Generate a fresh one per deployment:
+      #   php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'
+      APP_ENCRYPTION_KEY: "9d67d2d89e38cc98a13ca107f5476aee4c5f7f2d90e9ff83a634edff81982a41"
     depends_on:
       db:
         condition: service_healthy
@@ -33,11 +36,11 @@ services:
       MYSQL_PASSWORD: motherboard
       MYSQL_ROOT_PASSWORD: root
     ports:
-      - "3306:3306"
+      - "127.0.0.1:3306:3306"
     volumes:
       - motherboard_db:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-umotherboard", "-pmotherboard"]
       interval: 5s
       timeout: 5s
       retries: 20
@@ -45,7 +48,7 @@ services:
   mailhog:
     image: mailhog/mailhog
     ports:
-      - "8025:8025"
+      - "127.0.0.1:8025:8025"
 
 volumes:
   motherboard_db:

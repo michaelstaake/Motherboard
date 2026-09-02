@@ -66,13 +66,66 @@ function motherboard_s3_normalize_endpoint(string $endpoint): string {
     if ($parts === false || empty($parts['host'])) {
         return '';
     }
+    $host = strtolower($parts['host']);
+
+    // Plaintext would put the SigV4 Authorization header and the object body on the wire
+    // in the clear, and the payload is signed as UNSIGNED-PAYLOAD so it has no integrity
+    // protection either. Permit http only for hosts that cannot leave the local network.
     $scheme = strtolower($parts['scheme'] ?? 'https');
-    if ($scheme !== 'http' && $scheme !== 'https') {
+    if ($scheme !== 'http' || !motherboard_s3_is_private_host($host)) {
         $scheme = 'https';
     }
-    $host = strtolower($parts['host']);
+
     $port = isset($parts['port']) ? ':' . (int) $parts['port'] : '';
     return $scheme . '://' . $host . $port;
+}
+
+/**
+ * True for hosts that resolve to loopback, link-local, or RFC1918 space.
+ *
+ * Used for two purposes: allowing plaintext to a MinIO-style endpoint on the same
+ * network, and refusing to let an admin point the client at cloud metadata services
+ * (169.254.169.254 and friends), which would turn "Test connection" into an SSRF probe.
+ */
+function motherboard_s3_is_private_host(string $host): bool {
+    $host = trim($host, '[]');
+
+    if (filter_var($host, FILTER_VALIDATE_IP) === false) {
+        if ($host === 'localhost' || str_ends_with($host, '.localhost') || str_ends_with($host, '.local')) {
+            return true;
+        }
+        $resolved = gethostbyname($host);
+        if ($resolved === $host || filter_var($resolved, FILTER_VALIDATE_IP) === false) {
+            return false;
+        }
+        $host = $resolved;
+    }
+
+    return filter_var(
+        $host,
+        FILTER_VALIDATE_IP,
+        FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
+    ) === false;
+}
+
+/**
+ * Link-local space only (169.254.0.0/16, fe80::/10). Deliberately narrower than
+ * motherboard_s3_is_private_host(): a MinIO endpoint on the LAN is a legitimate
+ * configuration, a cloud metadata endpoint never is.
+ */
+function motherboard_s3_is_metadata_host(string $host): bool {
+    $host = trim($host, '[]');
+
+    if (filter_var($host, FILTER_VALIDATE_IP) === false) {
+        $resolved = gethostbyname($host);
+        if ($resolved === $host || filter_var($resolved, FILTER_VALIDATE_IP) === false) {
+            return false;
+        }
+        $host = $resolved;
+    }
+
+    return str_starts_with($host, '169.254.')
+        || str_starts_with(strtolower($host), 'fe80:');
 }
 
 function motherboard_s3_normalize_prefix(string $prefix): string {
@@ -194,9 +247,13 @@ class MotherboardS3Client {
             $headers[$name] = $value;
         }
 
+        // SigV4 requires the signed headers in byte order of their LOWERCASED names.
+        // Sorting the original mixed-case keys happens to agree for the fixed header set
+        // used here, but would silently break the signature for any added header.
         $signedNames = array_keys($headers);
-        natcasesort($signedNames);
-        $signedNames = array_values($signedNames);
+        usort($signedNames, function ($a, $b) {
+            return strcmp(strtolower($a), strtolower($b));
+        });
         $canonicalHeaders = '';
         $signedHeaderList = [];
         foreach ($signedNames as $name) {
@@ -247,6 +304,8 @@ class MotherboardS3Client {
         curl_setopt($ch, CURLOPT_TIMEOUT, 300);
         curl_setopt($ch, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS | CURLPROTO_HTTP);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 
         $in = null;
         $out = null;
@@ -311,6 +370,13 @@ class MotherboardS3Client {
         $parts = parse_url($this->endpoint);
         $scheme = $parts['scheme'] ?? 'https';
         $endpointHost = $parts['host'] ?? '';
+
+        // An admin-supplied endpoint is still an SSRF vector: "Test connection" reports the
+        // response body back to the browser. Cloud metadata services live on link-local
+        // addresses, so refuse to sign anything aimed there.
+        if ($endpointHost !== '' && motherboard_s3_is_metadata_host($endpointHost)) {
+            throw new Exception(motherboard_s3_error('Endpoint host is not routable'));
+        }
         $port = isset($parts['port']) ? (int) $parts['port'] : null;
         $pathStyle = $this->pathStyle;
         $host = $pathStyle ? $endpointHost : $this->bucket . '.' . $endpointHost;

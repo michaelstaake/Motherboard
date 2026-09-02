@@ -8,6 +8,7 @@ return [
     'min_php_version' => '8.1',
     'default_enabled' => false,
     'settings' => true,
+    'settings_keys' => ['turnstile_secret_key'],
     'author' => 'Napa AI',
     'conflicts' => ['google-recaptcha'],
     'boot' => function (array $definition): void {

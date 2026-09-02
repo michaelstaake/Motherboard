@@ -1,0 +1,2 @@
+# Application source; reachable only through the front controller.
+Require all denied

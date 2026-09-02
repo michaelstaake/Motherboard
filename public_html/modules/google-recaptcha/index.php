@@ -8,6 +8,7 @@ return [
     'min_php_version' => '8.1',
     'default_enabled' => false,
     'settings' => true,
+    'settings_keys' => ['recaptcha_secret_key'],
     'author' => 'Napa AI',
     'conflicts' => ['cloudflare-turnstile'],
     'boot' => function (array $definition): void {

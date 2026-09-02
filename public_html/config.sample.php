@@ -36,12 +36,15 @@ date_default_timezone_set(getenv('APP_TIMEZONE') ?: 'America/Los_Angeles');
 
 require_once ROOT_PATH . '/version.php';
 
-if ($channel === 'release' && empty(getenv('APP_DEBUG'))) {
-    error_reporting(0);
-    ini_set('display_errors', 0);
-    ini_set('log_errors', 1);
-} else {
+// Errors are shown only when APP_DEBUG is explicitly set. The release channel is a
+// distribution marker, not a debug switch: a beta build still must not print stack
+// traces, DSNs, or filesystem paths to unauthenticated visitors.
+ini_set('log_errors', 1);
+
+if (!empty(getenv('APP_DEBUG'))) {
     error_reporting(E_ALL);
     ini_set('display_errors', 1);
-    ini_set('log_errors', 1);
+} else {
+    error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
+    ini_set('display_errors', 0);
 }

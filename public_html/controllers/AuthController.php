@@ -4,6 +4,9 @@ require_once 'models/User.php';
 require_once 'models/Settings.php';
 
 class AuthController extends Controller {
+    /** Hash of a value nobody can supply; used only to equalise failed-login timing. */
+    private const TIMING_EQUALISER_HASH = '$2y$10$usesomesillystringfore2uDLvp1Ii2e./U9C8sBjqp8I90dH6hi';
+
     private $userModel;
     
     public function __construct() {
@@ -45,6 +48,9 @@ class AuthController extends Controller {
                     $error = $verify['error'] ?? t('auth.invalid_code');
                     $requires2FA = true;
                     $pendingUserId = $_SESSION['pending_2fa_user'] ?? null;
+                    // Otherwise second-factor guessing costs nothing against the IP budget.
+                    $pendingUser = $pendingUserId ? $this->userModel->findById($pendingUserId) : null;
+                    $this->userModel->recordLoginAttempt($ip, $pendingUser['username'] ?? null, false);
                 } else {
                     $username = $this->sanitizeInput($_POST['username']);
                     $password = $_POST['password'];
@@ -59,8 +65,19 @@ class AuthController extends Controller {
                     if ($this->userModel->getLoginAttempts($ip) >= $maxLoginAttempts) {
                         throw new Exception(t('auth.too_many'));
                     }
+                    // Counted per account as well, so spraying from rotating addresses
+                    // still trips a limit on the account being targeted.
+                    if ($this->userModel->getLoginAttemptsForUsername($username) >= $maxLoginAttempts) {
+                        throw new Exception(t('auth.too_many'));
+                    }
                     $user = $this->userModel->findByUsername($username);
-                    
+
+                    if (!$user) {
+                        // Spend the same time hashing as a real verification would, so the
+                        // response time does not disclose whether the account exists.
+                        $this->userModel->verifyPassword($password, self::TIMING_EQUALISER_HASH);
+                    }
+
                     if ($user && $this->userModel->verifyPassword($password, $user['password'])) {
                         $gate = Hooks::applyFilters('auth.login.after_credentials', [
                             'proceed' => true,
@@ -108,6 +125,10 @@ class AuthController extends Controller {
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['user_group'] = $user['user_group'];
         $_SESSION['last_activity'] = time();
+        // Ties the session to the credential it was issued against; changing the password
+        // invalidates every other session (see Controller::requireAuth).
+        $_SESSION['auth_fingerprint'] = hash('sha256', (string) $user['password']);
+        $this->rotateCSRF();
         
         // Record login
         $this->userModel->recordLogin($userId, $ip);
@@ -133,7 +154,7 @@ class AuthController extends Controller {
             Hooks::doAction('auth.logout', $_SESSION['user_id']);
         }
         
-        session_destroy();
+        self::destroySession();
         $this->redirect('/login');
     }
     
@@ -150,13 +171,24 @@ class AuthController extends Controller {
                     throw new Exception($captchaError);
                 }
 
+                $ip = $this->getClientIP();
+                $maxResetAttempts = (int) $this->settingsModel->getSetting('max_login_attempts', MAX_LOGIN_ATTEMPTS);
+                $maxResetAttempts = max(3, min(10, $maxResetAttempts));
+                if ($this->userModel->getLoginAttempts($ip) >= $maxResetAttempts) {
+                    throw new Exception(t('auth.too_many'));
+                }
+
                 $email = $this->sanitizeInput($_POST['email']);
+                // Metered regardless of whether the address matches, so this endpoint
+                // cannot be used as an unbounded mail relay or enumeration oracle.
+                $this->userModel->recordLoginAttempt($ip, $email, false);
+
                 $user = $this->userModel->findByEmail($email);
                 
                 if ($user) {
                     $token = bin2hex(random_bytes(32));
                     $this->userModel->updateUser($user['id'], [
-                        'reset_token' => $token,
+                        'reset_token' => User::hashResetToken($token),
                         'reset_expires' => date('Y-m-d H:i:s', strtotime('+1 hour'))
                     ]);
                     
@@ -215,7 +247,13 @@ class AuthController extends Controller {
                     'reset_token' => null,
                     'reset_expires' => null
                 ]);
-                
+
+                // The stored hash has changed, so every session carrying the old
+                // fingerprint — including any the attacker holds — stops validating.
+                if (($_SESSION['user_id'] ?? null) == $user['id']) {
+                    self::destroySession();
+                }
+
                 $this->logger->log('password_reset_completed', 'Password reset completed', $user['id']);
                 $message = t('auth.password_reset_ok');
             } catch (Exception $e) {
