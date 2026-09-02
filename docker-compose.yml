@@ -1,0 +1,51 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    volumes:
+      - ./public_html:/var/www/html
+    environment:
+      DB_HOST: db
+      DB_NAME: motherboard
+      DB_USER: motherboard
+      DB_PASS: motherboard
+      BASE_URL: http://localhost:8080
+      FORCE_HTTPS: "false"
+      APP_DEBUG: "1"
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      SMTP_SECURE: ""
+      SMTP_USER: ""
+      SMTP_PASS: ""
+      FROM_EMAIL: noreply@motherboard.local
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: motherboard
+      MYSQL_USER: motherboard
+      MYSQL_PASSWORD: motherboard
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - motherboard_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025"
+
+volumes:
+  motherboard_db:

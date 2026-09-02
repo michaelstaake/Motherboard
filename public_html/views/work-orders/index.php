@@ -1,0 +1,327 @@
+<?php 
+$title = t('wo.title') . ' - ' . ($companyName ?? APP_NAME);
+ob_start(); 
+?>
+
+<div>
+    <div class="py-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900"><?= t('wo.title') ?></h1>
+                <?php if ($assignedTo): ?>
+                    <p class="mt-1 text-sm text-gray-600"><?= t('wo.assigned_filter') ?></p>
+                <?php endif; ?>
+            </div>
+            <?php if ($_SESSION['user_group'] !== 'Limited'): ?>
+                <a href="<?= BASE_URL ?>/work-orders/create" class="bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700">
+                    <?= t('wo.create') ?>
+                </a>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    <?php if (isset($_GET['message'])): ?>
+        <div class="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-600"><?= htmlspecialchars($_GET['message']) ?></p>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <?php if (isset($_GET['error'])): ?>
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-red-600"><?= htmlspecialchars($_GET['error']) ?></p>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow mb-6">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex flex-wrap items-center gap-4">
+                <!-- Status Filter -->
+                <div class="flex space-x-2">
+                    <?php 
+                    $statuses = ['All', 'Priority', 'Open', 'In Progress', 'Awaiting Parts', 'Closed', 'Picked Up'];
+                    foreach ($statuses as $filterStatus): 
+                    ?>
+                        <a href="<?= BASE_URL ?>/work-orders?status=<?= urlencode($filterStatus) ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?>"
+                           class="px-3 py-1 rounded-full text-sm <?= $status === $filterStatus ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' ?>">
+                            <?= t('status.' . $filterStatus) ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+
+                <!-- Search -->
+                <div class="flex-1 max-w-md">
+                    <form method="GET" class="flex">
+                        <input type="hidden" name="status" value="<?= htmlspecialchars($status) ?>">
+                        <?php if ($assignedTo): ?>
+                            <input type="hidden" name="assigned_to" value="<?= htmlspecialchars($assignedTo) ?>">
+                        <?php endif; ?>
+                        <input type="text" 
+                               name="search" 
+                               value="<?= htmlspecialchars($search) ?>"
+                               placeholder="<?= htmlspecialchars(t('wo.search')) ?>"
+                               class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-l-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
+                        <button type="submit" class="px-4 py-3 bg-gray-100 border-2 border-l-0 border-gray-300 rounded-r-md hover:bg-gray-200">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Active Filters -->
+        <?php if ($assignedTo): ?>
+            <div class="px-6 py-3 bg-blue-50 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-blue-700"><?= t('wo.active_filters') ?></span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <?= t('wo.assigned_to_me') ?>
+                            <a href="<?= BASE_URL ?>/work-orders?<?= $status !== 'All' ? 'status=' . urlencode($status) : '' ?><?= $search ? ($status !== 'All' ? '&' : '') . 'search=' . urlencode($search) : '' ?>" 
+                               class="ml-1 inline-flex items-center justify-center w-4 h-4 text-blue-400 hover:text-blue-600">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                    </div>
+                    <a href="<?= BASE_URL ?>/work-orders" class="text-sm text-blue-600 hover:text-blue-500">
+                        <?= t('wo.clear_filters') ?>
+                    </a>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <!-- Work Orders Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <?= t('wo.number') ?>
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <?= t('wo.customer') ?>
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <?= t('wo.date_opened') ?>
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <?= t('wo.computer') ?>
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <?= t('wo.technician') ?>
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <?= t('common.status') ?>
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <?= t('common.actions') ?>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <?php if (empty($workOrders)): ?>
+                        <tr>
+                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                <?= t('wo.none') ?>
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php foreach ($workOrders as $workOrder): ?>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        <a href="<?= BASE_URL ?>/work-orders/view/<?= $workOrder['id'] ?>" class="text-primary-600 hover:text-primary-500">
+                                            #<?= $workOrder['id'] ?>
+                                        </a>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        <a href="<?= BASE_URL ?>/customers/view/<?= $workOrder['customer_id'] ?>" class="text-primary-600 hover:text-primary-500">
+                                            <?= htmlspecialchars($workOrder['customer_name']) ?>
+                                        </a>
+                                    </div>
+                                    <?php if ($workOrder['customer_company']): ?>
+                                        <div class="text-sm text-gray-500">
+                                            <?= htmlspecialchars($workOrder['customer_company']) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <?= date('M j, Y', strtotime($workOrder['created_at'])) ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900" title="<?= htmlspecialchars($workOrder['computer']) ?>">
+                                        <?= htmlspecialchars(strlen($workOrder['computer']) > 30 ? substr($workOrder['computer'], 0, 30) . '...' : $workOrder['computer']) ?>
+                                    </div>
+                                    <?php if ($workOrder['model']): ?>
+                                        <div class="text-sm text-gray-500" title="<?= htmlspecialchars($workOrder['model']) ?>">
+                                            <?= htmlspecialchars(strlen($workOrder['model']) > 30 ? substr($workOrder['model'], 0, 30) . '...' : $workOrder['model']) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($workOrder['serial_number'])): ?>
+                                        <div class="text-sm text-gray-500" title="<?= htmlspecialchars($workOrder['serial_number']) ?>">
+                                            <?= t('wo.sn_short', ['sn' => htmlspecialchars(strlen($workOrder['serial_number']) > 30 ? substr($workOrder['serial_number'], 0, 30) . '...' : $workOrder['serial_number'])]) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($workOrder['imei'])): ?>
+                                        <div class="text-sm text-gray-500" title="<?= htmlspecialchars($workOrder['imei']) ?>">
+                                            <?= t('wo.imei_short', ['imei' => htmlspecialchars(strlen($workOrder['imei']) > 30 ? substr($workOrder['imei'], 0, 30) . '...' : $workOrder['imei'])]) ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <?php if ($workOrder['technician_display_name']): ?>
+                                        <a href="<?= BASE_URL ?>/users/view/<?= $workOrder['assigned_to'] ?>" class="text-primary-600 hover:text-primary-500">
+                                            <?= htmlspecialchars($workOrder['technician_display_name']) ?>
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="text-gray-400"><?= t('common.unassigned') ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                            <?= $workOrder['status'] === 'Open' ? 'bg-orange-100 text-orange-800' :
+                                                ($workOrder['status'] === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
+                                                ($workOrder['status'] === 'Awaiting Parts' ? 'bg-purple-100 text-purple-800' :
+                                                ($workOrder['status'] === 'Closed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'))) ?>">
+                                            <?= htmlspecialchars(tlabel('status', $workOrder['status'])) ?>
+                                        </span>
+                                        <?php if ($workOrder['priority'] === 'Priority'): ?>
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                <?= t('priority.Priority') ?>
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <a href="<?= BASE_URL ?>/work-orders/view/<?= $workOrder['id'] ?>" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                        <?= t('common.view') ?>
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <?php if ($totalPages > 1): ?>
+            <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    <?php if ($currentPage > 1): ?>
+                        <a href="<?= BASE_URL ?>/work-orders?page=<?= $currentPage - 1 ?><?= $status !== 'All' ? '&status=' . urlencode($status) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?>" 
+                           class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <?= t('common.previous') ?>
+                        </a>
+                    <?php endif; ?>
+                    <?php if ($currentPage < $totalPages): ?>
+                        <a href="<?= BASE_URL ?>/work-orders?page=<?= $currentPage + 1 ?><?= $status !== 'All' ? '&status=' . urlencode($status) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?>" 
+                           class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <?= t('common.next') ?>
+                        </a>
+                    <?php endif; ?>
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700">
+                            <?= t('wo.showing_page', ['current' => $currentPage, 'total' => $totalPages]) ?>
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                            <?php 
+                            $range = 2; // Number of pages to show around current page
+                            $showFirst = $currentPage > $range + 1;
+                            $showLast = $currentPage < $totalPages - $range;
+                            
+                            // Always show page 1
+                            if ($showFirst): ?>
+                                <a href="<?= BASE_URL ?>/work-orders?page=1<?= $status !== 'All' ? '&status=' . urlencode($status) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?>" 
+                                   class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">1</a>
+                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400">...</span>
+                            <?php endif; ?>
+
+                            <?php
+                            for ($i = 1; $i <= $totalPages; $i++):
+                                if ($i == 1 && $showFirst) continue;
+                                if ($i == $totalPages && $showLast) continue;
+                                
+                                if ($i >= $currentPage - $range && $i <= $currentPage + $range):
+                            ?>
+                                <a href="<?= BASE_URL ?>/work-orders?page=<?= $i ?><?= $status !== 'All' ? '&status=' . urlencode($status) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?>" 
+                                   class="relative inline-flex items-center px-4 py-2 border text-sm font-medium 
+                                   <?= $i === $currentPage ? 'z-10 bg-primary-50 border-primary-500 text-primary-600' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50' ?>">
+                                    <?= $i ?>
+                                </a>
+                            <?php 
+                                endif;
+                            endfor; 
+                            ?>
+
+                            <?php if ($showLast): ?>
+                                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400">...</span>
+                                <a href="<?= BASE_URL ?>/work-orders?page=<?= $totalPages ?><?= $status !== 'All' ? '&status=' . urlencode($status) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?>" 
+                                   class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium"><?= $totalPages ?></a>
+                            <?php endif; ?>
+                        </nav>
+                        
+                        <!-- Go to Page Input -->
+                        <div class="ml-4 inline-flex items-center">
+                            <span class="text-sm text-gray-700 mr-2"><?= t('wo.go_to_page') ?></span>
+                            <input type="number" id="gotoPage" min="1" max="<?= $totalPages ?>" class="w-16 px-2 py-2 border-2 border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm bg-white" onkeydown="if(event.key === 'Enter') goToPage(this.value)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <script>
+            function goToPage(page) {
+                page = parseInt(page);
+                const maxPage = <?= $totalPages ?>;
+                const status = '<?= $status !== 'All' ? '&status=' . urlencode($status) : '' ?>';
+                const search = '<?= $search ? '&search=' . urlencode($search) : '' ?>';
+                const assignedTo = '<?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?>';
+                
+                if (page >= 1 && page <= maxPage) {
+                    window.location.href = '<?= BASE_URL ?>/work-orders?page=' + page + status + search + assignedTo;
+                } else {
+                    alert(<?= json_encode(t('js.page_range')) ?>.replace('{max}', String(maxPage)));
+                }
+            }
+            </script>
+        <?php endif; ?>
+    </div>
+</div>
+
+<?php 
+$content = ob_get_clean();
+include ROOT_PATH . '/views/layout.php';
+?>

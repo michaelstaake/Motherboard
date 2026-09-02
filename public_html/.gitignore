@@ -1,0 +1,14 @@
+# Motherboard
+config.php
+attachments/**
+!attachments/.htaccess
+!attachments/index.php
+
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+error_log
+*.log

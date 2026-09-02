@@ -1,0 +1,38 @@
+<IfModule mod_php.c>
+  php_flag display_errors Off
+  php_flag log_errors On
+</IfModule>
+<IfModule mod_php8.c>
+  php_flag display_errors Off
+  php_flag log_errors On
+</IfModule>
+
+RewriteEngine On
+
+<IfModule mod_rewrite.c>
+  RewriteCond %{HTTPS} off
+  RewriteCond %{ENV:FORCE_HTTPS} =1
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+Header always set X-Content-Type-Options nosniff
+Header always set X-Frame-Options DENY
+Header always set X-XSS-Protection "1; mode=block"
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' cdn.tailwindcss.com challenges.cloudflare.com *.cloudflare.com www.google.com www.gstatic.com; style-src 'self' 'unsafe-inline' cdn.tailwindcss.com; img-src 'self' data: https:; frame-src challenges.cloudflare.com *.google.com; connect-src 'self' challenges.cloudflare.com *.cloudflare.com www.google.com"
+
+<Files "config.php">
+    Require all denied
+</Files>
+
+<Files "*.log">
+    Require all denied
+</Files>
+
+<Files ".htaccess">
+    Require all denied
+</Files>
