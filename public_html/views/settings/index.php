@@ -98,9 +98,16 @@ $tabHelp = [
     <?php foreach ($tabs as $tabId): ?>
         <div class="settings-tab-panel bg-white shadow rounded-lg <?= $activeTab !== $tabId ? 'hidden' : '' ?>" data-tab-panel="<?= htmlspecialchars($tabId) ?>">
             <?php if (!empty($tabHelp[$tabId])): ?>
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-medium text-gray-900"><?= htmlspecialchars($tabLabels[$tabId] ?? $tabId) ?></h2>
-                    <p class="mt-1 text-sm text-gray-600"><?= htmlspecialchars($tabHelp[$tabId]) ?></p>
+                <div class="px-6 py-4 border-b border-gray-200 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-lg font-medium text-gray-900"><?= htmlspecialchars($tabLabels[$tabId] ?? $tabId) ?></h2>
+                        <p class="mt-1 text-sm text-gray-600"><?= htmlspecialchars($tabHelp[$tabId]) ?></p>
+                    </div>
+                    <?php if ($tabId === 'users'): ?>
+                        <button type="button" onclick="showCreateModal()" class="inline-flex flex-shrink-0 items-center justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                            <?= t('users.add') ?>
+                        </button>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
             <?php include ROOT_PATH . '/views/settings/partials/tab-' . $tabId . '.php'; ?>
