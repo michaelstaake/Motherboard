@@ -41,8 +41,8 @@ class InventoryController extends Controller {
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalCount' => $totalCount,
-            'error' => $_GET['error'] ?? '',
-            'message' => $_GET['message'] ?? '',
+            'error' => '',
+            'message' => '',
             'csrf_token' => $this->generateCSRF(),
         ], 'inventory/index');
     }
@@ -286,8 +286,8 @@ class InventoryController extends Controller {
     }
 
     private function redirectInventory(string $type, string $text): void {
+        $this->setFlash($text, $type);
         $query = http_build_query(array_filter([
-            $type => $text,
             'search' => $_GET['search'] ?? ($_POST['search'] ?? ''),
             'category' => $_GET['category'] ?? ($_POST['category'] ?? ''),
             'page' => $_GET['page'] ?? ($_POST['page'] ?? ''),
@@ -296,6 +296,6 @@ class InventoryController extends Controller {
     }
 
     private function redirectWorkOrder($id, string $type, string $text): void {
-        $this->redirect('/work-orders/view/' . (int) $id . '?' . http_build_query([$type => $text]));
+        $this->redirectWithFlash('/work-orders/view/' . (int) $id, $text, $type);
     }
 }

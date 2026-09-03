@@ -19,13 +19,6 @@ class SettingsController extends Controller {
         $message = '';
         $activeTab = $this->resolveActiveTab($_GET['tab'] ?? 'general');
 
-        if (isset($_GET['msg']) && $_GET['msg'] !== '') {
-            $message = $_GET['msg'];
-        }
-        if (isset($_GET['error']) && $_GET['error'] !== '') {
-            $error = $_GET['error'];
-        }
-
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 $this->validateCSRF();
@@ -125,7 +118,7 @@ class SettingsController extends Controller {
                 unset($posted['csrf_token']);
                 Hooks::doAction('settings.saved', $section, $posted);
 
-                $this->redirect('/settings?tab=' . urlencode($activeTab) . '&msg=' . urlencode($message));
+                $this->redirectWithFlash('/settings?tab=' . urlencode($activeTab), $message);
 
             } catch (Exception $e) {
                 $error = $e->getMessage();

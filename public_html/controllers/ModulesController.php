@@ -6,8 +6,7 @@ class ModulesController extends Controller {
         $this->requireAdmin();
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            $msg = isset($_GET['msg']) ? '&msg=' . urlencode($_GET['msg']) : '';
-            $this->redirect('/settings?tab=modules' . $msg);
+            $this->redirect('/settings?tab=modules');
         }
 
         $error = '';
@@ -25,10 +24,10 @@ class ModulesController extends Controller {
             $loader->setEnabled($this->settingsModel, $slug, $enable);
             $this->logger->log('module_toggled', ($enable ? 'Enabled' : 'Disabled') . ' module ' . $slug, $_SESSION['user_id']);
             $message = $enable ? t('modules.enabled_ok', ['name' => $module['name'] ?? $slug]) : t('modules.disabled_ok', ['name' => $module['name'] ?? $slug]);
-            $this->redirect('/settings?tab=modules&msg=' . urlencode($message));
+            $this->redirectWithFlash('/settings?tab=modules', $message);
         } catch (Exception $e) {
             $error = $e->getMessage();
-            $this->redirect('/settings?tab=modules&error=' . urlencode($error));
+            $this->redirectWithFlash('/settings?tab=modules', $error, 'error');
         }
     }
 

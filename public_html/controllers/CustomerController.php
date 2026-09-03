@@ -53,7 +53,7 @@ class CustomerController extends Controller {
                 $this->logger->log('customer_created', "Customer '{$customerData['name']}' created", $_SESSION['user_id']);
                 
                 // Redirect to prevent resubmission
-                $this->redirect('/customers?message=' . urlencode(t('customers.created')));
+                $this->redirectWithFlash('/customers', t('customers.created'));
                 
             } catch (Exception $e) {
                 $error = $e->getMessage();
@@ -174,7 +174,7 @@ class CustomerController extends Controller {
                     $this->logger->log('customers_merged', 
                         "Merged customer '{$sourceCustomer['name']}' into '{$destinationCustomer['name']}'", $_SESSION['user_id']);
                     
-                    $this->redirect('/customers/view/' . $destinationId . '?message=' . urlencode(t('customers.merged')));
+                    $this->redirectWithFlash('/customers/view/' . $destinationId, t('customers.merged'));
                     return;
                 }
                 
@@ -232,7 +232,7 @@ class CustomerController extends Controller {
             // Check if customer has any work orders
             $workOrders = $this->workOrderModel->getWorkOrdersByCustomerId($id);
             if (!empty($workOrders)) {
-                $this->redirect('/customers/view/' . $id . '?error=' . urlencode(t('customers.cannot_delete_wo')));
+                $this->redirectWithFlash('/customers/view/' . $id, t('customers.cannot_delete_wo'), 'error');
             }
             
             // Delete the customer
@@ -243,11 +243,11 @@ class CustomerController extends Controller {
             $this->logger->log('customer_deleted', "Customer '{$customer['name']}' deleted", $_SESSION['user_id']);
             
             // Redirect to customers list with success message
-            $this->redirect('/customers?message=' . urlencode(t('customers.deleted')));
+            $this->redirectWithFlash('/customers', t('customers.deleted'));
             
         } catch (Exception $e) {
             error_log("Error deleting customer: " . $e->getMessage());
-            $this->redirect('/customers/view/' . $id . '?error=' . urlencode(t('customers.delete_fail')));
+            $this->redirectWithFlash('/customers/view/' . $id, t('customers.delete_fail'), 'error');
         }
     }
     

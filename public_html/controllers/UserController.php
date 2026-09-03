@@ -148,10 +148,10 @@ class UserController extends Controller {
             $redirect .= '&page=' . $page;
         }
         if ($error) {
-            $this->redirect($redirect . '&error=' . urlencode($error));
+            $this->redirectWithFlash($redirect, $error, 'error');
         }
         if ($message) {
-            $this->redirect($redirect . '&msg=' . urlencode($message));
+            $this->redirectWithFlash($redirect, $message);
         }
         $this->redirect($redirect);
     }

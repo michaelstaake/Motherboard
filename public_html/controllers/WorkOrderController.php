@@ -57,7 +57,7 @@ class WorkOrderController extends Controller {
         $this->requireTechnician();
         
         $step = intval($_GET['step'] ?? 1);
-        $error = $_GET['error'] ?? '';
+        $error = '';
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
@@ -214,8 +214,8 @@ class WorkOrderController extends Controller {
             // Limited users can only view
         }
         
-        $error = $_GET['error'] ?? '';
-        $message = $_GET['message'] ?? '';
+        $error = '';
+        $message = '';
         $editDevice = false;
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SESSION['user_group'] !== 'Limited') {
@@ -363,9 +363,9 @@ class WorkOrderController extends Controller {
             $this->workOrderModel->logWorkOrderAction($id, 'updated', 'Attachment uploaded');
             $this->logger->log('attachment_uploaded', "Attachment uploaded to work order #{$id}", $_SESSION['user_id']);
 
-            $this->redirect('/work-orders/view/' . $id . '?message=' . urlencode(t('wo.attachment_added')));
+            $this->redirectWithFlash('/work-orders/view/' . $id, t('wo.attachment_added'));
         } catch (Exception $e) {
-            $this->redirect('/work-orders/view/' . $id . '?error=' . urlencode($e->getMessage()));
+            $this->redirectWithFlash('/work-orders/view/' . $id, $e->getMessage(), 'error');
         }
     }
 
@@ -394,9 +394,9 @@ class WorkOrderController extends Controller {
                 $this->workOrderModel->logWorkOrderAction($attachment['work_order_id'], 'updated', $details);
             }
 
-            $this->redirect('/work-orders/view/' . $attachment['work_order_id'] . '?message=' . urlencode(t('wo.attachment_updated')));
+            $this->redirectWithFlash('/work-orders/view/' . $attachment['work_order_id'], t('wo.attachment_updated'));
         } catch (Exception $e) {
-            $this->redirect('/work-orders/view/' . $attachment['work_order_id'] . '?error=' . urlencode($e->getMessage()));
+            $this->redirectWithFlash('/work-orders/view/' . $attachment['work_order_id'], $e->getMessage(), 'error');
         }
     }
 
@@ -419,9 +419,9 @@ class WorkOrderController extends Controller {
             $this->attachmentModel->deleteAttachment($id);
             $this->workOrderModel->logWorkOrderAction($workOrderId, 'updated', 'Attachment removed: ' . $attachment['original_filename']);
             $this->logger->log('attachment_deleted', "Attachment removed from work order #{$workOrderId}", $_SESSION['user_id']);
-            $this->redirect('/work-orders/view/' . $workOrderId . '?message=' . urlencode(t('wo.attachment_removed')));
+            $this->redirectWithFlash('/work-orders/view/' . $workOrderId, t('wo.attachment_removed'));
         } catch (Exception $e) {
-            $this->redirect('/work-orders/view/' . $workOrderId . '?error=' . urlencode($e->getMessage()));
+            $this->redirectWithFlash('/work-orders/view/' . $workOrderId, $e->getMessage(), 'error');
         }
     }
 
@@ -482,11 +482,11 @@ class WorkOrderController extends Controller {
             $this->logger->log('work_order_deleted', "Work Order #{$id} deleted", $_SESSION['user_id']);
             
             // Redirect to work orders list with success message
-            $this->redirect('/work-orders?message=' . urlencode(t('wo.deleted')));
+            $this->redirectWithFlash('/work-orders', t('wo.deleted'));
             
         } catch (Exception $e) {
             error_log("Error deleting work order: " . $e->getMessage());
-            $this->redirect('/work-orders/view/' . $id . '?error=' . urlencode(t('wo.delete_fail')));
+            $this->redirectWithFlash('/work-orders/view/' . $id, t('wo.delete_fail'), 'error');
         }
     }
 

@@ -21,7 +21,7 @@ ob_start();
     </div>
 
     <!-- Success/Error Messages -->
-    <?php if (isset($_GET['message'])): ?>
+    <?php if (!empty($message)): ?>
         <div class="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
             <div class="flex">
                 <div class="flex-shrink-0">
@@ -30,13 +30,13 @@ ob_start();
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <p class="text-sm text-green-600"><?= htmlspecialchars($_GET['message']) ?></p>
+                    <p class="text-sm text-green-600"><?= htmlspecialchars($message) ?></p>
                 </div>
             </div>
         </div>
     <?php endif; ?>
 
-    <?php if (isset($_GET['error'])): ?>
+    <?php if (!empty($error)): ?>
         <div class="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
             <div class="flex">
                 <div class="flex-shrink-0">
@@ -45,7 +45,7 @@ ob_start();
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <p class="text-sm text-red-600"><?= htmlspecialchars($_GET['error']) ?></p>
+                    <p class="text-sm text-red-600"><?= htmlspecialchars($error) ?></p>
                 </div>
             </div>
         </div>

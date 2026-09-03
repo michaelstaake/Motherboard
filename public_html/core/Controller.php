@@ -83,11 +83,54 @@ class Controller {
         }
     }
     
+    /**
+     * Flash banners live in the session for exactly one render, so success and error
+     * text no longer has to ride along in the query string (and stick around in the
+     * address bar, history, and any link the user copies).
+     */
+    protected function setFlash(string $text, string $type = 'message'): void {
+        if ($text === '') {
+            return;
+        }
+        $_SESSION['flash'][$type === 'error' ? 'error' : 'message'] = $text;
+    }
+
+    protected function redirectWithFlash(string $path, string $text, string $type = 'message'): void {
+        $this->setFlash($text, $type);
+        $this->redirect($path);
+    }
+
+    /**
+     * Reads and clears the pending flash. Called once per render, from view()/viewPath().
+     */
+    public static function takeFlash(): array {
+        $flash = $_SESSION['flash'] ?? [];
+        unset($_SESSION['flash']);
+        return [
+            'message' => (string) ($flash['message'] ?? ''),
+            'error' => (string) ($flash['error'] ?? ''),
+        ];
+    }
+
+    /**
+     * Gives every view a defined $message/$error, preferring what the controller already
+     * produced on this request over anything left in the session.
+     */
+    private function withFlash(array $data): array {
+        $flash = self::takeFlash();
+        foreach (['message', 'error'] as $key) {
+            $existing = (string) ($data[$key] ?? '');
+            $data[$key] = $existing !== '' ? $existing : $flash[$key];
+        }
+        return $data;
+    }
+
     protected function view($viewName, $data = []) {
         $companyName = $this->settingsModel->getSetting('company_name', APP_NAME);
         $data['companyName'] = !empty($companyName) ? $companyName : APP_NAME;
         $data['companyLogoUrl'] = $this->settingsModel->getSetting('company_logo_url', '');
         $data['locale'] = I18n::getInstance()->getLocale();
+        $data = $this->withFlash($data);
 
         $data = Hooks::applyFilters('view.data', $data, $viewName);
         Hooks::doAction('view.render.before', $viewName, $data);
@@ -101,6 +144,7 @@ class Controller {
         $data['companyName'] = !empty($companyName) ? $companyName : APP_NAME;
         $data['companyLogoUrl'] = $this->settingsModel->getSetting('company_logo_url', '');
         $data['locale'] = I18n::getInstance()->getLocale();
+        $data = $this->withFlash($data);
 
         $data = Hooks::applyFilters('view.data', $data, $viewName);
         Hooks::doAction('view.render.before', $viewName, $data);
