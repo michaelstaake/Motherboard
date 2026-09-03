@@ -378,7 +378,7 @@
                     </div>
                     <div class="text-gray-600 flex items-center">
                         <?php Hooks::doAction('layout.footer'); ?>
-                        <p><?= t('layout.powered_by') ?> <a href="https://motherboard.cx" target="_blank" class="text-primary-600 hover:text-primary-700"><?= t('app.name') ?></a></p>
+                        <p><?= t('layout.powered_by') ?> <a href="https://motherboard.cx" target="_blank" class="text-primary-600 hover:text-primary-700" title="v<?php require ROOT_PATH . '/version.php'; echo htmlspecialchars($version); ?>"><?= t('app.name') ?></a></p>
                     </div>
                 </div>
             </div>
