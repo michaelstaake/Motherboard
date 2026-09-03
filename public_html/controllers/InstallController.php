@@ -264,7 +264,7 @@ class InstallController extends Controller {
             'require_2fa' => '0',
             'attachment_destination' => 'local',
             'attachment_max_size_mb' => '10',
-            'attachment_allowed_extensions' => 'png'
+            'attachment_allowed_extensions' => 'png,jpg,pdf,md,txt'
         ];
         
         foreach ($defaultSettings as $key => $value) {

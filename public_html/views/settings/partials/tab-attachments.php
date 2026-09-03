@@ -1,7 +1,7 @@
 <?php
-    $attachmentExtensions = array_values(array_filter(array_map('trim', explode(',', strtolower($settings['attachment_allowed_extensions'] ?? 'png')))));
+    $attachmentExtensions = array_values(array_filter(array_map('trim', explode(',', strtolower($settings['attachment_allowed_extensions'] ?? 'png,jpg,pdf,md,txt')))));
     if (empty($attachmentExtensions)) {
-        $attachmentExtensions = ['png'];
+        $attachmentExtensions = ['png', 'jpg', 'pdf', 'md', 'txt'];
     }
     $attachmentDestinations = $attachmentDestinations ?? ['local' => t('settings.attachment_destination_local')];
 ?>

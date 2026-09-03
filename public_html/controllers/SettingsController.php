@@ -98,9 +98,9 @@ class SettingsController extends Controller {
                     }
 
                     require_once 'models/WorkOrderAttachment.php';
-                    $extensions = WorkOrderAttachment::normalizeExtensions($_POST['attachment_allowed_extensions'] ?? 'png');
+                    $extensions = WorkOrderAttachment::normalizeExtensions($_POST['attachment_allowed_extensions'] ?? 'png,jpg,pdf,md,txt');
                     if ($extensions === '') {
-                        $extensions = 'png';
+                        $extensions = 'png,jpg,pdf,md,txt';
                     }
 
                     $attachmentModel = new WorkOrderAttachment();

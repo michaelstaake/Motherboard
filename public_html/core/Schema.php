@@ -100,7 +100,7 @@ class Schema {
         $defaults = [
             'attachment_destination' => 'local',
             'attachment_max_size_mb' => '10',
-            'attachment_allowed_extensions' => 'png',
+            'attachment_allowed_extensions' => 'png,jpg,pdf,md,txt',
             'print_customer_signature' => '1',
             'print_technician_signature' => '1',
         ];

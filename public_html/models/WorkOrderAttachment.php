@@ -75,7 +75,7 @@ class WorkOrderAttachment extends Model {
             'destination' => $settings->getSetting('attachment_destination', 'local') ?: 'local',
             'max_size_mb' => $maxMb,
             'max_size_bytes' => $maxMb * 1024 * 1024,
-            'allowed_extensions' => $settings->getSetting('attachment_allowed_extensions', 'png'),
+            'allowed_extensions' => $settings->getSetting('attachment_allowed_extensions', 'png,jpg,pdf,md,txt'),
         ];
     }
 
@@ -109,12 +109,12 @@ class WorkOrderAttachment extends Model {
     }
 
     public function allowedExtensions(): array {
-        $raw = $this->getSettings()['allowed_extensions'] ?? 'png';
+        $raw = $this->getSettings()['allowed_extensions'] ?? 'png,jpg,pdf,md,txt';
         $parts = array_map('trim', explode(',', strtolower((string) $raw)));
         $parts = array_values(array_filter($parts, function ($part) {
             return $part !== '';
         }));
-        return $parts ?: ['png'];
+        return $parts ?: ['png', 'jpg', 'pdf', 'md', 'txt'];
     }
 
     public function allowsAllTypes(): bool {
