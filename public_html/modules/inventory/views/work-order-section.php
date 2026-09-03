@@ -91,7 +91,7 @@ $totals = motherboard_inventory_work_order_totals($assigned);
 <?php if ($canEdit): ?>
 <div id="addInventoryProductModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
     <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity" aria-hidden="true" onclick="closeAddInventoryProductModal()">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
             <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
         </div>
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
@@ -187,9 +187,6 @@ function openAddInventoryProductModal() {
 function closeAddInventoryProductModal() {
     document.getElementById('addInventoryProductModal').classList.add('hidden');
 }
-document.getElementById('addInventoryProductModal').addEventListener('click', function (e) {
-    if (e.target === this) closeAddInventoryProductModal();
-});
 toggleInventoryCustomFields();
 </script>
 <?php endif; ?>
