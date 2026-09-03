@@ -511,9 +511,20 @@ ob_start();
                         <?php foreach ($attachments as $attachment): ?>
                             <div class="border border-gray-200 rounded-md p-4">
                                 <div class="flex items-start gap-4">
-                                    <?php if ($attachmentModel->isDisplayableImage($attachment)): ?>
-                                        <button type="button" onclick="openAttachmentLightbox('<?= BASE_URL ?>/work-orders/attachments/<?= $attachment['id'] ?>/download', <?= htmlspecialchars(json_encode($attachment['original_filename']), ENT_QUOTES) ?>)" class="flex-shrink-0">
-                                            <img src="<?= BASE_URL ?>/work-orders/attachments/<?= $attachment['id'] ?>/download" alt="<?= htmlspecialchars($attachment['original_filename']) ?>" class="h-16 w-16 object-cover rounded border border-gray-200">
+                                    <?php
+                                        $previewType = $attachmentModel->previewType($attachment);
+                                        $attachmentUrl = BASE_URL . '/work-orders/attachments/' . $attachment['id'] . '/download';
+                                        $attachmentNameJson = htmlspecialchars(json_encode($attachment['original_filename']), ENT_QUOTES);
+                                    ?>
+                                    <?php if ($previewType === 'image'): ?>
+                                        <button type="button" onclick="openAttachmentLightbox('<?= $attachmentUrl ?>', <?= $attachmentNameJson ?>, 'image')" class="flex-shrink-0">
+                                            <img src="<?= $attachmentUrl ?>" alt="<?= htmlspecialchars($attachment['original_filename']) ?>" class="h-16 w-16 object-cover rounded border border-gray-200">
+                                        </button>
+                                    <?php elseif ($previewType !== ''): ?>
+                                        <button type="button" onclick="openAttachmentLightbox('<?= $attachmentUrl ?>', <?= $attachmentNameJson ?>, '<?= $previewType ?>')" class="flex-shrink-0 h-16 w-16 rounded border border-gray-200 bg-gray-50 flex items-center justify-center text-gray-400 hover:bg-gray-100">
+                                            <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                            </svg>
                                         </button>
                                     <?php else: ?>
                                         <div class="flex-shrink-0 h-16 w-16 rounded border border-gray-200 bg-gray-50 flex items-center justify-center text-gray-400">
@@ -885,14 +896,16 @@ ob_start();
 </div>
 <?php endif; ?>
 
-<!-- Attachment Image Lightbox -->
+<!-- Attachment Preview Lightbox -->
 <div id="attachmentLightbox" class="fixed inset-0 bg-black bg-opacity-80 hidden z-50 flex items-center justify-center p-4" onclick="closeAttachmentLightbox()">
     <button type="button" onclick="closeAttachmentLightbox()" class="absolute top-4 right-4 text-white hover:text-gray-300">
         <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
     </button>
-    <img id="attachmentLightboxImage" src="" alt="" class="max-h-full max-w-full object-contain" onclick="event.stopPropagation()">
+    <img id="attachmentLightboxImage" src="" alt="" class="hidden max-h-full max-w-full object-contain" onclick="event.stopPropagation()">
+    <iframe id="attachmentLightboxPdf" src="" class="hidden w-full h-full max-w-4xl bg-white rounded-lg" onclick="event.stopPropagation()"></iframe>
+    <pre id="attachmentLightboxText" class="hidden w-full max-w-3xl max-h-full overflow-auto bg-white text-gray-900 text-sm p-6 rounded-lg whitespace-pre-wrap" onclick="event.stopPropagation()"></pre>
 </div>
 
 <script>
@@ -1018,18 +1031,73 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-function openAttachmentLightbox(url, filename) {
+let attachmentLightboxObjectUrl = null;
+
+async function openAttachmentLightbox(url, filename, type) {
     const modal = document.getElementById('attachmentLightbox');
-    const image = document.getElementById('attachmentLightboxImage');
-    image.src = url;
-    image.alt = filename;
+    const imageEl = document.getElementById('attachmentLightboxImage');
+    const pdfEl = document.getElementById('attachmentLightboxPdf');
+    const textEl = document.getElementById('attachmentLightboxText');
+
+    imageEl.classList.add('hidden');
+    pdfEl.classList.add('hidden');
+    textEl.classList.add('hidden');
+    imageEl.src = '';
+    pdfEl.src = '';
+    textEl.textContent = '';
+    releaseAttachmentLightboxObjectUrl();
+
     modal.classList.remove('hidden');
+
+    if (type === 'image') {
+        imageEl.src = url;
+        imageEl.alt = filename;
+        imageEl.classList.remove('hidden');
+        return;
+    }
+
+    // PDF and text previews are fetched into a blob rather than pointed at the
+    // download URL directly: the server sends Content-Disposition: attachment for
+    // these mime types, which would make an <iframe src> or fetch-less approach
+    // trigger a download instead of rendering inline.
+    if (type === 'pdf') {
+        pdfEl.classList.remove('hidden');
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            attachmentLightboxObjectUrl = URL.createObjectURL(blob);
+            pdfEl.src = attachmentLightboxObjectUrl;
+        } catch (e) {
+            pdfEl.classList.add('hidden');
+        }
+        return;
+    }
+
+    if (type === 'text') {
+        textEl.classList.remove('hidden');
+        try {
+            const response = await fetch(url);
+            textEl.textContent = await response.text();
+        } catch (e) {
+            textEl.textContent = '';
+        }
+    }
+}
+
+function releaseAttachmentLightboxObjectUrl() {
+    if (attachmentLightboxObjectUrl) {
+        URL.revokeObjectURL(attachmentLightboxObjectUrl);
+        attachmentLightboxObjectUrl = null;
+    }
 }
 
 function closeAttachmentLightbox() {
     const modal = document.getElementById('attachmentLightbox');
     modal.classList.add('hidden');
     document.getElementById('attachmentLightboxImage').src = '';
+    document.getElementById('attachmentLightboxPdf').src = '';
+    document.getElementById('attachmentLightboxText').textContent = '';
+    releaseAttachmentLightboxObjectUrl();
 }
 
 function closeAttachmentMenus() {

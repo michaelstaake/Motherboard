@@ -220,6 +220,28 @@ class WorkOrderAttachment extends Model {
         return in_array($mime, ['image/png', 'image/jpeg', 'image/gif', 'image/webp'], true);
     }
 
+    /**
+     * Which lightbox preview (if any) an attachment supports: 'image', 'pdf', 'text', or ''
+     * for types with no in-browser preview. Text is extension-gated rather than mime-gated
+     * because finfo reports .md and .txt alike as text/plain (or occasionally
+     * application/octet-stream for unusual encodings), so mime alone can't tell them apart
+     * from other text/plain uploads we don't want to preview (e.g. .csv, .log).
+     */
+    public function previewType(array $attachment): string {
+        if ($this->isDisplayableImage($attachment)) {
+            return 'image';
+        }
+        $mime = $attachment['mime_type'] ?? '';
+        if ($mime === 'application/pdf') {
+            return 'pdf';
+        }
+        $ext = strtolower(pathinfo($attachment['original_filename'] ?? '', PATHINFO_EXTENSION));
+        if (in_array($ext, ['txt', 'md'], true) && ($mime === 'text/plain' || $mime === 'application/octet-stream')) {
+            return 'text';
+        }
+        return '';
+    }
+
     public function absolutePath(array $attachment): string {
         return self::storagePath() . '/' . self::safeRelativeKey($attachment['stored_path'] ?? '');
     }
