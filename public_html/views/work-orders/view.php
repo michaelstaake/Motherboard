@@ -578,10 +578,13 @@ ob_start();
         <!-- Activity Log -->
         <?php if (!empty($workOrderLogs)): ?>
         <div class="mt-6 bg-white shadow rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
+            <button type="button" onclick="toggleActivityLog()" class="w-full flex items-center justify-between px-6 py-4 border-b border-gray-200 focus:outline-none">
                 <h2 class="text-lg font-medium text-gray-900"><?= t('wo.activity') ?></h2>
-            </div>
-            <div class="px-6 py-4">
+                <svg id="activityLogChevron" class="h-5 w-5 text-gray-400 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+            <div id="activityLogBody" class="px-6 py-4 hidden">
                 <div class="space-y-3">
                     <?php foreach ($workOrderLogs as $log): ?>
                     <div class="flex items-start space-x-3 py-2 border-b border-gray-100 last:border-b-0">
@@ -919,6 +922,13 @@ function closeDeviceEdit() {
     document.getElementById('deviceDetailsEdit')?.classList.add('hidden');
     document.getElementById('deviceDetailsView')?.classList.remove('hidden');
     document.getElementById('deviceEditButton')?.classList.remove('hidden');
+}
+
+function toggleActivityLog() {
+    const body = document.getElementById('activityLogBody');
+    const chevron = document.getElementById('activityLogChevron');
+    body.classList.toggle('hidden');
+    chevron.classList.toggle('rotate-180');
 }
 
 function openLoginModal() {
