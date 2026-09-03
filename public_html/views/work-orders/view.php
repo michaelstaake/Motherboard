@@ -535,7 +535,7 @@ ob_start();
                                     <?php endif; ?>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-gray-900"><?= htmlspecialchars($attachment['original_filename']) ?></p>
-                                        <p class="text-xs text-gray-500 mt-1"><?= htmlspecialchars($attachmentModel->formatSize($attachment['file_size'] ?? 0)) ?> · <?= htmlspecialchars($attachmentModel->locationLabel($attachment)) ?></p>
+                                        <p class="text-xs text-gray-500 mt-1"><span class="cursor-default" title="<?= htmlspecialchars($attachmentModel->locationLabel($attachment)) ?>"><?= htmlspecialchars($attachmentModel->formatSize($attachment['file_size'] ?? 0)) ?></span></p>
                                         <?php if (!empty($attachment['description'])): ?>
                                             <p class="text-sm text-gray-700 mt-2 whitespace-pre-wrap"><?= nl2br(htmlspecialchars($attachment['description'])) ?></p>
                                         <?php endif; ?>
