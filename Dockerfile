@@ -9,5 +9,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
 COPY docker/php/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 WORKDIR /var/www/html
+
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["apache2-foreground"]
