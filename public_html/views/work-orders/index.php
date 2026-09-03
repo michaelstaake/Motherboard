@@ -173,7 +173,7 @@ ob_start();
                                     <?php endif; ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <?= date('M j, Y', strtotime($workOrder['created_at'])) ?>
+                                    <?= ldate($workOrder['created_at'], 'M j, Y') ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900" title="<?= htmlspecialchars($workOrder['computer']) ?>">

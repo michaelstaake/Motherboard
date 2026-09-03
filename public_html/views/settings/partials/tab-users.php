@@ -62,10 +62,10 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <?= $user['last_login'] ? date('M j, Y g:i A', strtotime($user['last_login'])) : t('common.never') ?>
+                                    <?= $user['last_login'] ? ldate($user['last_login'], 'M j, Y g:i A') : t('common.never') ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <?= date('M j, Y', strtotime($user['created_at'])) ?>
+                                    <?= ldate($user['created_at'], 'M j, Y') ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <div class="flex justify-end space-x-2">

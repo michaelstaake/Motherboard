@@ -126,7 +126,7 @@ ob_start();
                         <?php foreach ($logs as $log): ?>
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <?= date('M j, Y g:i A', strtotime($log['created_at'])) ?>
+                                    <?= ldate($log['created_at'], 'M j, Y g:i A') ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     <?php if ($log['user_id']): ?>

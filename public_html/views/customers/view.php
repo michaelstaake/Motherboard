@@ -137,7 +137,7 @@ ob_start();
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500"><?= t('customers.since') ?></dt>
-                            <dd class="mt-1 text-sm text-gray-900"><?= date('M j, Y', strtotime($customer['created_at'])) ?></dd>
+                            <dd class="mt-1 text-sm text-gray-900"><?= ldate($customer['created_at'], 'M j, Y') ?></dd>
                         </div>
                     </dl>
                 </div>
@@ -226,7 +226,7 @@ ob_start();
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?= date('M j, Y', strtotime($workOrder['created_at'])) ?>
+                                <?= ldate($workOrder['created_at'], 'M j, Y') ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <a href="<?= BASE_URL ?>/work-orders/view/<?= $workOrder['id'] ?>" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">

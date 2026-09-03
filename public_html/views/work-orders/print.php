@@ -64,7 +64,7 @@ $hideNavigation = true;
             <!-- Work Order Number & Date -->
             <div class="text-right">
                 <h2 class="text-2xl font-bold text-gray-900 mb-1"><?= t('wo.work_order_label', ['id' => $workOrder['id']]) ?></h2>
-                <p class="text-sm text-gray-600"><?= t('wo.created_at', ['date' => date('M j, Y \\a\\t g:i A', strtotime($workOrder['created_at']))]) ?></p>
+                <p class="text-sm text-gray-600"><?= t('wo.created_at', ['date' => ldate($workOrder['created_at'], 'M j, Y \\a\\t g:i A')]) ?></p>
             </div>
         </div>
 

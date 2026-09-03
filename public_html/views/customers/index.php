@@ -117,7 +117,7 @@ ob_start();
                                     <?= $customer['work_order_count'] ?? 0 ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <?= date('M j, Y', strtotime($customer['created_at'])) ?>
+                                    <?= ldate($customer['created_at'], 'M j, Y') ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <a href="<?= BASE_URL ?>/customers/view/<?= $customer['id'] ?>" class="text-primary-600 hover:text-primary-900"><?= t('common.view') ?></a>

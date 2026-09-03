@@ -125,12 +125,12 @@ ob_start();
                     <dl class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
                         <div>
                             <dt class="text-sm font-medium text-gray-500"><?= t('wo.date_opened') ?></dt>
-                            <dd class="mt-1 text-sm text-gray-900"><?= date('M j, Y g:i A', strtotime($workOrder['created_at'])) ?></dd>
+                            <dd class="mt-1 text-sm text-gray-900"><?= ldate($workOrder['created_at'], 'M j, Y g:i A') ?></dd>
                         </div>
                         <?php if (($workOrder['status'] === 'Closed' || $workOrder['status'] === 'Picked Up') && !empty($workOrder['closed_at'])): ?>
                         <div>
                             <dt class="text-sm font-medium text-gray-500"><?= t('wo.date_closed') ?></dt>
-                            <dd class="mt-1 text-sm text-gray-900"><?= date('M j, Y g:i A', strtotime($workOrder['closed_at'])) ?></dd>
+                            <dd class="mt-1 text-sm text-gray-900"><?= ldate($workOrder['closed_at'], 'M j, Y g:i A') ?></dd>
                         </div>
                         <?php endif; ?>
                     </dl>
@@ -602,7 +602,7 @@ ob_start();
                                     <p class="text-xs text-gray-500 mt-1"><?= t('common.by', ['name' => htmlspecialchars($log['user_display_name'] ?? $log['username'] ?? t('common.unknown'))]) ?></p>
                                 </div>
                                 <div class="flex-shrink-0 ml-4">
-                                    <span class="text-xs text-gray-500"><?= date('M j, g:i A', strtotime($log['created_at'])) ?></span>
+                                    <span class="text-xs text-gray-500"><?= ldate($log['created_at'], 'M j, g:i A') ?></span>
                                 </div>
                             </div>
                         </div>

@@ -193,12 +193,12 @@ ob_start();
                         <div>
                             <dt class="text-sm font-medium text-gray-500"><?= t('users.last_login') ?></dt>
                             <dd class="mt-1 text-sm text-gray-900">
-                                <?= $user['last_login'] ? date('M j, Y g:i A', strtotime($user['last_login'])) : t('common.never') ?>
+                                <?= $user['last_login'] ? ldate($user['last_login'], 'M j, Y g:i A') : t('common.never') ?>
                             </dd>
                         </div>
                         <div>
                             <dt class="text-sm font-medium text-gray-500"><?= t('common.created') ?></dt>
-                            <dd class="mt-1 text-sm text-gray-900"><?= date('M j, Y', strtotime($user['created_at'])) ?></dd>
+                            <dd class="mt-1 text-sm text-gray-900"><?= ldate($user['created_at'], 'M j, Y') ?></dd>
                         </div>
                         <?php endif; ?>
                     </dl>
@@ -278,7 +278,7 @@ ob_start();
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                <?= date('M j, Y', strtotime($workOrder['created_at'])) ?>
+                                <?= ldate($workOrder['created_at'], 'M j, Y') ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <a href="<?= BASE_URL ?>/work-orders/view/<?= $workOrder['id'] ?>" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">

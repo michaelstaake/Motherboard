@@ -103,6 +103,19 @@ function tlabel(string $prefix, string $value): string {
     return $translated === $key ? $value : $translated;
 }
 
+function ldate($datetime, string $format): string {
+    $timestamp = is_int($datetime) ? $datetime : strtotime((string) $datetime);
+    if ($timestamp === false) {
+        return '';
+    }
+    $month = (int) date('n', $timestamp);
+    $workingFormat = str_replace(['M', 'F'], ["\x01", "\x02"], $format);
+    $result = date($workingFormat, $timestamp);
+    $result = str_replace("\x01", t('date.month_short.' . $month), $result);
+    $result = str_replace("\x02", t('date.month_long.' . $month), $result);
+    return $result;
+}
+
 function applyPrintLanguage(?Settings $settings = null): void {
     $settings = $settings ?? new Settings();
     $available = I18n::getInstance()->availableLocales();

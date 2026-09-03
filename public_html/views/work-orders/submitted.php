@@ -144,7 +144,7 @@ ob_start();
                 <?php endif; ?>
                 <div>
                     <dt class="text-sm font-medium text-gray-500"><?= t('wo.created') ?></dt>
-                    <dd class="mt-1 text-sm text-gray-900"><?= date('M j, Y g:i A', strtotime($workOrder['created_at'])) ?></dd>
+                    <dd class="mt-1 text-sm text-gray-900"><?= ldate($workOrder['created_at'], 'M j, Y g:i A') ?></dd>
                 </div>
             </dl>
         </div>

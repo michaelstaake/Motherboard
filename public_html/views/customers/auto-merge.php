@@ -96,7 +96,7 @@ ob_start();
                                                     <?= t('common.id') ?>: #<?= $customer['id'] ?>
                                                 </p>
                                                 <p class="text-sm text-gray-500 truncate">
-                                                    <?= t('common.created') ?>: <?= date('M j, Y', strtotime($customer['created_at'])) ?>
+                                                    <?= t('common.created') ?>: <?= ldate($customer['created_at'], 'M j, Y') ?>
                                                 </p>
                                                 <p class="text-sm text-gray-500 truncate">
                                                     <?= t('customers.orders') ?>: <?= count($customer['work_orders'] ?? []) ?>
