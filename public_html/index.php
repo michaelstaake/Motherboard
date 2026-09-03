@@ -154,6 +154,7 @@ $router->addRoute('/403', 'ErrorController', 'error403');
 $router->addRoute('/404', 'ErrorController', 'error404');
 $router->addRoute('/api/search-customers', 'ApiController', 'searchCustomers');
 $router->addRoute('/api/work-order-status', 'ApiController', 'updateWorkOrderStatus');
+$router->addRoute('/api/quick-nav-key', 'ApiController', 'updateQuickNavKey');
 
 Hooks::doAction('router.register', $router);
 

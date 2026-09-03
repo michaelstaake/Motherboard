@@ -3,6 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <?php
+        // Ensures a CSRF token is always available for page-level AJAX calls, even on pages
+        // whose controller doesn't render a form (mirrors Controller::generateCSRF()).
+        if (!isset($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+    ?>
+    <meta name="csrf-token" content="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
     <title><?= htmlspecialchars($title ?? ($companyName ?? APP_NAME), ENT_QUOTES, 'UTF-8') ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -417,6 +425,14 @@
                             </li>
                         <?php endforeach; ?>
                     </ul>
+                    <div class="border-t border-gray-200 px-4 py-3 flex items-center justify-between">
+                        <span class="text-xs text-gray-500"><?= t('command_palette.trigger_key_label') ?></span>
+                        <div id="command-palette-key-picker" class="flex items-center gap-1">
+                            <button type="button" class="command-palette-key-option rounded border border-gray-300 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100" data-trigger-key="/">/</button>
+                            <button type="button" class="command-palette-key-option rounded border border-gray-300 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100" data-trigger-key=".">.</button>
+                            <button type="button" class="command-palette-key-option rounded border border-gray-300 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100" data-trigger-key="-">-</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -450,11 +466,65 @@
             palette.classList.add('hidden');
         }
 
+        const QUICK_NAV_ALLOWED_KEYS = ['/', '.', '-'];
+        <?php
+            $initialQuickNavTriggerKey = $_SESSION['quick_nav_trigger_key'] ?? '/';
+            if (!in_array($initialQuickNavTriggerKey, ['/', '.', '-'], true)) {
+                $initialQuickNavTriggerKey = '/';
+            }
+        ?>
+        let quickNavTriggerKey = <?= json_encode($initialQuickNavTriggerKey) ?>;
+
+        function saveQuickNavTriggerKey(key) {
+            if (!QUICK_NAV_ALLOWED_KEYS.includes(key) || key === quickNavTriggerKey) {
+                return;
+            }
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            const body = new URLSearchParams();
+            body.set('trigger_key', key);
+            body.set('csrf_token', csrfMeta);
+            fetch('<?= BASE_URL ?>/api/quick-nav-key', {
+                method: 'POST',
+                body: body
+            })
+                .then(function(response) {
+                    return response.json().then(function(data) {
+                        if (!response.ok) {
+                            throw new Error(data.error || 'Failed to save shortcut key');
+                        }
+                        return data;
+                    });
+                })
+                .then(function() {
+                    quickNavTriggerKey = key;
+                    updateQuickNavKeyPicker();
+                })
+                .catch(function() {
+                    showAlert('Could not save your shortcut key preference. Please try again.', 'error');
+                });
+        }
+
+        function updateQuickNavKeyPicker() {
+            const picker = document.getElementById('command-palette-key-picker');
+            if (!picker) {
+                return;
+            }
+            picker.querySelectorAll('.command-palette-key-option').forEach(function(button) {
+                const isActive = button.getAttribute('data-trigger-key') === quickNavTriggerKey;
+                button.classList.toggle('bg-primary-600', isActive);
+                button.classList.toggle('text-white', isActive);
+                button.classList.toggle('border-primary-600', isActive);
+                button.classList.toggle('bg-gray-50', !isActive);
+                button.classList.toggle('text-gray-600', !isActive);
+                button.classList.toggle('border-gray-300', !isActive);
+            });
+        }
+
         document.addEventListener('keydown', function(e) {
             const palette = document.getElementById('command-palette');
             const paletteOpen = palette && !palette.classList.contains('hidden');
 
-            if (e.altKey && e.key === '/') {
+            if (e.altKey && e.key === quickNavTriggerKey) {
                 if (isEditableField(document.activeElement)) {
                     return;
                 }
@@ -509,6 +579,15 @@
             }
             if (commandPaletteBackdrop) {
                 commandPaletteBackdrop.addEventListener('click', closeCommandPalette);
+            }
+            const commandPaletteKeyPicker = document.getElementById('command-palette-key-picker');
+            if (commandPaletteKeyPicker) {
+                commandPaletteKeyPicker.querySelectorAll('.command-palette-key-option').forEach(function(button) {
+                    button.addEventListener('click', function() {
+                        saveQuickNavTriggerKey(button.getAttribute('data-trigger-key'));
+                    });
+                });
+                updateQuickNavKeyPicker();
             }
 
             // Initialize phone validation

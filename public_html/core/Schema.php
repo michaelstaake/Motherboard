@@ -17,9 +17,17 @@ class Schema {
             $pdo->exec("ALTER TABLE work_orders ADD COLUMN remarks TEXT NULL{$after}");
         }
 
+        self::ensureUserPreferences($pdo);
         self::ensureSecurityStorage($pdo);
         self::ensureAttachmentsTable($pdo);
         self::ensureDefaultSettings($pdo);
+    }
+
+    private static function ensureUserPreferences(PDO $pdo): void {
+        $columns = self::tableColumns($pdo, 'users');
+        if (!in_array('quick_nav_trigger_key', $columns, true)) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN quick_nav_trigger_key VARCHAR(1) NOT NULL DEFAULT '/' AFTER last_login");
+        }
     }
 
     private static function ensureSecurityStorage(PDO $pdo): void {

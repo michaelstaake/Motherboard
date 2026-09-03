@@ -16,6 +16,7 @@ return [
     'nav.open_work_orders' => 'Open Work Orders',
     'command_palette.title' => 'Quick Navigation',
     'command_palette.hint' => 'Type a letter or click an item. Press Esc to close.',
+    'command_palette.trigger_key_label' => 'Alt + shortcut key:',
     'layout.powered_by' => 'Powered by',
     'common.save' => 'Save',
     'common.cancel' => 'Cancel',

@@ -26,6 +26,7 @@ CREATE TABLE `users` (
   `reset_expires` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL,
   `last_login` datetime DEFAULT NULL,
+  `quick_nav_trigger_key` varchar(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '/',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)

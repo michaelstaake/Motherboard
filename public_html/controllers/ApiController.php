@@ -83,4 +83,33 @@ class ApiController extends Controller {
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
+
+    public function updateQuickNavKey() {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['error' => 'Method not allowed']);
+            return;
+        }
+
+        try {
+            $this->requireAuth();
+            $this->validateCSRF();
+
+            $triggerKey = (string) ($_POST['trigger_key'] ?? '');
+            $allowedKeys = ['/', '.', '-'];
+            if (!in_array($triggerKey, $allowedKeys, true)) {
+                throw new Exception('Invalid trigger key');
+            }
+
+            $this->userModel->updateUser($_SESSION['user_id'], ['quick_nav_trigger_key' => $triggerKey]);
+            $_SESSION['quick_nav_trigger_key'] = $triggerKey;
+
+            echo json_encode(['success' => true]);
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+    }
 }

@@ -64,6 +64,7 @@ class Controller {
         }
 
         $_SESSION['user_group'] = $user['user_group'];
+        $_SESSION['quick_nav_trigger_key'] = $user['quick_nav_trigger_key'] ?? '/';
     }
     
     protected function requireAdmin() {

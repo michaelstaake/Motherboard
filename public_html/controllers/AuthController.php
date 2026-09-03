@@ -124,6 +124,7 @@ class AuthController extends Controller {
         $_SESSION['username'] = $user['username'];
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['user_group'] = $user['user_group'];
+        $_SESSION['quick_nav_trigger_key'] = $user['quick_nav_trigger_key'] ?? '/';
         $_SESSION['last_activity'] = time();
         // Ties the session to the credential it was issued against; changing the password
         // invalidates every other session (see Controller::requireAuth).
