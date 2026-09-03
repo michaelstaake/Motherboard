@@ -190,6 +190,17 @@ class WorkOrderAttachment extends Model {
         if ($postMax > 0 && $length > $postMax) {
             return true;
         }
+
+        // PHP only auto-populates $_POST/$_FILES for these two content types, so an empty
+        // $_POST is the truncation signal only for them; for anything else (e.g. a JSON API
+        // request) an empty $_POST is normal and doesn't mean the body was dropped.
+        $contentType = strtolower((string) ($_SERVER['CONTENT_TYPE'] ?? ''));
+        $isFormBody = str_starts_with($contentType, 'application/x-www-form-urlencoded')
+            || str_starts_with($contentType, 'multipart/form-data');
+        if (!$isFormBody) {
+            return false;
+        }
+
         return empty($_POST) && empty($_FILES);
     }
 
