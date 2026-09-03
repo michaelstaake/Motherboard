@@ -277,12 +277,6 @@ function closeProductModal() {
     document.getElementById('productModal').classList.add('hidden');
     document.getElementById('productForm').reset();
 }
-document.getElementById('categoryModal').addEventListener('click', function (e) {
-    if (e.target === this) closeCategoryModal();
-});
-document.getElementById('productModal').addEventListener('click', function (e) {
-    if (e.target === this) closeProductModal();
-});
 (function () {
     const field = document.getElementById('product_item_number');
     const nameField = document.getElementById('product_name');
