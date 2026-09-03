@@ -512,9 +512,9 @@ ob_start();
                             <div class="border border-gray-200 rounded-md p-4">
                                 <div class="flex items-start gap-4">
                                     <?php if ($attachmentModel->isDisplayableImage($attachment)): ?>
-                                        <a href="<?= BASE_URL ?>/work-orders/attachments/<?= $attachment['id'] ?>/download" target="_blank" class="flex-shrink-0">
+                                        <button type="button" onclick="openAttachmentLightbox('<?= BASE_URL ?>/work-orders/attachments/<?= $attachment['id'] ?>/download', <?= htmlspecialchars(json_encode($attachment['original_filename']), ENT_QUOTES) ?>)" class="flex-shrink-0">
                                             <img src="<?= BASE_URL ?>/work-orders/attachments/<?= $attachment['id'] ?>/download" alt="<?= htmlspecialchars($attachment['original_filename']) ?>" class="h-16 w-16 object-cover rounded border border-gray-200">
-                                        </a>
+                                        </button>
                                     <?php else: ?>
                                         <div class="flex-shrink-0 h-16 w-16 rounded border border-gray-200 bg-gray-50 flex items-center justify-center text-gray-400">
                                             <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -538,7 +538,7 @@ ob_start();
                                         </button>
                                         <div class="hidden origin-top-right absolute right-0 mt-2 w-52 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20" onclick="event.stopPropagation()">
                                             <div class="py-1">
-                                                <a href="<?= BASE_URL ?>/work-orders/attachments/<?= $attachment['id'] ?>/download" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                <a href="<?= BASE_URL ?>/work-orders/attachments/<?= $attachment['id'] ?>/download" download="<?= htmlspecialchars($attachment['original_filename']) ?>" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                                     <?= t('wo.download_attachment') ?>
                                                 </a>
                                                 <?php if ($canEdit): ?>
@@ -885,6 +885,16 @@ ob_start();
 </div>
 <?php endif; ?>
 
+<!-- Attachment Image Lightbox -->
+<div id="attachmentLightbox" class="fixed inset-0 bg-black bg-opacity-80 hidden z-50 flex items-center justify-center p-4" onclick="closeAttachmentLightbox()">
+    <button type="button" onclick="closeAttachmentLightbox()" class="absolute top-4 right-4 text-white hover:text-gray-300">
+        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </button>
+    <img id="attachmentLightboxImage" src="" alt="" class="max-h-full max-w-full object-contain" onclick="event.stopPropagation()">
+</div>
+
 <script>
 function openDeviceEdit() {
     document.getElementById('deviceDetailsView')?.classList.add('hidden');
@@ -1004,8 +1014,23 @@ document.addEventListener('keydown', function(e) {
         closeEditAttachmentModal();
         closeAddAttachmentModal();
         closeAttachmentMenus();
+        closeAttachmentLightbox();
     }
 });
+
+function openAttachmentLightbox(url, filename) {
+    const modal = document.getElementById('attachmentLightbox');
+    const image = document.getElementById('attachmentLightboxImage');
+    image.src = url;
+    image.alt = filename;
+    modal.classList.remove('hidden');
+}
+
+function closeAttachmentLightbox() {
+    const modal = document.getElementById('attachmentLightbox');
+    modal.classList.add('hidden');
+    document.getElementById('attachmentLightboxImage').src = '';
+}
 
 function closeAttachmentMenus() {
     document.querySelectorAll('[data-attachment-menu] > div:last-child').forEach(function(menu) {
