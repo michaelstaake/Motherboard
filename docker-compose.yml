@@ -7,6 +7,7 @@ services:
       - "127.0.0.1:8080:80"
     volumes:
       - ./public_html:/var/www/html
+      - motherboard_sessions:/var/lib/php/sessions
     environment:
       DB_HOST: db
       DB_NAME: motherboard
@@ -52,3 +53,4 @@ services:
 
 volumes:
   motherboard_db:
+  motherboard_sessions:

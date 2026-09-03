@@ -8,4 +8,9 @@ ATTACHMENTS_DIR="/var/www/html/attachments"
 mkdir -p "$ATTACHMENTS_DIR/pending"
 chmod -R o+rwX "$ATTACHMENTS_DIR"
 
+# Session volume is created root-owned by Docker; let Apache (www-data) write to it.
+SESSIONS_DIR="/var/lib/php/sessions"
+mkdir -p "$SESSIONS_DIR"
+chown -R www-data:www-data "$SESSIONS_DIR"
+
 exec "$@"
