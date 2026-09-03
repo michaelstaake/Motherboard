@@ -903,9 +903,9 @@ ob_start();
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
     </button>
-    <img id="attachmentLightboxImage" src="" alt="" class="hidden max-h-full max-w-full object-contain" onclick="event.stopPropagation()">
-    <iframe id="attachmentLightboxPdf" src="" class="hidden w-full h-full max-w-4xl bg-white rounded-lg" onclick="event.stopPropagation()"></iframe>
-    <pre id="attachmentLightboxText" class="hidden w-full max-w-3xl max-h-full overflow-auto bg-white text-gray-900 text-sm p-6 rounded-lg whitespace-pre-wrap" onclick="event.stopPropagation()"></pre>
+    <img id="attachmentLightboxImage" src="" alt="" class="hidden max-h-[calc(100vh-200px)] max-w-full object-contain" onclick="event.stopPropagation()">
+    <iframe id="attachmentLightboxPdf" src="" class="hidden w-full h-[calc(100vh-200px)] max-w-4xl bg-white rounded-lg" onclick="event.stopPropagation()"></iframe>
+    <pre id="attachmentLightboxText" class="hidden w-full max-w-3xl max-h-[calc(100vh-200px)] overflow-auto bg-white text-gray-900 text-sm p-6 rounded-lg whitespace-pre-wrap" onclick="event.stopPropagation()"></pre>
 </div>
 
 <script>
