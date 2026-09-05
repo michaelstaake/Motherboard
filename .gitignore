@@ -31,6 +31,16 @@ docker/mysql-data/
 # Local app config (real secrets) - see public_html/config.sample.php
 public_html/config.php
 
+# LibreWO dumps staged for import (live customer data, never commit).
+# public_html/database/schema.sql is deliberately still tracked.
+importers/**/*.sql
+public_html/*.sql
+librewo*.sql
+*_import.sql
+
+# A configured copy of the importer carries DB_PASS and APP_ENCRYPTION_KEY.
+public_html/librewo-import.php
+
 # User-uploaded attachments (runtime data, not source)
 public_html/attachments/**
 !public_html/attachments/.htaccess
