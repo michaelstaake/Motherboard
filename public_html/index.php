@@ -1,4 +1,34 @@
 <?php
+if (version_compare(PHP_VERSION, '8.4.0', '<')) {
+    http_response_code(500);
+    header('Content-Type: text/html; charset=utf-8');
+    $currentPhpVersion = htmlspecialchars(PHP_VERSION, ENT_QUOTES);
+    echo <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Unsupported PHP Version</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f5f7; color: #1f2328; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+  .card { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 32px 40px; max-width: 480px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  h1 { font-size: 20px; margin: 0 0 12px; }
+  p { line-height: 1.5; margin: 0 0 8px; }
+  code { background: #f0f1f3; padding: 2px 6px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Unsupported PHP Version</h1>
+  <p>Motherboard requires PHP <code>8.4.0</code> or newer, but this server is running PHP <code>{$currentPhpVersion}</code>.</p>
+  <p>Please ask your host or administrator to upgrade PHP before continuing.</p>
+</div>
+</body>
+</html>
+HTML;
+    exit;
+}
+
 require_once 'config.php';
 
 ini_set('session.cache_limiter', '');
