@@ -39,6 +39,7 @@ docker compose up --build
 
 - App: http://localhost:8080
 - Mailhog UI: http://localhost:8025
+- phpMyAdmin: http://localhost:8081 (logs in as `motherboard` / `motherboard`)
 - MySQL: localhost:3306 (`motherboard` / `motherboard`)
 
 ## Modules

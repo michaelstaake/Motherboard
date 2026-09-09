@@ -51,6 +51,18 @@ services:
     ports:
       - "127.0.0.1:8025:8025"
 
+  phpmyadmin:
+    image: phpmyadmin:latest
+    environment:
+      PMA_HOST: db
+      PMA_USER: motherboard
+      PMA_PASSWORD: motherboard
+    ports:
+      - "127.0.0.1:8081:80"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   motherboard_db:
   motherboard_sessions:
