@@ -21,7 +21,18 @@ Version: **26.8.14.1**
 
 ## Docker (development)
 
-From `motherboard-app`:
+Clone the repo (or pull the latest changes if you already have it):
+
+```bash
+git clone https://github.com/michaelstaake/Motherboard.git motherboard-app
+cd motherboard-app
+```
+
+```bash
+git pull
+```
+
+Then build and start the stack:
 
 ```bash
 docker compose up --build
