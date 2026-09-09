@@ -1,0 +1,99 @@
+# Production stack. Run it explicitly, never by renaming this file:
+#
+#   docker compose -f docker-compose.prod.yml up -d
+#
+# Copying this over docker-compose.yml makes a tracked file locally modified and
+# `git pull` will refuse to update. Settings come from .env — see .env.example.
+# Full guide: documentation/docker-production.md
+
+name: motherboard-prod
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    logging: *default-logging
+    ports:
+      - "${WEB_BIND:-0.0.0.0}:${WEB_PORT:-8080}:80"
+    volumes:
+      - ./public_html:/var/www/html
+      - motherboard_sessions:/var/lib/php/sessions
+    environment:
+      DB_HOST: db
+      DB_NAME: ${DB_NAME:-motherboard}
+      DB_USER: ${DB_USER:-motherboard}
+      DB_PASS: ${DB_PASS:?set DB_PASS in .env - copy .env.example to .env}
+      BASE_URL: ${BASE_URL:?set BASE_URL in .env, e.g. http://192.168.1.50:8080}
+      FORCE_HTTPS: "${FORCE_HTTPS:-false}"
+      APP_TIMEZONE: ${APP_TIMEZONE:-America/Los_Angeles}
+      TZ: ${APP_TIMEZONE:-America/Los_Angeles}
+      # Must stay empty in production: a non-empty value makes config.php print
+      # stack traces and DSNs to unauthenticated visitors. Deliberately not
+      # wired to .env so it cannot be turned on by accident.
+      APP_DEBUG: ""
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: "${SMTP_PORT:-587}"
+      SMTP_SECURE: ${SMTP_SECURE:-tls}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      FROM_EMAIL: ${FROM_EMAIL:-}
+      APP_ENCRYPTION_KEY: ${APP_ENCRYPTION_KEY:?generate one - docker run --rm php:8.4-cli php -r 'echo bin2hex(random_bytes(32)), PHP_EOL;'}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    logging: *default-logging
+    # Not published on the host. The app reaches it over the compose network;
+    # use phpMyAdmin or `docker compose exec db` for maintenance.
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-motherboard}
+      MYSQL_USER: ${DB_USER:-motherboard}
+      MYSQL_PASSWORD: ${DB_PASS:?set DB_PASS in .env}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:?set DB_ROOT_PASS in .env}
+      TZ: ${APP_TIMEZONE:-America/Los_Angeles}
+    volumes:
+      - motherboard_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1",
+             "-u", "${DB_USER:-motherboard}", "-p${DB_PASS}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  # Reachable from the LAN by default, behind phpMyAdmin's own login form (no
+  # PMA_USER/PMA_PASSWORD auto-login). Set PMA_BIND=127.0.0.1 in .env to make it
+  # localhost-only, or start with --scale phpmyadmin=0 to leave it off entirely.
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    restart: unless-stopped
+    logging: *default-logging
+    environment:
+      PMA_HOST: db
+      UPLOAD_LIMIT: 256M
+    ports:
+      - "${PMA_BIND:-0.0.0.0}:${PMA_PORT:-8081}:80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  motherboard_db:
+  motherboard_sessions:

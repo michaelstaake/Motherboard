@@ -15,6 +15,7 @@ services:
       DB_PASS: motherboard
       BASE_URL: http://localhost:8080
       FORCE_HTTPS: "false"
+      APP_TIMEZONE: America/Los_Angeles
       APP_DEBUG: "1"
       SMTP_HOST: mailhog
       SMTP_PORT: "1025"

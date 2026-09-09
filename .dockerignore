@@ -1,0 +1,7 @@
+# The image contains no application code — public_html is bind-mounted by
+# compose. Only docker/ is ever COPYed, so the context is an allowlist.
+#
+# If the Dockerfile ever starts COPYing the app in, add "!public_html" here
+# and re-exclude public_html/attachments, config.php and *.sql.
+*
+!docker/
