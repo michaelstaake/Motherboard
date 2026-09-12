@@ -91,6 +91,7 @@ class Settings extends Model {
             'work_order_disclaimer' => $this->getSetting('work_order_disclaimer', 'Set up your Disclaimer on the Settings page'),
             'print_customer_signature' => $this->getSetting('print_customer_signature', '1'),
             'print_technician_signature' => $this->getSetting('print_technician_signature', '1'),
+            'print_hide_notes' => $this->getSetting('print_hide_notes', '0'),
         ];
     }
     

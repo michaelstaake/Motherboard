@@ -143,7 +143,7 @@ $hideNavigation = true;
             </div>
         <?php endif; ?>
 
-        <?php if (!empty($workOrder['notes'])): ?>
+        <?php if (!empty($workOrder['notes']) && empty($companyInfo['print_hide_notes'])): ?>
             <div class="border border-gray-300 rounded-lg p-3 mb-4 print-avoid-break">
                 <h3 class="text-sm font-semibold text-gray-900 mb-2"><?= t('wo.notes') ?></h3>
                 <p class="text-xs text-gray-700 whitespace-pre-wrap"><?= htmlspecialchars($workOrder['notes']) ?></p>

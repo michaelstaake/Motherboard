@@ -43,6 +43,7 @@ class SettingsController extends Controller {
                         'work_order_disclaimer' => $this->sanitizeInput($_POST['work_order_disclaimer']),
                         'print_customer_signature' => isset($_POST['print_customer_signature']) ? '1' : '0',
                         'print_technician_signature' => isset($_POST['print_technician_signature']) ? '1' : '0',
+                        'print_hide_notes' => isset($_POST['print_hide_notes']) ? '1' : '0',
                     ];
                     $this->settingsModel->updateCompanyInfo($printoutData);
                     $this->logger->log('settings_updated', 'Printout settings updated', $_SESSION['user_id']);

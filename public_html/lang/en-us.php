@@ -490,6 +490,7 @@ return [
     'settings.disclaimer_help' => 'This text will appear at the bottom of printed work orders',
     'settings.print_customer_signature' => 'Show Customer Signature on printed work orders',
     'settings.print_technician_signature' => 'Show Technician Signature on printed work orders',
+    'settings.print_hide_notes' => 'Hide Notes on printed work orders',
     'settings.security_help' => 'Configure security and authentication options',
     'settings.force_2fa_help' => 'Enabled: 2FA required for every login. Disabled: 2FA only required from logins from new IP.',
     'settings.session_timeout' => 'Session Timeout (minutes)',

@@ -103,6 +103,7 @@ class Schema {
             'attachment_allowed_extensions' => 'png,jpg,pdf,md,txt',
             'print_customer_signature' => '1',
             'print_technician_signature' => '1',
+            'print_hide_notes' => '0',
         ];
 
         $stmt = $pdo->prepare(

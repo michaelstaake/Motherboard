@@ -253,6 +253,7 @@ class InstallController extends Controller {
             'work_order_disclaimer' => 'Set up your Disclaimer on the Settings page',
             'print_customer_signature' => '1',
             'print_technician_signature' => '1',
+            'print_hide_notes' => '0',
             'captcha_provider' => 'off',
             'turnstile_site_key' => '',
             'turnstile_secret_key' => '',

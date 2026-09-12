@@ -18,6 +18,10 @@
                 <input id="print_technician_signature" name="print_technician_signature" type="checkbox" value="1" <?= ($settings['print_technician_signature'] ?? '1') === '1' ? 'checked' : '' ?> class="h-4 w-4 mt-0.5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
                 <label for="print_technician_signature" class="ml-2 block text-sm text-gray-700"><?= t('settings.print_technician_signature') ?></label>
             </div>
+            <div class="flex items-start">
+                <input id="print_hide_notes" name="print_hide_notes" type="checkbox" value="1" <?= ($settings['print_hide_notes'] ?? '0') === '1' ? 'checked' : '' ?> class="h-4 w-4 mt-0.5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+                <label for="print_hide_notes" class="ml-2 block text-sm text-gray-700"><?= t('settings.print_hide_notes') ?></label>
+            </div>
         </div>
     </div>
 
