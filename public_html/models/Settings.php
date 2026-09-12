@@ -92,6 +92,7 @@ class Settings extends Model {
             'print_customer_signature' => $this->getSetting('print_customer_signature', '1'),
             'print_technician_signature' => $this->getSetting('print_technician_signature', '1'),
             'print_hide_notes' => $this->getSetting('print_hide_notes', '0'),
+            'print_hide_attachments' => $this->getSetting('print_hide_attachments', '0'),
         ];
     }
     

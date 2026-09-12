@@ -466,6 +466,7 @@ return [
     'settings.print_customer_signature' => 'Afficher la signature du client sur les ordres imprimés',
     'settings.print_technician_signature' => 'Afficher la signature du technicien sur les ordres imprimés',
     'settings.print_hide_notes' => 'Masquer les notes sur les ordres imprimés',
+    'settings.print_hide_attachments' => 'Masquer les pièces jointes sur les ordres imprimés',
     'settings.security_help' => 'Configurer la sécurité et l’authentification',
     'settings.force_2fa_help' => 'Activé : 2FA à chaque connexion. Désactivé : 2FA seulement depuis une nouvelle IP.',
     'settings.session_timeout' => 'Expiration de session (minutes)',

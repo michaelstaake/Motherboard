@@ -466,6 +466,7 @@ return [
     'settings.print_customer_signature' => 'Mostrar firma del cliente en las órdenes impresas',
     'settings.print_technician_signature' => 'Mostrar firma del técnico en las órdenes impresas',
     'settings.print_hide_notes' => 'Ocultar las notas en las órdenes impresas',
+    'settings.print_hide_attachments' => 'Ocultar los archivos adjuntos en las órdenes impresas',
     'settings.security_help' => 'Configura la seguridad y la autenticación',
     'settings.force_2fa_help' => 'Activado: 2FA en cada inicio. Desactivado: 2FA solo desde una IP nueva.',
     'settings.session_timeout' => 'Tiempo de sesión (minutos)',

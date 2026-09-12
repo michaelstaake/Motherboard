@@ -466,6 +466,7 @@ return [
     'settings.print_customer_signature' => 'Zobrazit podpis zákazníka na vytištěných zakázkách',
     'settings.print_technician_signature' => 'Zobrazit podpis technika na vytištěných zakázkách',
     'settings.print_hide_notes' => 'Skrýt poznámky na vytištěných zakázkách',
+    'settings.print_hide_attachments' => 'Skrýt přílohy na vytištěných zakázkách',
     'settings.security_help' => 'Nastavení zabezpečení a ověření',
     'settings.force_2fa_help' => 'Zapnuto: 2FA při každém přihlášení. Vypnuto: 2FA jen z nové IP.',
     'settings.session_timeout' => 'Časový limit relace (minuty)',

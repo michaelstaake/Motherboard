@@ -466,6 +466,7 @@ return [
     'settings.print_customer_signature' => 'Kundenunterschrift auf gedruckten Arbeitsaufträgen anzeigen',
     'settings.print_technician_signature' => 'Technikerunterschrift auf gedruckten Arbeitsaufträgen anzeigen',
     'settings.print_hide_notes' => 'Notizen auf gedruckten Arbeitsaufträgen ausblenden',
+    'settings.print_hide_attachments' => 'Anhänge auf gedruckten Arbeitsaufträgen ausblenden',
     'settings.security_help' => 'Sicherheit und Authentifizierung konfigurieren',
     'settings.force_2fa_help' => 'Aktiviert: 2FA bei jeder Anmeldung. Deaktiviert: 2FA nur bei Anmeldung von neuer IP.',
     'settings.session_timeout' => 'Sitzungszeitüberschreitung (Minuten)',

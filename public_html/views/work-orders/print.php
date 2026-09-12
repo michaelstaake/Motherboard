@@ -152,7 +152,7 @@ $hideNavigation = true;
 
         <?php Hooks::doAction('work_order.print.before_attachments', $workOrder ?? []); ?>
 
-        <?php if (!empty($attachments)): ?>
+        <?php if (!empty($attachments) && empty($companyInfo['print_hide_attachments'])): ?>
             <div class="border border-gray-300 rounded-lg p-3 mb-4 print-avoid-break">
                 <h3 class="text-sm font-semibold text-gray-900 mb-2"><?= t('wo.attachments') ?></h3>
                 <ul class="space-y-1">
