@@ -309,7 +309,7 @@ return [
     'settings.tab.info' => 'Info',
     'settings.tab.users' => 'Users',
     'settings.save' => 'Save',
-    'settings.printout_help' => 'Configure disclaimer text and signature options on printed work orders.',
+    'settings.printout_help' => 'Configures work order printout page',
     'settings.localization_help' => 'Configure data formats and language preferences.',
     'settings.unsaved_title' => 'Unsaved Changes',
     'settings.unsaved_body' => 'You have unsaved changes on this tab. Save before leaving, or your changes will be lost.',
