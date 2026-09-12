@@ -6,12 +6,13 @@ $csrf_token = $csrf_token ?? '';
 $workOrderId = (int) ($workOrder['id'] ?? 0);
 $referenceId = $warranty['reference_work_order_id'] ?? null;
 
-// The card carries the reference work order and nothing else, so a read-only viewer with no
-// reference to see would get an empty shell. Skip it entirely for them.
 $showReference = $warranty && $referenceId;
+
+// A read-only viewer gets no button, so the card is their only sidebar signal that this is a
+// warranty repair; it is skipped only when there is nothing at all to tell them.
 ?>
 
-<?php if ($canEdit || $showReference): ?>
+<?php if ($canEdit || $warranty): ?>
 <div class="mt-6 bg-white shadow rounded-lg">
     <div class="px-6 py-4 flex items-center justify-between<?= $showReference ? ' border-b border-gray-200' : '' ?>">
         <h2 class="text-lg font-medium text-gray-900"><?= t('warranty.section') ?></h2>
