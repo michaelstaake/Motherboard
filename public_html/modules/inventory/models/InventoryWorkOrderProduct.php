@@ -23,7 +23,10 @@ class InventoryWorkOrderProduct extends Model {
             $row['line_total'] = round((float) $row['unit_price'] * (int) $row['quantity'], 2);
         }
         unset($row);
-        return $rows;
+
+        // Lets other modules restate the money on a work order (warranty repairs zero it
+        // out, for example) without touching the stored line.
+        return Hooks::applyFilters('inventory.work_order.lines', $rows, $workOrderId);
     }
 
     public function findLine(int $id): ?array {

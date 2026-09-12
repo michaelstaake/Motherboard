@@ -391,6 +391,10 @@ ob_start();
                     </div>
                 </div>
             </a>
+            <?php Hooks::doAction('work_order.view.after_customer_info', $workOrder ?? [], [
+                'canEdit' => $canEdit ?? false,
+                'csrf_token' => $csrf_token ?? '',
+            ]); ?>
         </div>
     </div>
         
@@ -439,6 +443,7 @@ ob_start();
                             <div>
                                 <label for="description" class="block text-sm font-medium text-gray-700"><?= t('wo.description') ?></label>
                                 <textarea id="description" name="description" rows="5" class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white"><?= htmlspecialchars($workOrder['description']) ?></textarea>
+                                <?php Hooks::doAction('work_order.description.after', $workOrder ?? [], 'view'); ?>
                             </div>
 
                             <div>
@@ -471,6 +476,7 @@ ob_start();
                     <div class="sm:col-span-2 mb-4">
                         <dt class="text-sm font-medium text-gray-500"><?= t('wo.description') ?></dt>
                         <dd class="mt-1 text-sm text-gray-900"><?= nl2br(htmlspecialchars($workOrder['description'])) ?></dd>
+                        <?php Hooks::doAction('work_order.description.after', $workOrder ?? [], 'view'); ?>
                     </div>
                     <?php if ($workOrder['resolution']): ?>
                     <div class="sm:col-span-2 mb-4">

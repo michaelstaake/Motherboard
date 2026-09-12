@@ -134,6 +134,7 @@ $hideNavigation = true;
         <div class="border border-gray-300 rounded-lg p-3 mb-4 print-avoid-break">
             <h3 class="text-sm font-semibold text-gray-900 mb-2"><?= t('wo.problem') ?></h3>
             <p class="text-xs text-gray-700 whitespace-pre-wrap"><?= htmlspecialchars($workOrder['description']) ?></p>
+            <?php Hooks::doAction('work_order.description.after', $workOrder ?? [], 'print'); ?>
         </div>
 
         <?php if (!empty($workOrder['resolution'])): ?>

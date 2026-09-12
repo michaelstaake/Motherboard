@@ -286,6 +286,11 @@ ob_start();
                                   placeholder="<?= htmlspecialchars(t('wo.describe_ph')) ?>"><?= htmlspecialchars($workOrderData['description'] ?? '') ?></textarea>
                     </div>
 
+                    <?php Hooks::doAction('work_order.create.step3.after_description', $workOrderData ?? [], [
+                        'customer' => $customer ?? null,
+                        'csrf_token' => $csrf_token ?? '',
+                    ]); ?>
+
                     <div class="flex justify-between mt-6">
                         <a href="<?= BASE_URL ?>/work-orders/create?step=2" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-md hover:bg-gray-400">
                             <?= t('common.previous') ?>

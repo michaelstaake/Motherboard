@@ -183,6 +183,25 @@ Output HTML with `echo`.
 
 ## Work order hooks
 
+### `work_order.create.step` (action)
+
+**When:** Inside the create wizard, after CSRF validation and before the step is handled.
+
+**Arguments:** `int $step`, `array $post`
+
+The work order row does not exist yet, so a module adding fields to a step stashes its own
+values in the session under its own key, not in `$_SESSION['work_order_data']` (everything in
+there is handed to the `work_orders` insert). Persist them from `work_order.create.after`.
+
+### `work_order.create.step3.after_description` (action)
+
+**When:** Step 3 of create, after the problem description field and inside the step's form.
+
+**Arguments:** `array $workOrderData`, `array $context`  
+`$context` includes `customer` (array or null) and `csrf_token` (string).
+
+Output HTML with `echo` or `include`.
+
 ### `work_order.create.data` (filter)
 
 **When:** Step 4 of create, before insert.
@@ -221,6 +240,26 @@ Output HTML with `echo`.
 
 **Arguments:** `int $id`, `array $workOrder`  
 The row is already deleted; `$workOrder` is the snapshot from before delete.
+
+### `work_order.description.after` (action)
+
+**When:** Immediately after the problem description on the work order details view (both the
+editable form and the read-only version) and on the printable work order.
+
+**Arguments:** `array $workOrder`, `string $context` (`view` or `print`)
+
+Output HTML with `echo`. Render extra lines here rather than appending them to the stored
+description: the editable form posts the raw `description` back, so text written into it would
+be saved and then duplicated on the next render.
+
+### `work_order.view.after_customer_info` (action)
+
+**When:** Work order details view, in the sidebar column directly below Customer Information.
+
+**Arguments:** `array $workOrder`, `array $context`  
+`$context` includes `canEdit` (bool) and `csrf_token` (string).
+
+Output HTML with `echo` or `include`.
 
 ### `work_order.view.before_attachments` (action)
 
@@ -322,6 +361,26 @@ Output extra help HTML with `echo`.
 **When:** Schema, admin user, and default settings have been created.
 
 **Arguments:** none
+
+---
+
+---
+
+## Hooks owned by bundled modules
+
+These only fire when the owning module is enabled, so guard for that rather than assuming them.
+
+### `inventory.work_order.lines` (filter) — Inventory
+
+**When:** Reading the inventory lines assigned to a work order, for the details view and the
+printout.
+
+**Arguments:** `array $lines`, `int $workOrderId`  
+**Return:** `array` lines.
+
+Restates a work order's money without touching the stored rows. The Warranty module uses it to
+show 0.00 prices on warranty repairs. Stock accounting reads the same rows, so leave
+`product_id` and `quantity` alone.
 
 ---
 

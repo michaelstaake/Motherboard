@@ -67,7 +67,11 @@ class WorkOrderController extends Controller {
                     ]));
                 }
                 $this->validateCSRF();
-                
+
+                // Modules that add fields to a create step stash their own values in the
+                // session here; the work order row does not exist yet.
+                Hooks::doAction('work_order.create.step', $step, $_POST);
+
                 if ($step === 1) {
                     // Customer step
                     $customerId = $_POST['customer_id'] ?? null;
