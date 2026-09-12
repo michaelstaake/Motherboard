@@ -20,7 +20,6 @@ class WorkOrderWarranty extends Model {
 
         $stmt = $this->db->prepare("
             SELECT w.work_order_id, w.reference_work_order_id, w.created_at, w.updated_at,
-                   ref.computer AS reference_computer, ref.model AS reference_model,
                    ref.created_at AS reference_created_at
             FROM work_order_warranty w
             LEFT JOIN work_orders ref ON ref.id = w.reference_work_order_id

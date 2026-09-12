@@ -5,49 +5,35 @@ $canEdit = !empty($canEdit);
 $csrf_token = $csrf_token ?? '';
 $workOrderId = (int) ($workOrder['id'] ?? 0);
 $referenceId = $warranty['reference_work_order_id'] ?? null;
+
+// The card carries the reference work order and nothing else, so a read-only viewer with no
+// reference to see would get an empty shell. Skip it entirely for them.
+$showReference = $warranty && $referenceId;
 ?>
 
+<?php if ($canEdit || $showReference): ?>
 <div class="mt-6 bg-white shadow rounded-lg">
-    <div class="px-6 py-4 border-b border-gray-200">
+    <div class="px-6 py-4 flex items-center justify-between<?= $showReference ? ' border-b border-gray-200' : '' ?>">
         <h2 class="text-lg font-medium text-gray-900"><?= t('warranty.section') ?></h2>
-    </div>
-    <div class="px-6 py-4">
-        <?php if ($warranty): ?>
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                <?= t('warranty.is_warranty') ?>
-            </span>
-            <div class="mt-3">
-                <?php if ($referenceId): ?>
-                    <div class="text-sm font-medium text-gray-500"><?= t('warranty.reference') ?></div>
-                    <a href="<?= BASE_URL ?>/work-orders/view/<?= (int) $referenceId ?>" class="text-sm font-medium text-primary-600 hover:text-primary-500">
-                        <?= t('warranty.reference_label', ['number' => (string) (int) $referenceId]) ?>
-                    </a>
-                    <?php
-                    $referenceDevice = trim(($warranty['reference_computer'] ?? '') . ' ' . ($warranty['reference_model'] ?? ''));
-                    $referenceDate = ldate($warranty['reference_created_at'] ?? '', 'M j, Y');
-                    ?>
-                    <?php if ($referenceDevice !== '' || $referenceDate !== ''): ?>
-                        <div class="text-sm text-gray-600">
-                            <?= htmlspecialchars(trim($referenceDevice . ($referenceDevice !== '' && $referenceDate !== '' ? ' - ' : '') . $referenceDate)) ?>
-                        </div>
-                    <?php endif; ?>
-                <?php else: ?>
-                    <p class="text-sm text-gray-500"><?= t('warranty.no_reference') ?></p>
-                <?php endif; ?>
-            </div>
-        <?php else: ?>
-            <p class="text-sm text-gray-500"><?= t('warranty.not_warranty') ?></p>
-        <?php endif; ?>
-
         <?php if ($canEdit): ?>
-            <div class="mt-4">
-                <button type="button" onclick="openWarrantyModal()" class="inline-flex items-center px-3 py-1.5 border text-sm font-medium rounded-md <?= $warranty ? 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50' : 'border-transparent text-white bg-primary-600 hover:bg-primary-700' ?> focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                    <?= $warranty ? t('warranty.manage') : t('warranty.set') ?>
-                </button>
-            </div>
+            <button type="button" onclick="openWarrantyModal()" class="inline-flex items-center px-3 py-1.5 border text-sm font-medium rounded-md <?= $warranty ? 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50' : 'border-transparent text-white bg-primary-600 hover:bg-primary-700' ?> focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                <?= $warranty ? t('warranty.manage') : t('warranty.set') ?>
+            </button>
         <?php endif; ?>
     </div>
+    <?php if ($showReference): ?>
+        <div class="px-6 py-4">
+            <a href="<?= BASE_URL ?>/work-orders/view/<?= (int) $referenceId ?>" class="text-sm font-medium text-primary-600 hover:text-primary-500">
+                <?= t('warranty.reference_label', ['number' => (string) (int) $referenceId]) ?>
+            </a>
+            <?php $referenceDate = ldate($warranty['reference_created_at'] ?? '', 'M j, Y'); ?>
+            <?php if ($referenceDate !== ''): ?>
+                <div class="text-sm text-gray-600"><?= htmlspecialchars($referenceDate) ?></div>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 </div>
+<?php endif; ?>
 
 <?php if ($canEdit): ?>
 <!-- Warranty Modal -->
