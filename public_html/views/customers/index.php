@@ -106,10 +106,10 @@ ob_start();
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         <?php if ($customer['email']): ?>
-                                        <div><a href="mailto:<?= htmlspecialchars($customer['email']) ?>" class="text-primary-600 hover:text-primary-500"><?= htmlspecialchars($customer['email']) ?></a></div>
+                                        <div><button type="button" onclick="copyToClipboard(<?= htmlspecialchars(json_encode($customer['email'])) ?>)" title="<?= htmlspecialchars(t('js.copy')) ?>" class="text-primary-600 hover:text-primary-500"><?= htmlspecialchars($customer['email']) ?></button></div>
                                         <?php endif; ?>
                                         <?php if ($customer['phone']): ?>
-                                        <div><a href="tel:<?= htmlspecialchars($customer['phone']) ?>" class="text-primary-600 hover:text-primary-500"><?= htmlspecialchars($customer['phone']) ?></a></div>
+                                        <div><button type="button" onclick="copyToClipboard(<?= htmlspecialchars(json_encode($customer['phone'])) ?>)" title="<?= htmlspecialchars(t('js.copy')) ?>" class="text-primary-600 hover:text-primary-500"><?= htmlspecialchars($customer['phone']) ?></button></div>
                                         <?php endif; ?>
                                     </div>
                                 </td>

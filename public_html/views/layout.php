@@ -739,6 +739,30 @@
             }, 5000);
         }
 
+        function copyToClipboard(text) {
+            if (!text) {
+                return;
+            }
+            const done = () => showAlert(<?= json_encode(t('js.copied')) ?>, 'success');
+            const fail = () => showAlert(<?= json_encode(t('js.copy_failed')) ?>, 'error');
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(done, fail);
+                return;
+            }
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy') ? done() : fail();
+            } catch (e) {
+                fail();
+            }
+            textarea.remove();
+        }
+
         // CSRF token for AJAX requests
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
                           document.querySelector('input[name="csrf_token"]')?.value;

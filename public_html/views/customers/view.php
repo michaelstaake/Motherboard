@@ -90,12 +90,26 @@ ob_start();
 
                         <div>
                             <label for="email" class="block text-sm font-medium text-gray-700"><?= t('customers.email') ?></label>
-                            <input type="email" id="email" name="email" value="<?= htmlspecialchars($customer['email'] ?? '') ?>" class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
+                            <div class="relative mt-1">
+                                <input type="email" id="email" name="email" value="<?= htmlspecialchars($customer['email'] ?? '') ?>" class="block w-full pl-4 pr-11 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
+                                <button type="button" onclick="copyToClipboard(document.getElementById('email').value.trim())" title="<?= htmlspecialchars(t('js.copy')) ?>" aria-label="<?= htmlspecialchars(t('js.copy')) ?>" class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-primary-600">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
                         <div>
                             <label for="phone" class="block text-sm font-medium text-gray-700"><?= t('customers.phone') ?></label>
-                            <input type="tel" id="phone" name="phone" value="<?= htmlspecialchars($customer['phone'] ?? '') ?>" class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
+                            <div class="relative mt-1">
+                                <input type="tel" id="phone" name="phone" value="<?= htmlspecialchars($customer['phone'] ?? '') ?>" class="block w-full pl-4 pr-11 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
+                                <button type="button" onclick="copyToClipboard(document.getElementById('phone').value.trim())" title="<?= htmlspecialchars(t('js.copy')) ?>" aria-label="<?= htmlspecialchars(t('js.copy')) ?>" class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-primary-600">
+                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
