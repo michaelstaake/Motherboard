@@ -138,7 +138,7 @@ class InventoryProduct extends Model {
         if ($this->isCustomProduct($existing)) {
             throw new Exception(t('inventory.custom_product_protected'));
         }
-        $payload = $this->normalize($data);
+        $payload = $this->normalize($data, $id);
         $this->assertItemNumberUnique($payload['item_number'], $id);
         $payload['updated_at'] = date('Y-m-d H:i:s');
 
@@ -226,7 +226,7 @@ class InventoryProduct extends Model {
         }
     }
 
-    private function normalize(array $data): array {
+    private function normalize(array $data, ?int $ignoreId = null): array {
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
             throw new Exception(t('inventory.product_required'));
@@ -234,7 +234,7 @@ class InventoryProduct extends Model {
 
         $rawItemNumber = trim((string) ($data['item_number'] ?? ''));
         if ($rawItemNumber === '') {
-            throw new Exception(t('inventory.item_number_required'));
+            $rawItemNumber = $this->generateItemNumber($name, $ignoreId);
         }
         $itemNumber = motherboard_inventory_slugify_item_number($rawItemNumber);
         if ($itemNumber === '' || strlen($itemNumber) > 100) {
@@ -279,13 +279,28 @@ class InventoryProduct extends Model {
         ];
     }
 
-    private function assertItemNumberUnique(string $itemNumber, ?int $ignoreId = null): void {
-        if ($ignoreId) {
-            $existing = $this->findOneWhere('item_number = ? AND id != ?', [$itemNumber, $ignoreId]);
-        } else {
-            $existing = $this->findOneWhere('item_number = ?', [$itemNumber]);
+    // Builds an unused item number from the product name, adding -2, -3, ... when the base is taken.
+    private function generateItemNumber(string $name, ?int $ignoreId = null): string {
+        $base = rtrim(substr(motherboard_inventory_slugify_item_number($name), 0, 90), '-');
+        if ($base === '' || motherboard_inventory_is_custom_item($base)) {
+            $base = $base === '' ? 'ITEM' : $base . '-ITEM';
         }
-        if ($existing) {
+        $candidate = $base;
+        for ($suffix = 2; $this->itemNumberTaken($candidate, $ignoreId); $suffix++) {
+            $candidate = $base . '-' . $suffix;
+        }
+        return $candidate;
+    }
+
+    private function itemNumberTaken(string $itemNumber, ?int $ignoreId = null): bool {
+        if ($ignoreId) {
+            return (bool) $this->findOneWhere('item_number = ? AND id != ?', [$itemNumber, $ignoreId]);
+        }
+        return (bool) $this->findOneWhere('item_number = ?', [$itemNumber]);
+    }
+
+    private function assertItemNumberUnique(string $itemNumber, ?int $ignoreId = null): void {
+        if ($this->itemNumberTaken($itemNumber, $ignoreId)) {
             throw new Exception(t('inventory.item_number_exists'));
         }
     }

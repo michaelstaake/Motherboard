@@ -241,8 +241,8 @@ $searchQuery = $search ?? '';
                 <input type="text" id="product_name" name="name" required class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
             </div>
             <div class="mb-4">
-                <label for="product_item_number" class="block text-sm font-medium text-gray-700"><?= t('inventory.item_number') ?> *</label>
-                <input type="text" id="product_item_number" name="item_number" required maxlength="100" pattern="[A-Z0-9]+(-[A-Z0-9]+)*" class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
+                <label for="product_item_number" class="block text-sm font-medium text-gray-700"><?= t('inventory.item_number') ?></label>
+                <input type="text" id="product_item_number" name="item_number" maxlength="100" pattern="[A-Z0-9]+(-[A-Z0-9]+)*" class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
                 <p class="mt-1 text-xs text-gray-500">
                     <?= t('inventory.item_number_help') ?>
                     <button type="button" id="product_item_number_generate" class="font-medium text-primary-600 hover:text-primary-500"><?= t('inventory.item_number_generate') ?></button>

@@ -29,7 +29,7 @@ return [
     'inventory.item_number_exists' => 'Ein Produkt mit dieser Artikelnummer existiert bereits.',
     'inventory.item_number_required' => 'Die Artikelnummer ist erforderlich.',
     'inventory.item_number_invalid' => 'Die Artikelnummer darf nur Großbuchstaben, Zahlen und Bindestriche enthalten.',
-    'inventory.item_number_help' => 'Erforderlich, eindeutig, nur Großbuchstaben, Zahlen und Bindestriche.',
+    'inventory.item_number_help' => 'Optional, eindeutig, nur Großbuchstaben, Zahlen und Bindestriche. Leer lassen, um sie aus dem Produktnamen zu erzeugen.',
     'inventory.item_number_generate' => 'Generieren',
     'inventory.item_number_reserved' => 'Die Artikelnummer „custom“ ist für individuelle Auftragspositionen reserviert.',
     'inventory.custom_product' => 'Individuell',

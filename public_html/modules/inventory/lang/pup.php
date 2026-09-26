@@ -29,7 +29,7 @@ return [
     'inventory.item_number_exists' => 'Another chew-toy already wears that tag.',
     'inventory.item_number_required' => 'Every chew-toy needs a tag number.',
     'inventory.item_number_invalid' => 'Tag numbers are BIG LETTERS, numbers, and hyphens only. No spaces.',
-    'inventory.item_number_help' => 'Required, unique, BIG LETTERS only.',
+    'inventory.item_number_help' => 'Optional, unique, BIG LETTERS only. Leave it empty and I fetch one from the name.',
     'inventory.item_number_generate' => 'Generate',
     'inventory.item_number_reserved' => 'The tag "custom" is reserved for one-off chew-toys on a woof order.',
     'inventory.custom_product' => 'One-off chew-toy',

@@ -29,7 +29,7 @@ return [
     'inventory.item_number_exists' => 'A product with that item number already exists.',
     'inventory.item_number_required' => 'Item number is required.',
     'inventory.item_number_invalid' => 'Item number may only contain uppercase letters, numbers, and hyphens.',
-    'inventory.item_number_help' => 'Required, unique, uppercase letters, numbers, and hyphens.',
+    'inventory.item_number_help' => 'Optional, unique, uppercase letters, numbers, and hyphens. Leave blank to generate one from the product name.',
     'inventory.item_number_generate' => 'Generate',
     'inventory.item_number_reserved' => 'The item number "custom" is reserved for custom work order items.',
     'inventory.custom_product' => 'Custom',

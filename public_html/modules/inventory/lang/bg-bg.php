@@ -29,7 +29,7 @@ return [
     'inventory.item_number_exists' => 'Вече съществува продукт с този артикулен код.',
     'inventory.item_number_required' => 'Артикулният код е задължителен.',
     'inventory.item_number_invalid' => 'Артикулният код трябва да съдържа само главни латински букви, цифри и тирета.',
-    'inventory.item_number_help' => 'Задължителен и уникален; само главни латински букви, цифри и тирета.',
+    'inventory.item_number_help' => 'По избор и уникален; само главни латински букви, цифри и тирета. Оставете празно, за да се генерира от името на продукта.',
     'inventory.item_number_generate' => 'Генерирай',
     'inventory.item_number_reserved' => 'Артикулният код „custom“ е запазен за персонализирани позиции в сервизните задачи.',
     'inventory.custom_product' => 'Персонализиран',

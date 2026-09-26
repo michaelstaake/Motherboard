@@ -29,7 +29,7 @@ return [
     'inventory.item_number_exists' => 'Produkt s tímto číslem položky již existuje.',
     'inventory.item_number_required' => 'Číslo položky je povinné.',
     'inventory.item_number_invalid' => 'Číslo položky smí obsahovat pouze velká písmena, čísla a pomlčky.',
-    'inventory.item_number_help' => 'Povinné, jedinečné, pouze velká písmena, čísla a pomlčky.',
+    'inventory.item_number_help' => 'Volitelné, jedinečné, pouze velká písmena, čísla a pomlčky. Ponechte prázdné pro vygenerování z názvu produktu.',
     'inventory.item_number_generate' => 'Vygenerovat',
     'inventory.item_number_reserved' => 'Číslo položky „custom“ je vyhrazené pro vlastní položky na zakázkách.',
     'inventory.custom_product' => 'Vlastní',
