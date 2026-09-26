@@ -141,7 +141,7 @@ class SettingsController extends Controller {
         $appVersion = t('common.unknown');
         if (file_exists(ROOT_PATH . '/version.php')) {
             require ROOT_PATH . '/version.php';
-            $appVersion = trim($version . (!empty($channel) ? ' (' . $channel . ')' : ''));
+            $appVersion = trim($version . (!empty($channel) && $channel !== 'release' ?' (' . $channel . ')' : ''));
         }
 
         $viewData = [
