@@ -101,6 +101,28 @@ function motherboard_inventory_format_stock($stock): string {
     return (string) (int) $stock;
 }
 
+const MOTHERBOARD_INVENTORY_TAXABLE_COOKIE = 'motherboard_inventory_taxable';
+
+/**
+ * Whether the Add Product form should start with Taxable checked: it follows the last
+ * product added on this computer, so a run of similar products needs no re-checking.
+ */
+function motherboard_inventory_last_taxable(): bool {
+    return ($_COOKIE[MOTHERBOARD_INVENTORY_TAXABLE_COOKIE] ?? '1') !== '0';
+}
+
+function motherboard_inventory_remember_taxable(bool $taxable): void {
+    $params = session_get_cookie_params();
+    setcookie(MOTHERBOARD_INVENTORY_TAXABLE_COOKIE, $taxable ? '1' : '0', [
+        'expires' => time() + 365 * 24 * 60 * 60,
+        'path' => '/',
+        'domain' => $params['domain'] ?? '',
+        'secure' => (bool) ($params['secure'] ?? false),
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+
 /**
  * Spreadsheet apps run cells that start with =, +, -, or @ as formulas, so text that
  * staff typed (names, descriptions) is prefixed with an apostrophe. Plain numbers such as

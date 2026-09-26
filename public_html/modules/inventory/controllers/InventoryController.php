@@ -35,6 +35,7 @@ class InventoryController extends Controller {
 
         $this->viewPath(motherboard_inventory_path() . '/views/index.php', [
             'categories' => $this->categoryModel->getAll(),
+            'defaultTaxable' => motherboard_inventory_last_taxable(),
             'products' => $this->productModel->getAll($search ?: null, $categoryId, $limit, $offset),
             'search' => $search,
             'categoryId' => $categoryId,
@@ -178,6 +179,7 @@ class InventoryController extends Controller {
             $this->validateCSRF();
             $data = $this->postedProduct();
             $this->productModel->createProduct($data);
+            motherboard_inventory_remember_taxable(!empty($data['taxable']));
             $this->logger->log('inventory_product_created', "Product '{$data['name']}' created", $_SESSION['user_id']);
             $this->redirectInventory('message', t('inventory.product_created'));
         } catch (Exception $e) {

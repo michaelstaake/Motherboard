@@ -286,7 +286,7 @@ function openProductModal(product) {
     const form = document.getElementById('productForm');
     const title = document.getElementById('productModalTitle');
     form.reset();
-    document.getElementById('product_taxable').checked = true;
+    document.getElementById('product_taxable').checked = <?= json_encode(!empty($defaultTaxable)) ?>;
     if (product) {
         form.action = <?= json_encode(BASE_URL . '/inventory/products/') ?> + product.id;
         title.textContent = <?= json_encode(t('inventory.edit_product')) ?>;
