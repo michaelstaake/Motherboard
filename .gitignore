@@ -45,3 +45,6 @@ public_html/librewo-import.php
 public_html/attachments/**
 !public_html/attachments/.htaccess
 !public_html/attachments/index.php
+
+# Local Claude instructions
+CLAUDE.md
