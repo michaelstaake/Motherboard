@@ -725,13 +725,15 @@
         // Global functions
         function showAlert(message, type = 'info') {
             const alertDiv = document.createElement('div');
-            alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-md shadow-lg ${
+            alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-md shadow-lg cursor-pointer ${
                 type === 'error' ? 'bg-red-100 text-red-700 border border-red-300' :
                 type === 'success' ? 'bg-green-100 text-green-700 border border-green-300' :
                 'bg-blue-100 text-blue-700 border border-blue-300'
             }`;
             alertDiv.textContent = message;
-            
+            // Let the user click or tap the toast away if it's in the way
+            alertDiv.addEventListener('click', () => alertDiv.remove());
+
             document.body.appendChild(alertDiv);
             
             setTimeout(() => {
