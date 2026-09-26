@@ -24,7 +24,7 @@ $searchQuery = $search ?? '';
                 <div class="hidden origin-top-right absolute right-0 top-full mt-1 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20" onclick="event.stopPropagation()">
                     <div class="py-1">
                         <a href="<?= BASE_URL ?>/inventory/export?type=current" onclick="closeSplitMenus()" title="<?= htmlspecialchars(t('inventory.export_current_help')) ?>" class="block whitespace-nowrap px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><?= t('inventory.export_current') ?></a>
-                        <a href="<?= BASE_URL ?>/inventory/export?type=movement" onclick="closeSplitMenus()" title="<?= htmlspecialchars(t('inventory.export_movement_help')) ?>" class="block whitespace-nowrap px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><?= t('inventory.export_movement') ?></a>
+                        <button type="button" onclick="closeSplitMenus(); openMovementExportModal()" title="<?= htmlspecialchars(t('inventory.export_movement_help')) ?>" class="block w-full whitespace-nowrap text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><?= t('inventory.export_movement') ?></button>
                     </div>
                 </div>
             </div>
@@ -194,6 +194,29 @@ $searchQuery = $search ?? '';
     </div>
 </div>
 
+<div id="movementExportModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 1000;">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <h3 class="text-lg font-medium text-gray-900"><?= t('inventory.export_movement') ?></h3>
+        <p class="mt-1 mb-4 text-sm text-gray-500"><?= t('inventory.export_movement_help') ?></p>
+        <form id="movementExportForm" method="GET" action="<?= BASE_URL ?>/inventory/export">
+            <input type="hidden" name="type" value="movement">
+            <h4 class="text-sm font-semibold text-gray-900 mb-2"><?= t('inventory.export_range') ?></h4>
+            <div class="space-y-2">
+                <?php foreach (['month', '30', '90', '365', 'all'] as $exportRange): ?>
+                    <div class="flex items-start">
+                        <input id="export_range_<?= $exportRange ?>" name="range" type="radio" value="<?= $exportRange ?>" <?= $exportRange === 'month' ? 'checked' : '' ?> class="h-4 w-4 mt-0.5 text-primary-600 focus:ring-primary-500 border-gray-300">
+                        <label for="export_range_<?= $exportRange ?>" class="ml-2 block text-sm text-gray-700"><?= t('inventory.export_range_' . $exportRange) ?></label>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="mt-5 flex justify-end space-x-3">
+                <button type="button" onclick="closeMovementExportModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"><?= t('common.cancel') ?></button>
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700"><?= t('inventory.export_download') ?></button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div id="categoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 1000;">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <h3 id="categoryModalTitle" class="text-lg font-medium text-gray-900 mb-4"><?= t('inventory.add_category') ?></h3>
@@ -277,6 +300,15 @@ $searchQuery = $search ?? '';
 </div>
 
 <script>
+function openMovementExportModal() {
+    document.getElementById('movementExportForm').reset();
+    document.getElementById('movementExportModal').classList.remove('hidden');
+}
+function closeMovementExportModal() {
+    document.getElementById('movementExportModal').classList.add('hidden');
+}
+// The form downloads a file rather than leaving the page, so close the modal once it is sent.
+document.getElementById('movementExportForm').addEventListener('submit', closeMovementExportModal);
 const inventoryCategoryTree = <?= json_encode((object) array_combine(
     array_map(static fn(array $category): int => (int) $category['id'], $categories),
     array_map(static fn(array $category): array => [

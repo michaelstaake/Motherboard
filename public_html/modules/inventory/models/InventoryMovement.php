@@ -31,15 +31,21 @@ class InventoryMovement extends Model {
         ]);
     }
 
-    public function getAllForExport(): array {
-        $stmt = $this->db->query("
+    /**
+     * @param string|null $since Only movements on or after this 'Y-m-d H:i:s' time; null for all of them.
+     */
+    public function getAllForExport(?string $since = null): array {
+        $where = $since === null ? '' : 'WHERE m.created_at >= ?';
+        $stmt = $this->db->prepare("
             SELECT m.*, COALESCE(p.name, m.product_name) AS current_name, COALESCE(p.item_number, m.item_number) AS current_item_number, p.category_id,
                    COALESCE(NULLIF(u.name, ''), u.username) AS user_name
             FROM inventory_movements m
             LEFT JOIN inventory_products p ON p.id = m.product_id
             LEFT JOIN users u ON u.id = m.user_id
+            {$where}
             ORDER BY m.created_at ASC, m.id ASC
         ");
+        $stmt->execute($since === null ? [] : [$since]);
         return $stmt->fetchAll();
     }
 }

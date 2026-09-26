@@ -67,6 +67,7 @@ class InventoryController extends Controller {
         $this->requireTechnician();
 
         $type = (string) ($_GET['type'] ?? '');
+        $logDetail = $type;
         $categoryPaths = $this->categoryModel->getPaths();
         if ($type === 'current') {
             $filename = 'inventory-' . date('Y-m-d') . '.csv';
@@ -91,6 +92,20 @@ class InventoryController extends Controller {
                 (int) $product['sold_count'],
             ], $this->productModel->getAll());
         } elseif ($type === 'movement') {
+            // Day ranges count today as their last day, so "last 30 days" starts 29 days ago.
+            $ranges = [
+                'month' => date('Y-m-01 00:00:00'),
+                '30' => date('Y-m-d 00:00:00', strtotime('-29 days')),
+                '90' => date('Y-m-d 00:00:00', strtotime('-89 days')),
+                '365' => date('Y-m-d 00:00:00', strtotime('-364 days')),
+                'all' => null,
+            ];
+            $range = (string) ($_GET['range'] ?? 'month');
+            if (!array_key_exists($range, $ranges)) {
+                $range = 'month';
+            }
+            $since = $ranges[$range];
+            $logDetail .= ", {$range}";
             $filename = 'inventory-movement-' . date('Y-m-d') . '.csv';
             $header = [
                 t('inventory.export_date'),
@@ -116,12 +131,12 @@ class InventoryController extends Controller {
                 $movement['stock_after'] === null ? '' : motherboard_inventory_format_stock($movement['stock_after']),
                 $movement['work_order_id'] ? '#' . (int) $movement['work_order_id'] : '',
                 $movement['user_name'] ?? '',
-            ], $movementModel->getAllForExport());
+            ], $movementModel->getAllForExport($since));
         } else {
             $this->redirect('/404');
         }
 
-        $this->logger->log('inventory_exported', "Exported inventory ({$type})", $_SESSION['user_id']);
+        $this->logger->log('inventory_exported', "Exported inventory ({$logDetail})", $_SESSION['user_id']);
 
         header('Content-Type: text/csv; charset=UTF-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
