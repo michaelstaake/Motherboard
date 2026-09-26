@@ -66,4 +66,10 @@ These modules are made by the Motherboard project and ship with the core in `pub
 
 ## Community Modules
 
-Modules made by other people. None are listed yet — yours could be the first.
+Modules made by other people.
+
+### EDS Warranty Cards
+
+- **Author:** EDS Design
+- **Description:** Create, issue, print, and search warranty cards for work orders, with formatted numbering, immutable customer snapshots, and Bulgarian and English localization.
+- **Repository:** https://github.com/eds-design/motherboard-eds-warranty-cards
