@@ -72,7 +72,6 @@ function motherboard_inventory_ensure_schema(Database $database): void {
             stock_before INT NULL,
             stock_after INT NULL,
             work_order_id INT NULL,
-            work_order_number VARCHAR(20) NULL,
             user_id INT NULL,
             created_at DATETIME NOT NULL,
             KEY idx_inventory_movements_product (product_id),
@@ -96,12 +95,11 @@ function motherboard_inventory_backfill_movements(PDO $pdo): void {
     $stmt = $pdo->prepare("
         INSERT INTO inventory_movements
             (product_id, product_name, item_number, movement_type, quantity, stock_before, stock_after,
-             work_order_id, work_order_number, user_id, created_at)
+             work_order_id, user_id, created_at)
         SELECT wop.product_id, p.name, p.item_number, 'sale', -wop.quantity, NULL, NULL,
-               wop.work_order_id, wo.work_order_number, NULL, wop.created_at
+               wop.work_order_id, NULL, wop.created_at
         FROM work_order_products wop
         JOIN inventory_products p ON p.id = wop.product_id
-        LEFT JOIN work_orders wo ON wo.id = wop.work_order_id
         WHERE p.item_number <> ?
         ORDER BY wop.created_at ASC, wop.id ASC
     ");

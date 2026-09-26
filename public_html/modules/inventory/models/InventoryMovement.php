@@ -17,13 +17,6 @@ class InventoryMovement extends Model {
             return;
         }
 
-        $workOrderNumber = null;
-        if ($workOrderId) {
-            $stmt = $this->db->prepare("SELECT work_order_number FROM work_orders WHERE id = ?");
-            $stmt->execute([$workOrderId]);
-            $workOrderNumber = $stmt->fetchColumn() ?: null;
-        }
-
         $this->create([
             'product_id' => (int) $product['id'],
             'product_name' => $product['name'],
@@ -33,7 +26,6 @@ class InventoryMovement extends Model {
             'stock_before' => $stockBefore,
             'stock_after' => $stockAfter,
             'work_order_id' => $workOrderId,
-            'work_order_number' => $workOrderNumber,
             'user_id' => isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : null,
             'created_at' => date('Y-m-d H:i:s'),
         ]);

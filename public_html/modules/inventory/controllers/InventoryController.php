@@ -114,7 +114,7 @@ class InventoryController extends Controller {
                 $movement['quantity'] === null ? '' : sprintf('%+d', (int) $movement['quantity']),
                 $movement['stock_before'] === null ? '' : motherboard_inventory_format_stock($movement['stock_before']),
                 $movement['stock_after'] === null ? '' : motherboard_inventory_format_stock($movement['stock_after']),
-                $movement['work_order_number'] ?? ($movement['work_order_id'] ? '#' . (int) $movement['work_order_id'] : ''),
+                $movement['work_order_id'] ? '#' . (int) $movement['work_order_id'] : '',
                 $movement['user_name'] ?? '',
             ], $movementModel->getAllForExport());
         } else {
