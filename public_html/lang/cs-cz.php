@@ -677,6 +677,7 @@ return [
     'log.inventory_product_added' => 'Skladový produkt přidán k zakázce',
     'log.inventory_product_removed' => 'Skladový produkt odebrán ze zakázky',
     'log.inventory_quantity_updated' => 'Skladové množství aktualizováno',
+    'log.inventory_exported' => 'Sklad exportován',
     'date.month_short.1' => 'led',
     'date.month_short.2' => 'úno',
     'date.month_short.3' => 'bře',

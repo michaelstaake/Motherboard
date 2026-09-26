@@ -680,6 +680,7 @@ return [
     'log.inventory_product_added' => 'Складов продукт е добавен към сервизната задача',
     'log.inventory_product_removed' => 'Складов продукт е премахнат от сервизната задача',
     'log.inventory_quantity_updated' => 'Складовото количество е обновено',
+    'log.inventory_exported' => 'Складът е експортиран',
     'date.month_short.1' => 'яну',
     'date.month_short.2' => 'фев',
     'date.month_short.3' => 'мар',

@@ -141,7 +141,30 @@ class InventoryProduct extends Model {
         $payload = $this->normalize($data);
         $this->assertItemNumberUnique($payload['item_number'], $id);
         $payload['updated_at'] = date('Y-m-d H:i:s');
-        return $this->update($id, $payload);
+
+        $this->db->beginTransaction();
+        try {
+            // Re-read under lock: a work order may have taken stock since the form was opened.
+            $locked = $this->lockById($id) ?: $existing;
+            $updated = $this->update($id, $payload);
+            $before = (int) $locked['stock'];
+            $after = (int) $payload['stock'];
+            if ($before !== $after) {
+                $quantity = ($before === -1 || $after === -1) ? null : $after - $before;
+                (new InventoryMovement($this->db))->record(
+                    array_merge($locked, ['name' => $payload['name'], 'item_number' => $payload['item_number']]),
+                    InventoryMovement::TYPE_ADJUSTMENT,
+                    $quantity,
+                    $before,
+                    $after
+                );
+            }
+            $this->db->commit();
+            return $updated;
+        } catch (Exception $e) {
+            $this->db->rollback();
+            throw $e;
+        }
     }
 
     public function deleteProduct(int $id): bool {
@@ -167,13 +190,14 @@ class InventoryProduct extends Model {
         return $row ?: null;
     }
 
-    public function adjustStockAndSold(int $id, int $stockDelta, int $soldDelta): void {
+    public function adjustStockAndSold(int $id, int $stockDelta, int $soldDelta, ?int $workOrderId = null): void {
         $product = $this->lockById($id);
         if (!$product) {
             throw new Exception(t('inventory.product_not_found'));
         }
 
-        $stock = (int) $product['stock'];
+        $stockBefore = (int) $product['stock'];
+        $stock = $stockBefore;
         if ($stock !== -1) {
             $newStock = $stock + $stockDelta;
             if ($newStock < 0) {
@@ -189,6 +213,17 @@ class InventoryProduct extends Model {
 
         $stmt = $this->db->prepare("UPDATE inventory_products SET stock = ?, sold_count = ?, updated_at = ? WHERE id = ?");
         $stmt->execute([$stock, $sold, date('Y-m-d H:i:s'), $id]);
+
+        if ($soldDelta !== 0) {
+            (new InventoryMovement($this->db))->record(
+                $product,
+                $soldDelta > 0 ? InventoryMovement::TYPE_SALE : InventoryMovement::TYPE_RETURN,
+                -$soldDelta,
+                $stockBefore,
+                $stock,
+                $workOrderId
+            );
+        }
     }
 
     private function normalize(array $data): array {

@@ -677,6 +677,7 @@ return [
     'log.inventory_product_added' => 'Chew-toy stuck on woof order',
     'log.inventory_product_removed' => 'Chew-toy unstuck from woof order',
     'log.inventory_quantity_updated' => 'Chew-toy count re-wagged',
+    'log.inventory_exported' => 'Treat stash fetched',
     'date.month_short.1' => 'Jan',
     'date.month_short.2' => 'Feb',
     'date.month_short.3' => 'Mar',

@@ -4,7 +4,7 @@ require_once $definition['path'] . '/schema.php';
 require_once ROOT_PATH . '/models/Settings.php';
 
 motherboard_inventory_load_models();
-const MOTHERBOARD_INVENTORY_SCHEMA_VERSION = 1;
+const MOTHERBOARD_INVENTORY_SCHEMA_VERSION = 2;
 
 $inventoryPath = $definition['path'];
 $inventoryController = $definition['path'] . '/controllers/InventoryController.php';
@@ -28,6 +28,7 @@ Hooks::addAction('schema.migrate', function (Database $database): void {
 
 Hooks::addAction('router.register', function (Router $router) use ($inventoryController): void {
     $router->addRoute('/inventory', 'InventoryController', 'index', $inventoryController);
+    $router->addRoute('/inventory/export', 'InventoryController', 'export', $inventoryController);
     $router->addRoute('/inventory/categories', 'InventoryController', 'createCategory', $inventoryController);
     $router->addRoute('/inventory/categories/{id}', 'InventoryController', 'updateCategory', $inventoryController);
     $router->addRoute('/inventory/categories/{id}/delete', 'InventoryController', 'deleteCategory', $inventoryController);

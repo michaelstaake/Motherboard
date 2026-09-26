@@ -677,6 +677,7 @@ return [
     'log.inventory_product_added' => 'Inventarprodukt zum Auftrag hinzugefügt',
     'log.inventory_product_removed' => 'Inventarprodukt vom Auftrag entfernt',
     'log.inventory_quantity_updated' => 'Inventarmenge aktualisiert',
+    'log.inventory_exported' => 'Inventar exportiert',
     'date.month_short.1' => 'Jan',
     'date.month_short.2' => 'Feb',
     'date.month_short.3' => 'Mär',

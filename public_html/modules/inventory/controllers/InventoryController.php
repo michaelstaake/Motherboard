@@ -47,6 +47,79 @@ class InventoryController extends Controller {
         ], 'inventory/index');
     }
 
+    public function export() {
+        $this->requireTechnician();
+
+        $type = (string) ($_GET['type'] ?? '');
+        if ($type === 'current') {
+            $filename = 'inventory-' . date('Y-m-d') . '.csv';
+            $header = [
+                t('inventory.item_number'),
+                t('inventory.product_name'),
+                t('inventory.category'),
+                t('inventory.description'),
+                t('inventory.price'),
+                t('inventory.taxable'),
+                t('inventory.stock'),
+                t('inventory.sold'),
+            ];
+            $rows = array_map(static fn(array $product): array => [
+                $product['item_number'],
+                $product['name'],
+                $product['category_name'] ?: t('inventory.uncategorized'),
+                $product['description'] ?? '',
+                number_format((float) $product['price'], 2, '.', ''),
+                !empty($product['taxable']) ? t('common.yes') : t('common.no'),
+                motherboard_inventory_format_stock($product['stock']),
+                (int) $product['sold_count'],
+            ], $this->productModel->getAll());
+        } elseif ($type === 'movement') {
+            $filename = 'inventory-movement-' . date('Y-m-d') . '.csv';
+            $header = [
+                t('inventory.export_date'),
+                t('inventory.item_number'),
+                t('inventory.product_name'),
+                t('inventory.category'),
+                t('inventory.export_type'),
+                t('inventory.export_quantity_change'),
+                t('inventory.export_stock_before'),
+                t('inventory.export_stock_after'),
+                t('inventory.export_work_order'),
+                t('inventory.export_user'),
+            ];
+            $movementModel = new InventoryMovement($this->db);
+            $rows = array_map(static fn(array $movement): array => [
+                $movement['created_at'],
+                $movement['current_item_number'],
+                $movement['current_name'],
+                $movement['category_name'] ?? '',
+                t('inventory.movement_' . $movement['movement_type']),
+                $movement['quantity'] === null ? '' : sprintf('%+d', (int) $movement['quantity']),
+                $movement['stock_before'] === null ? '' : motherboard_inventory_format_stock($movement['stock_before']),
+                $movement['stock_after'] === null ? '' : motherboard_inventory_format_stock($movement['stock_after']),
+                $movement['work_order_number'] ?? ($movement['work_order_id'] ? '#' . (int) $movement['work_order_id'] : ''),
+                $movement['user_name'] ?? '',
+            ], $movementModel->getAllForExport());
+        } else {
+            $this->redirect('/404');
+        }
+
+        $this->logger->log('inventory_exported', "Exported inventory ({$type})", $_SESSION['user_id']);
+
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Cache-Control: no-store');
+        $out = fopen('php://output', 'w');
+        // Byte order mark so Excel opens the file as UTF-8 rather than the system code page.
+        fwrite($out, "\xEF\xBB\xBF");
+        fputcsv($out, $header, ',', '"', '');
+        foreach ($rows as $row) {
+            fputcsv($out, array_map('motherboard_inventory_csv_cell', $row), ',', '"', '');
+        }
+        fclose($out);
+        exit;
+    }
+
     public function createCategory() {
         $this->requireTechnician();
         $this->requirePost();

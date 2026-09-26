@@ -56,7 +56,7 @@ class InventoryWorkOrderProduct extends Model {
                 return (int) $existing['id'];
             }
 
-            $productModel->adjustStockAndSold($productId, $this->stockDeltaForTake($product, $quantity), $quantity);
+            $productModel->adjustStockAndSold($productId, $this->stockDeltaForTake($product, $quantity), $quantity, $workOrderId);
 
             $lineId = (int) $this->create([
                 'work_order_id' => $workOrderId,
@@ -96,7 +96,7 @@ class InventoryWorkOrderProduct extends Model {
         $this->db->beginTransaction();
         try {
             $custom = $productModel->lockCustomProduct();
-            $productModel->adjustStockAndSold((int) $custom['id'], $this->stockDeltaForTake($custom, $quantity), $quantity);
+            $productModel->adjustStockAndSold((int) $custom['id'], $this->stockDeltaForTake($custom, $quantity), $quantity, $workOrderId);
 
             $lineId = (int) $this->create([
                 'work_order_id' => $workOrderId,
@@ -143,7 +143,7 @@ class InventoryWorkOrderProduct extends Model {
                 $product = $productModel->lockById((int) $line['product_id']);
                 if ($product) {
                     $qty = (int) $line['quantity'];
-                    $productModel->adjustStockAndSold((int) $line['product_id'], $this->stockDeltaForReturn($product, $qty), -$qty);
+                    $productModel->adjustStockAndSold((int) $line['product_id'], $this->stockDeltaForReturn($product, $qty), -$qty, (int) $line['work_order_id']);
                 }
             }
             $this->delete($lineId);
@@ -174,7 +174,7 @@ class InventoryWorkOrderProduct extends Model {
                     continue;
                 }
                 $qty = (int) $line['quantity'];
-                $productModel->adjustStockAndSold((int) $line['product_id'], $this->stockDeltaForReturn($product, $qty), -$qty);
+                $productModel->adjustStockAndSold((int) $line['product_id'], $this->stockDeltaForReturn($product, $qty), -$qty, $workOrderId);
             }
             if ($ownsTransaction) {
                 $this->db->commit();
@@ -203,10 +203,10 @@ class InventoryWorkOrderProduct extends Model {
             $product = $productModel->lockById((int) $line['product_id']);
             if ($product) {
                 if ($delta > 0) {
-                    $productModel->adjustStockAndSold((int) $line['product_id'], $this->stockDeltaForTake($product, $delta), $delta);
+                    $productModel->adjustStockAndSold((int) $line['product_id'], $this->stockDeltaForTake($product, $delta), $delta, (int) $line['work_order_id']);
                 } else {
                     $restore = abs($delta);
-                    $productModel->adjustStockAndSold((int) $line['product_id'], $this->stockDeltaForReturn($product, $restore), -$restore);
+                    $productModel->adjustStockAndSold((int) $line['product_id'], $this->stockDeltaForReturn($product, $restore), -$restore, (int) $line['work_order_id']);
                 }
             }
         }

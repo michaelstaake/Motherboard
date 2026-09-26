@@ -163,6 +163,32 @@ $searchQuery = $search ?? '';
             <?php endif; ?>
         </div>
     </div>
+
+    <div class="mt-8 flex justify-end border-t border-gray-200 pt-6">
+        <button type="button" onclick="openExportModal()" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white shadow-sm hover:bg-gray-50">
+            <?= t('inventory.export') ?>
+        </button>
+    </div>
+</div>
+
+<div id="exportModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 1000;">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <h3 class="text-lg font-medium text-gray-900"><?= t('inventory.export_title') ?></h3>
+        <p class="mt-1 mb-4 text-sm text-gray-500"><?= t('inventory.export_intro') ?></p>
+        <div class="space-y-3">
+            <a href="<?= BASE_URL ?>/inventory/export?type=current" onclick="closeExportModal()" class="block rounded-md border border-gray-300 px-4 py-3 hover:border-primary-500 hover:bg-primary-50">
+                <span class="block text-sm font-medium text-gray-900"><?= t('inventory.export_current') ?></span>
+                <span class="block mt-1 text-xs text-gray-500"><?= t('inventory.export_current_help') ?></span>
+            </a>
+            <a href="<?= BASE_URL ?>/inventory/export?type=movement" onclick="closeExportModal()" class="block rounded-md border border-gray-300 px-4 py-3 hover:border-primary-500 hover:bg-primary-50">
+                <span class="block text-sm font-medium text-gray-900"><?= t('inventory.export_movement') ?></span>
+                <span class="block mt-1 text-xs text-gray-500"><?= t('inventory.export_movement_help') ?></span>
+            </a>
+        </div>
+        <div class="mt-4 flex justify-end">
+            <button type="button" onclick="closeExportModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"><?= t('common.cancel') ?></button>
+        </div>
+    </div>
 </div>
 
 <div id="categoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 1000;">
@@ -238,6 +264,12 @@ $searchQuery = $search ?? '';
 </div>
 
 <script>
+function openExportModal() {
+    document.getElementById('exportModal').classList.remove('hidden');
+}
+function closeExportModal() {
+    document.getElementById('exportModal').classList.add('hidden');
+}
 function openCategoryModal(id, name) {
     const form = document.getElementById('categoryForm');
     const title = document.getElementById('categoryModalTitle');

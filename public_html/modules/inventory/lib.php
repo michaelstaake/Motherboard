@@ -101,6 +101,19 @@ function motherboard_inventory_format_stock($stock): string {
     return (string) (int) $stock;
 }
 
+/**
+ * Spreadsheet apps run cells that start with =, +, -, or @ as formulas, so text that
+ * staff typed (names, descriptions) is prefixed with an apostrophe. Plain numbers such as
+ * a -3 quantity change are left alone.
+ */
+function motherboard_inventory_csv_cell($value): string {
+    $value = (string) $value;
+    if ($value !== '' && !is_numeric($value) && preg_match('/^[=+\-@\t\r]/', $value)) {
+        return "'" . $value;
+    }
+    return $value;
+}
+
 function motherboard_inventory_slugify_item_number(string $value): string {
     $value = strtoupper(trim($value));
     $value = preg_replace('/[\s_]+/', '-', $value) ?? '';
@@ -122,4 +135,5 @@ function motherboard_inventory_load_models(): void {
     require_once motherboard_inventory_path() . '/models/InventoryCategory.php';
     require_once motherboard_inventory_path() . '/models/InventoryProduct.php';
     require_once motherboard_inventory_path() . '/models/InventoryWorkOrderProduct.php';
+    require_once motherboard_inventory_path() . '/models/InventoryMovement.php';
 }

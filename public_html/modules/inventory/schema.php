@@ -57,7 +57,51 @@ function motherboard_inventory_ensure_schema(Database $database): void {
         motherboard_inventory_ensure_work_order_product_lines($pdo);
     }
 
+    if (!motherboard_inventory_table_exists($pdo, 'inventory_movements')) {
+        $pdo->exec("CREATE TABLE inventory_movements (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            product_id INT NULL,
+            product_name VARCHAR(255) NOT NULL,
+            item_number VARCHAR(100) NOT NULL,
+            movement_type VARCHAR(20) NOT NULL,
+            quantity INT NULL,
+            stock_before INT NULL,
+            stock_after INT NULL,
+            work_order_id INT NULL,
+            work_order_number VARCHAR(20) NULL,
+            user_id INT NULL,
+            created_at DATETIME NOT NULL,
+            KEY idx_inventory_movements_product (product_id),
+            KEY idx_inventory_movements_created (created_at),
+            FOREIGN KEY (product_id) REFERENCES inventory_products(id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        motherboard_inventory_backfill_movements($pdo);
+    }
+
     motherboard_inventory_ensure_custom_product($pdo);
+}
+
+/**
+ * Movements were not recorded before the table existed, so seed it with the sales that
+ * work orders still show. Stock edits made by staff before then left no trace to recover.
+ */
+function motherboard_inventory_backfill_movements(PDO $pdo): void {
+    if (!motherboard_inventory_table_exists($pdo, 'work_order_products')) {
+        return;
+    }
+    $stmt = $pdo->prepare("
+        INSERT INTO inventory_movements
+            (product_id, product_name, item_number, movement_type, quantity, stock_before, stock_after,
+             work_order_id, work_order_number, user_id, created_at)
+        SELECT wop.product_id, p.name, p.item_number, 'sale', -wop.quantity, NULL, NULL,
+               wop.work_order_id, wo.work_order_number, NULL, wop.created_at
+        FROM work_order_products wop
+        JOIN inventory_products p ON p.id = wop.product_id
+        LEFT JOIN work_orders wo ON wo.id = wop.work_order_id
+        WHERE p.item_number <> ?
+        ORDER BY wop.created_at ASC, wop.id ASC
+    ");
+    $stmt->execute([motherboard_inventory_custom_item_number()]);
 }
 
 function motherboard_inventory_table_exists(PDO $pdo, string $table): bool {
