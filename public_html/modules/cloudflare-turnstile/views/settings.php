@@ -9,7 +9,7 @@ ob_start();
         <div class="sm:flex sm:items-baseline sm:gap-3">
             <h1 class="text-2xl font-bold text-gray-900"><?= t('module.cloudflare-turnstile.name') ?></h1>
             <?php if (!empty($module['version'])): ?>
-                <p class="mt-1 sm:mt-0 text-sm text-gray-600"><?= t('modules.version') ?> <?= htmlspecialchars($module['version']) ?></p>
+                <p class="mt-1 sm:mt-0 text-sm text-gray-600">v<?= htmlspecialchars($module['version']) ?></p>
             <?php endif; ?>
         </div>
         <a href="<?= BASE_URL ?>/settings?tab=modules" class="mt-4 sm:mt-0 inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
