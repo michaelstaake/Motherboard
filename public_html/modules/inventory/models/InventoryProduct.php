@@ -90,7 +90,7 @@ class InventoryProduct extends Model {
             $params[] = $term;
         }
 
-        $sql .= " ORDER BY p.name ASC";
+        $sql .= " ORDER BY p.item_number ASC";
 
         if ($limit) {
             $sql .= " LIMIT ?";

@@ -132,8 +132,8 @@ $totals = motherboard_inventory_work_order_totals($assigned);
                             <option value="<?= htmlspecialchars(motherboard_inventory_custom_item_number()) ?>"><?= t('inventory.custom_product') ?></option>
                             <?php foreach ($available as $product): ?>
                                 <option value="<?= (int) $product['id'] ?>">
-                                    <?= htmlspecialchars($product['name']) ?>
-                                    (<?= htmlspecialchars($product['item_number']) ?>)
+                                    <?= htmlspecialchars($product['item_number']) ?>
+                                    — <?= htmlspecialchars($product['name']) ?>
                                     — <?= htmlspecialchars(motherboard_inventory_format_money($product['price'])) ?>
                                     — <?= t('inventory.stock') ?>: <?= htmlspecialchars(motherboard_inventory_format_stock($product['stock'])) ?>
                                     <?php if (!empty($product['on_work_order'])): ?>
@@ -231,9 +231,9 @@ function inventoryProductTextLine(text, className = '') {
 function buildInventoryProductOption(product) {
     const option = document.createElement('div');
     option.className = 'p-2 hover:bg-gray-100 cursor-pointer';
-    option.appendChild(inventoryProductTextLine(product.name, 'font-medium'));
+    option.appendChild(inventoryProductTextLine(product.item_number + ' — ' + product.name, 'font-medium'));
     option.appendChild(inventoryProductTextLine(
-        product.item_number + ' — ' + product.price + ' — ' + <?= json_encode(t('inventory.stock')) ?> + ': ' + product.stock,
+        product.price + ' — ' + <?= json_encode(t('inventory.stock')) ?> + ': ' + product.stock,
         'text-sm text-gray-600'
     ));
     option.addEventListener('click', () => selectInventoryProduct(product));
@@ -247,7 +247,7 @@ function selectInventoryProduct(product) {
         select.value = String(product.id);
     }
     if (search) {
-        search.value = product.name + ' (' + product.item_number + ')';
+        search.value = product.item_number + ' — ' + product.name;
     }
     hideInventoryProductResults();
     toggleInventoryCustomFields();
