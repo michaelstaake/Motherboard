@@ -53,15 +53,27 @@ $searchQuery = $search ?? '';
                                     <?= htmlspecialchars($category['name']) ?>
                                     <span class="text-gray-400">(<?= (int) $category['total_count'] ?>)</span>
                                 </a>
-                                <div class="flex shrink-0 items-center space-x-2">
-                                    <?php if ((int) $category['depth'] < $maxCategoryDepth): ?>
-                                        <button type="button" class="text-sm font-medium text-primary-600 hover:text-primary-500" title="<?= htmlspecialchars(t('inventory.add_subcategory')) ?>" aria-label="<?= htmlspecialchars(t('inventory.add_subcategory')) ?>" onclick="openCategoryModal(null, '', <?= (int) $category['id'] ?>)">+</button>
-                                    <?php endif; ?>
-                                    <button type="button" class="text-sm text-primary-600 hover:text-primary-500" onclick="openCategoryModal(<?= (int) $category['id'] ?>, <?= htmlspecialchars(json_encode($category['name']), ENT_QUOTES) ?>, <?= $category['parent_id'] !== null ? (int) $category['parent_id'] : 'null' ?>)"><?= t('common.edit') ?></button>
-                                    <form method="POST" action="<?= BASE_URL ?>/inventory/categories/<?= (int) $category['id'] ?>/delete" onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('inventory.confirm_delete_category')), ENT_QUOTES) ?>)">
-                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
-                                        <button type="submit" class="text-sm text-red-600 hover:text-red-500"><?= t('common.delete') ?></button>
-                                    </form>
+                                <div class="relative shrink-0 inline-flex rounded-md shadow-sm" data-category-menu>
+                                    <button type="button" onclick="openProductModal(null, <?= (int) $category['id'] ?>)" class="inline-flex items-center rounded-l-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                        <?= t('inventory.add_product') ?>
+                                    </button>
+                                    <button type="button" onclick="toggleCategoryMenu(event, this)" class="-ml-px inline-flex items-center rounded-r-md border border-gray-300 bg-white px-1.5 py-1 text-gray-400 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary-500" aria-haspopup="true" aria-expanded="false" aria-label="<?= htmlspecialchars(t('common.actions')) ?>" title="<?= htmlspecialchars(t('common.actions')) ?>">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </button>
+                                    <div class="hidden origin-top-right absolute right-0 top-full mt-1 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20" onclick="event.stopPropagation()">
+                                        <div class="py-1">
+                                            <?php if ((int) $category['depth'] < $maxCategoryDepth): ?>
+                                                <button type="button" onclick="closeCategoryMenus(); openCategoryModal(null, '', <?= (int) $category['id'] ?>)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><?= t('inventory.add_subcategory') ?></button>
+                                            <?php endif; ?>
+                                            <button type="button" onclick="closeCategoryMenus(); openCategoryModal(<?= (int) $category['id'] ?>, <?= htmlspecialchars(json_encode($category['name']), ENT_QUOTES) ?>, <?= $category['parent_id'] !== null ? (int) $category['parent_id'] : 'null' ?>)" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><?= t('common.edit') ?></button>
+                                            <form method="POST" action="<?= BASE_URL ?>/inventory/categories/<?= (int) $category['id'] ?>/delete" onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('inventory.confirm_delete_category')), ENT_QUOTES) ?>)">
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+                                                <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"><?= t('common.delete') ?></button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -320,7 +332,31 @@ function closeCategoryModal() {
     document.getElementById('categoryModal').classList.add('hidden');
     document.getElementById('categoryForm').reset();
 }
-function openProductModal(product) {
+function closeCategoryMenus() {
+    document.querySelectorAll('[data-category-menu] > div:last-child').forEach(function (menu) {
+        menu.classList.add('hidden');
+    });
+    document.querySelectorAll('[data-category-menu] > button[aria-haspopup]').forEach(function (button) {
+        button.setAttribute('aria-expanded', 'false');
+    });
+}
+function toggleCategoryMenu(event, button) {
+    event.stopPropagation();
+    const menu = button.nextElementSibling;
+    const wasHidden = menu.classList.contains('hidden');
+    closeCategoryMenus();
+    if (wasHidden) {
+        menu.classList.remove('hidden');
+        button.setAttribute('aria-expanded', 'true');
+    }
+}
+document.addEventListener('click', closeCategoryMenus);
+document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+        closeCategoryMenus();
+    }
+});
+function openProductModal(product, categoryId) {
     const form = document.getElementById('productForm');
     const title = document.getElementById('productModalTitle');
     form.reset();
@@ -340,6 +376,7 @@ function openProductModal(product) {
         title.textContent = <?= json_encode(t('inventory.add_product')) ?>;
         document.getElementById('product_price').value = '0.00';
         document.getElementById('product_stock').value = '0';
+        document.getElementById('product_category_id').value = categoryId ? String(categoryId) : '';
     }
     document.getElementById('productModal').classList.remove('hidden');
 }
