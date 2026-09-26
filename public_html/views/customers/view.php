@@ -78,39 +78,28 @@ ob_start();
                     <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                     
                     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <?php
+                        $copyFields = [
+                            ['id' => 'name', 'type' => 'text', 'label' => t('customers.name') . ' *', 'required' => true],
+                            ['id' => 'company', 'type' => 'text', 'label' => t('customers.company'), 'required' => false],
+                            ['id' => 'email', 'type' => 'email', 'label' => t('customers.email'), 'required' => false],
+                            ['id' => 'phone', 'type' => 'tel', 'label' => t('customers.phone'), 'required' => false],
+                        ];
+                        foreach ($copyFields as $field):
+                            $value = $customer[$field['id']] ?? '';
+                        ?>
                         <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700"><?= t('customers.name') ?> *</label>
-                            <input type="text" id="name" name="name" value="<?= htmlspecialchars($customer['name']) ?>" required class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
-                        </div>
-
-                        <div>
-                            <label for="company" class="block text-sm font-medium text-gray-700"><?= t('customers.company') ?></label>
-                            <input type="text" id="company" name="company" value="<?= htmlspecialchars($customer['company'] ?? '') ?>" class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
-                        </div>
-
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700"><?= t('customers.email') ?></label>
+                            <label for="<?= $field['id'] ?>" class="block text-sm font-medium text-gray-700"><?= $field['label'] ?></label>
                             <div class="relative mt-1">
-                                <input type="email" id="email" name="email" value="<?= htmlspecialchars($customer['email'] ?? '') ?>" class="block w-full pl-4 pr-11 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
-                                <button type="button" onclick="copyToClipboard(document.getElementById('email').value.trim())" title="<?= htmlspecialchars(t('js.copy')) ?>" aria-label="<?= htmlspecialchars(t('js.copy')) ?>" class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-primary-600">
+                                <input type="<?= $field['type'] ?>" id="<?= $field['id'] ?>" name="<?= $field['id'] ?>" value="<?= htmlspecialchars($value) ?>"<?= $field['required'] ? ' required' : '' ?> data-copy-input class="block w-full pl-4 pr-11 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
+                                <button type="button" onclick="copyToClipboard(document.getElementById('<?= $field['id'] ?>').value.trim())" title="<?= htmlspecialchars(t('js.copy')) ?>" aria-label="<?= htmlspecialchars(t('js.copy')) ?>" class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-primary-600<?= trim($value) === '' ? ' hidden' : '' ?>">
                                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                     </svg>
                                 </button>
                             </div>
                         </div>
-
-                        <div>
-                            <label for="phone" class="block text-sm font-medium text-gray-700"><?= t('customers.phone') ?></label>
-                            <div class="relative mt-1">
-                                <input type="tel" id="phone" name="phone" value="<?= htmlspecialchars($customer['phone'] ?? '') ?>" class="block w-full pl-4 pr-11 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
-                                <button type="button" onclick="copyToClipboard(document.getElementById('phone').value.trim())" title="<?= htmlspecialchars(t('js.copy')) ?>" aria-label="<?= htmlspecialchars(t('js.copy')) ?>" class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-primary-600">
-                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
+                        <?php endforeach; ?>
                     </div>
 
                     <div class="mt-6 flex justify-end">
@@ -302,6 +291,15 @@ function closeDeleteModal() {
 }
 </script>
 <?php endif; ?>
+
+<script>
+// Only show a field's copy icon while the field has a value
+document.querySelectorAll('[data-copy-input]').forEach(input => {
+    input.addEventListener('input', () => {
+        input.nextElementSibling.classList.toggle('hidden', input.value.trim() === '');
+    });
+});
+</script>
 
 <?php 
 $content = ob_get_clean();
