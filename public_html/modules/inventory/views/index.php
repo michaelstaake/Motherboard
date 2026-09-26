@@ -47,13 +47,13 @@ $searchQuery = $search ?? '';
                         <p class="px-6 py-4 text-sm text-gray-500"><?= t('inventory.no_categories') ?></p>
                     <?php else: ?>
                         <?php foreach ($categories as $category): ?>
-                            <div class="pr-6 py-3 flex items-center justify-between <?= (int) $categoryId === (int) $category['id'] ? 'bg-primary-50' : '' ?>" style="padding-left: <?= 1.5 + ((int) $category['depth'] - 1) * 1.25 ?>rem;">
-                                <a href="<?= BASE_URL ?>/inventory?category=<?= (int) $category['id'] ?><?= $searchQuery ? '&search=' . urlencode($searchQuery) : '' ?>" class="text-sm <?= (int) $categoryId === (int) $category['id'] ? 'text-primary-700 font-medium' : 'text-gray-700 hover:text-gray-900' ?>">
+                            <div class="pr-6 py-3 flex items-center justify-between gap-3 <?= (int) $categoryId === (int) $category['id'] ? 'bg-primary-50' : '' ?>" style="padding-left: <?= 1.5 + ((int) $category['depth'] - 1) * 1.25 ?>rem;">
+                                <a href="<?= BASE_URL ?>/inventory?category=<?= (int) $category['id'] ?><?= $searchQuery ? '&search=' . urlencode($searchQuery) : '' ?>" class="min-w-0 break-words text-sm <?= (int) $categoryId === (int) $category['id'] ? 'text-primary-700 font-medium' : 'text-gray-700 hover:text-gray-900' ?>">
                                     <?php if ((int) $category['depth'] > 1): ?><span class="mr-1 text-gray-300" aria-hidden="true">&#x2514;</span><?php endif; ?>
                                     <?= htmlspecialchars($category['name']) ?>
                                     <span class="text-gray-400">(<?= (int) $category['total_count'] ?>)</span>
                                 </a>
-                                <div class="flex items-center space-x-2">
+                                <div class="flex shrink-0 items-center space-x-2">
                                     <?php if ((int) $category['depth'] < $maxCategoryDepth): ?>
                                         <button type="button" class="text-sm font-medium text-primary-600 hover:text-primary-500" title="<?= htmlspecialchars(t('inventory.add_subcategory')) ?>" aria-label="<?= htmlspecialchars(t('inventory.add_subcategory')) ?>" onclick="openCategoryModal(null, '', <?= (int) $category['id'] ?>)">+</button>
                                     <?php endif; ?>
