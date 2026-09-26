@@ -334,7 +334,7 @@ return [
     'settings.saved_printout' => 'La configuración de impresión se actualizó correctamente.',
     'settings.saved_localization' => 'La configuración de localización se actualizó correctamente.',
     'settings.company' => 'Información de la empresa',
-    'settings.company_help' => 'Esta información aparece en el sitio, correos e impresiones.',
+    'settings.company_help' => 'Personalización básica en toda la aplicación.',
     'settings.company_name' => 'Nombre de la empresa',
     'settings.logo_url' => 'URL del logotipo',
     'settings.phone' => 'Teléfono',

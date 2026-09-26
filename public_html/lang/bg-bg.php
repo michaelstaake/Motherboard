@@ -337,7 +337,7 @@ return [
     'settings.saved_printout' => 'Настройките за печат са обновени успешно.',
     'settings.saved_localization' => 'Настройките за локализация са обновени успешно.',
     'settings.company' => 'Информация за фирмата',
-    'settings.company_help' => 'Тази информация се показва в сайта, имейлите и разпечатките.',
+    'settings.company_help' => 'Основни настройки за цялото приложение.',
     'settings.company_name' => 'Име на фирмата',
     'settings.logo_url' => 'URL адрес на фирменото лого',
     'settings.phone' => 'Телефон',

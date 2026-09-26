@@ -337,7 +337,7 @@ return [
     'settings.saved_printout' => 'Printout settings updated successfully.',
     'settings.saved_localization' => 'Localization settings updated successfully.',
     'settings.company' => 'Company Information',
-    'settings.company_help' => 'This information appears across the site, emails, and print outs.',
+    'settings.company_help' => 'Basic customization across the app.',
     'settings.company_name' => 'Company Name',
     'settings.logo_url' => 'Company Logo URL',
     'settings.phone' => 'Phone',

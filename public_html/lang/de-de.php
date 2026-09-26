@@ -334,7 +334,7 @@ return [
     'settings.saved_printout' => 'Druckeinstellungen wurden aktualisiert.',
     'settings.saved_localization' => 'Lokalisierungseinstellungen wurden aktualisiert.',
     'settings.company' => 'Firmeninformationen',
-    'settings.company_help' => 'Diese Informationen erscheinen auf der Website, in E-Mails und auf Ausdrucken.',
+    'settings.company_help' => 'Grundlegende Anpassungen für die gesamte App.',
     'settings.company_name' => 'Firmenname',
     'settings.logo_url' => 'URL des Firmenlogos',
     'settings.phone' => 'Telefon',

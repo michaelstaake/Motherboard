@@ -334,7 +334,7 @@ return [
     'settings.saved_printout' => 'Les paramètres d\'impression ont été mis à jour.',
     'settings.saved_localization' => 'Les paramètres de localisation ont été mis à jour.',
     'settings.company' => 'Informations de l’entreprise',
-    'settings.company_help' => 'Ces informations apparaissent sur le site, dans les e-mails et sur les impressions.',
+    'settings.company_help' => 'Personnalisation de base dans toute l’application.',
     'settings.company_name' => 'Nom de l’entreprise',
     'settings.logo_url' => 'URL du logo',
     'settings.phone' => 'Téléphone',

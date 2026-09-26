@@ -334,7 +334,7 @@ return [
     'settings.saved_printout' => 'Paw print settings reburied.',
     'settings.saved_localization' => 'Bark tongue settings reburied.',
     'settings.company' => 'Kennel Info',
-    'settings.company_help' => 'This sniff shows on the site, sniff-mails, and paw prints.',
+    'settings.company_help' => 'Basic tail-oring across the whole doghouse.',
     'settings.company_name' => 'Kennel Name',
     'settings.logo_url' => 'Kennel Picture URL',
     'settings.phone' => 'Bark-phone',

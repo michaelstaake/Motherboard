@@ -334,7 +334,7 @@ return [
     'settings.saved_printout' => 'Nastavení tisku bylo aktualizováno.',
     'settings.saved_localization' => 'Nastavení lokalizace bylo aktualizováno.',
     'settings.company' => 'Údaje o firmě',
-    'settings.company_help' => 'Tyto údaje se zobrazují na webu, v e-mailech a na tiscích.',
+    'settings.company_help' => 'Základní přizpůsobení v celé aplikaci.',
     'settings.company_name' => 'Název firmy',
     'settings.logo_url' => 'URL loga',
     'settings.phone' => 'Telefon',
