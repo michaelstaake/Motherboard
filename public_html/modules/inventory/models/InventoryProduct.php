@@ -8,7 +8,7 @@ class InventoryProduct extends Model {
         return parent::findById($id);
     }
 
-    public function getAll(?string $search = null, ?int $categoryId = null, $limit = null, int $offset = 0): array {
+    public function getAll(?string $search = null, ?array $categoryIds = null, $limit = null, int $offset = 0): array {
         $sql = "
             SELECT p.*, c.name AS category_name
             FROM inventory_products p
@@ -24,9 +24,9 @@ class InventoryProduct extends Model {
             $params[] = $term;
             $params[] = $term;
         }
-        if ($categoryId) {
-            $sql .= " AND p.category_id = ?";
-            $params[] = $categoryId;
+        if ($categoryIds) {
+            $sql .= " AND p.category_id IN (" . implode(',', array_fill(0, count($categoryIds), '?')) . ")";
+            array_push($params, ...array_map('intval', $categoryIds));
         }
 
         $sql .= " ORDER BY p.name ASC";
@@ -42,7 +42,7 @@ class InventoryProduct extends Model {
         return $stmt->fetchAll();
     }
 
-    public function getCount(?string $search = null, ?int $categoryId = null): int {
+    public function getCount(?string $search = null, ?array $categoryIds = null): int {
         $sql = "SELECT COUNT(*) AS count FROM inventory_products p WHERE p.item_number <> ?";
         $params = [motherboard_inventory_custom_item_number()];
 
@@ -53,9 +53,9 @@ class InventoryProduct extends Model {
             $params[] = $term;
             $params[] = $term;
         }
-        if ($categoryId) {
-            $sql .= " AND p.category_id = ?";
-            $params[] = $categoryId;
+        if ($categoryIds) {
+            $sql .= " AND p.category_id IN (" . implode(',', array_fill(0, count($categoryIds), '?')) . ")";
+            array_push($params, ...array_map('intval', $categoryIds));
         }
 
         $stmt = $this->db->prepare($sql);

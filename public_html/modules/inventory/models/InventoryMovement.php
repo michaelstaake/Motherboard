@@ -41,11 +41,10 @@ class InventoryMovement extends Model {
 
     public function getAllForExport(): array {
         $stmt = $this->db->query("
-            SELECT m.*, COALESCE(p.name, m.product_name) AS current_name, COALESCE(p.item_number, m.item_number) AS current_item_number, c.name AS category_name,
+            SELECT m.*, COALESCE(p.name, m.product_name) AS current_name, COALESCE(p.item_number, m.item_number) AS current_item_number, p.category_id,
                    COALESCE(NULLIF(u.name, ''), u.username) AS user_name
             FROM inventory_movements m
             LEFT JOIN inventory_products p ON p.id = m.product_id
-            LEFT JOIN inventory_categories c ON c.id = p.category_id
             LEFT JOIN users u ON u.id = m.user_id
             ORDER BY m.created_at ASC, m.id ASC
         ");

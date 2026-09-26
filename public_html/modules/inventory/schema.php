@@ -6,11 +6,15 @@ function motherboard_inventory_ensure_schema(Database $database): void {
     if (!motherboard_inventory_table_exists($pdo, 'inventory_categories')) {
         $pdo->exec("CREATE TABLE inventory_categories (
             id INT AUTO_INCREMENT PRIMARY KEY,
+            parent_id INT NULL,
             name VARCHAR(255) NOT NULL,
             created_at DATETIME NOT NULL,
             updated_at DATETIME NULL,
-            UNIQUE KEY unique_inventory_category_name (name)
+            KEY idx_inventory_categories_parent (parent_id),
+            FOREIGN KEY (parent_id) REFERENCES inventory_categories(id) ON DELETE SET NULL
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    } else {
+        motherboard_inventory_ensure_subcategories($pdo);
     }
 
     if (!motherboard_inventory_table_exists($pdo, 'inventory_products')) {
@@ -202,6 +206,23 @@ function motherboard_inventory_ensure_item_number_required(PDO $pdo): void {
 function motherboard_inventory_table_columns(PDO $pdo, string $table): array {
     $stmt = $pdo->query('SHOW COLUMNS FROM `' . str_replace('`', '', $table) . '`');
     return array_column($stmt->fetchAll(), 'Field');
+}
+
+/**
+ * Subcategories: each category may sit under a parent. Names only need to be unique among
+ * siblings now ("Accessories" can live under both Laptops and Phones), which the model
+ * checks, so the table-wide unique name index goes.
+ */
+function motherboard_inventory_ensure_subcategories(PDO $pdo): void {
+    $columns = motherboard_inventory_table_columns($pdo, 'inventory_categories');
+    if (!in_array('parent_id', $columns, true)) {
+        $pdo->exec('ALTER TABLE inventory_categories ADD COLUMN parent_id INT NULL AFTER id');
+        $pdo->exec('ALTER TABLE inventory_categories ADD KEY idx_inventory_categories_parent (parent_id)');
+        $pdo->exec('ALTER TABLE inventory_categories ADD FOREIGN KEY (parent_id) REFERENCES inventory_categories(id) ON DELETE SET NULL');
+    }
+    if (motherboard_inventory_index_exists($pdo, 'inventory_categories', 'unique_inventory_category_name')) {
+        $pdo->exec('ALTER TABLE inventory_categories DROP INDEX unique_inventory_category_name');
+    }
 }
 
 function motherboard_inventory_ensure_work_order_product_lines(PDO $pdo): void {

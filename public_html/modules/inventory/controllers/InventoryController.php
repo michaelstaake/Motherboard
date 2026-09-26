@@ -26,7 +26,20 @@ class InventoryController extends Controller {
         $page = max(1, intval($_GET['page'] ?? 1));
         $limit = PAGINATION_LIMIT;
 
-        $totalCount = $this->productModel->getCount($search ?: null, $categoryId);
+        // A category also shows the products filed in its subcategories.
+        $categories = $this->categoryModel->getTree();
+        $categoryIds = null;
+        if ($categoryId) {
+            $categoryIds = [$categoryId];
+            foreach ($categories as $category) {
+                if ((int) $category['id'] === $categoryId) {
+                    $categoryIds = $category['subtree_ids'];
+                    break;
+                }
+            }
+        }
+
+        $totalCount = $this->productModel->getCount($search ?: null, $categoryIds);
         $totalPages = $totalCount > 0 ? (int) ceil($totalCount / $limit) : 1;
         if ($page > $totalPages && $totalCount > 0) {
             $this->redirect('/404');
@@ -34,9 +47,11 @@ class InventoryController extends Controller {
         $offset = ($page - 1) * $limit;
 
         $this->viewPath(motherboard_inventory_path() . '/views/index.php', [
-            'categories' => $this->categoryModel->getAll(),
+            'categories' => $categories,
+            'categoryPaths' => $this->categoryModel->getPaths($categories),
+            'maxCategoryDepth' => InventoryCategory::MAX_DEPTH,
             'defaultTaxable' => motherboard_inventory_last_taxable(),
-            'products' => $this->productModel->getAll($search ?: null, $categoryId, $limit, $offset),
+            'products' => $this->productModel->getAll($search ?: null, $categoryIds, $limit, $offset),
             'search' => $search,
             'categoryId' => $categoryId,
             'currentPage' => $page,
@@ -52,6 +67,7 @@ class InventoryController extends Controller {
         $this->requireTechnician();
 
         $type = (string) ($_GET['type'] ?? '');
+        $categoryPaths = $this->categoryModel->getPaths();
         if ($type === 'current') {
             $filename = 'inventory-' . date('Y-m-d') . '.csv';
             $header = [
@@ -67,7 +83,7 @@ class InventoryController extends Controller {
             $rows = array_map(static fn(array $product): array => [
                 $product['item_number'],
                 $product['name'],
-                $product['category_name'] ?: t('inventory.uncategorized'),
+                $categoryPaths[(int) $product['category_id']] ?? t('inventory.uncategorized'),
                 $product['description'] ?? '',
                 number_format((float) $product['price'], 2, '.', ''),
                 !empty($product['taxable']) ? t('common.yes') : t('common.no'),
@@ -93,7 +109,7 @@ class InventoryController extends Controller {
                 $movement['created_at'],
                 $movement['current_item_number'],
                 $movement['current_name'],
-                $movement['category_name'] ?? '',
+                $categoryPaths[(int) $movement['category_id']] ?? '',
                 t('inventory.movement_' . $movement['movement_type']),
                 $movement['quantity'] === null ? '' : sprintf('%+d', (int) $movement['quantity']),
                 $movement['stock_before'] === null ? '' : motherboard_inventory_format_stock($movement['stock_before']),
@@ -127,7 +143,7 @@ class InventoryController extends Controller {
         try {
             $this->validateCSRF();
             $name = $this->sanitizeInput($_POST['name'] ?? '');
-            $this->categoryModel->createCategory($name);
+            $this->categoryModel->createCategory($name, (int) ($_POST['parent_id'] ?? 0));
             $this->logger->log('inventory_category_created', "Category '{$name}' created", $_SESSION['user_id']);
             $this->redirectInventory('message', t('inventory.category_created'));
         } catch (Exception $e) {
@@ -146,7 +162,7 @@ class InventoryController extends Controller {
                 throw new Exception(t('inventory.category_not_found'));
             }
             $name = $this->sanitizeInput($_POST['name'] ?? '');
-            $this->categoryModel->updateCategory($id, $name);
+            $this->categoryModel->updateCategory($id, $name, (int) ($_POST['parent_id'] ?? 0));
             $this->logger->log('inventory_category_updated', "Category '{$name}' updated", $_SESSION['user_id']);
             $this->redirectInventory('message', t('inventory.category_updated'));
         } catch (Exception $e) {

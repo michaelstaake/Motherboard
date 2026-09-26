@@ -101,6 +101,10 @@ function motherboard_inventory_format_stock($stock): string {
     return (string) (int) $stock;
 }
 
+function motherboard_inventory_category_path(array $names): string {
+    return implode(' › ', $names);
+}
+
 const MOTHERBOARD_INVENTORY_TAXABLE_COOKIE = 'motherboard_inventory_taxable';
 
 /**

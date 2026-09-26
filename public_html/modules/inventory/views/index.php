@@ -47,13 +47,17 @@ $searchQuery = $search ?? '';
                         <p class="px-6 py-4 text-sm text-gray-500"><?= t('inventory.no_categories') ?></p>
                     <?php else: ?>
                         <?php foreach ($categories as $category): ?>
-                            <div class="px-6 py-3 flex items-center justify-between <?= (int) $categoryId === (int) $category['id'] ? 'bg-primary-50' : '' ?>">
+                            <div class="pr-6 py-3 flex items-center justify-between <?= (int) $categoryId === (int) $category['id'] ? 'bg-primary-50' : '' ?>" style="padding-left: <?= 1.5 + ((int) $category['depth'] - 1) * 1.25 ?>rem;">
                                 <a href="<?= BASE_URL ?>/inventory?category=<?= (int) $category['id'] ?><?= $searchQuery ? '&search=' . urlencode($searchQuery) : '' ?>" class="text-sm <?= (int) $categoryId === (int) $category['id'] ? 'text-primary-700 font-medium' : 'text-gray-700 hover:text-gray-900' ?>">
+                                    <?php if ((int) $category['depth'] > 1): ?><span class="mr-1 text-gray-300" aria-hidden="true">&#x2514;</span><?php endif; ?>
                                     <?= htmlspecialchars($category['name']) ?>
-                                    <span class="text-gray-400">(<?= (int) $category['product_count'] ?>)</span>
+                                    <span class="text-gray-400">(<?= (int) $category['total_count'] ?>)</span>
                                 </a>
                                 <div class="flex items-center space-x-2">
-                                    <button type="button" class="text-sm text-primary-600 hover:text-primary-500" onclick="openCategoryModal(<?= (int) $category['id'] ?>, <?= htmlspecialchars(json_encode($category['name']), ENT_QUOTES) ?>)"><?= t('common.edit') ?></button>
+                                    <?php if ((int) $category['depth'] < $maxCategoryDepth): ?>
+                                        <button type="button" class="text-sm font-medium text-primary-600 hover:text-primary-500" title="<?= htmlspecialchars(t('inventory.add_subcategory')) ?>" aria-label="<?= htmlspecialchars(t('inventory.add_subcategory')) ?>" onclick="openCategoryModal(null, '', <?= (int) $category['id'] ?>)">+</button>
+                                    <?php endif; ?>
+                                    <button type="button" class="text-sm text-primary-600 hover:text-primary-500" onclick="openCategoryModal(<?= (int) $category['id'] ?>, <?= htmlspecialchars(json_encode($category['name']), ENT_QUOTES) ?>, <?= $category['parent_id'] !== null ? (int) $category['parent_id'] : 'null' ?>)"><?= t('common.edit') ?></button>
                                     <form method="POST" action="<?= BASE_URL ?>/inventory/categories/<?= (int) $category['id'] ?>/delete" onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('inventory.confirm_delete_category')), ENT_QUOTES) ?>)">
                                         <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                                         <button type="submit" class="text-sm text-red-600 hover:text-red-500"><?= t('common.delete') ?></button>
@@ -111,7 +115,7 @@ $searchQuery = $search ?? '';
                                         <?php if (!empty($product['item_number'])): ?>
                                             <div class="text-sm text-gray-500"><?= htmlspecialchars($product['item_number']) ?></div>
                                         <?php endif; ?>
-                                        <div class="text-xs text-gray-400"><?= htmlspecialchars($product['category_name'] ?: t('inventory.uncategorized')) ?></div>
+                                        <div class="text-xs text-gray-400"><?= htmlspecialchars($categoryPaths[(int) $product['category_id']] ?? t('inventory.uncategorized')) ?></div>
                                         <?php if (!empty($product['description'])): ?>
                                             <div role="tooltip" class="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity absolute z-30 left-4 top-full mt-1 w-max max-w-xs rounded-md bg-gray-900 px-3 py-2 text-left text-xs font-normal text-white shadow-lg pointer-events-none"><?= nl2br(htmlspecialchars($product['description'])) ?></div>
                                         <?php endif; ?>
@@ -200,6 +204,16 @@ $searchQuery = $search ?? '';
                 <label for="category_name" class="block text-sm font-medium text-gray-700"><?= t('inventory.category_name') ?> *</label>
                 <input type="text" id="category_name" name="name" required class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
             </div>
+            <div class="mb-4">
+                <label for="category_parent_id" class="block text-sm font-medium text-gray-700"><?= t('inventory.category_parent') ?></label>
+                <select id="category_parent_id" name="parent_id" class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
+                    <option value=""><?= t('inventory.category_parent_none') ?></option>
+                    <?php foreach ($categories as $category): ?>
+                        <option value="<?= (int) $category['id'] ?>"><?= str_repeat('&nbsp;&nbsp;&nbsp;', (int) $category['depth'] - 1) . htmlspecialchars($category['name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <p class="mt-1 text-xs text-gray-500"><?= t('inventory.category_parent_help', ['max' => (string) $maxCategoryDepth]) ?></p>
+            </div>
             <div class="flex justify-end space-x-3">
                 <button type="button" onclick="closeCategoryModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"><?= t('common.cancel') ?></button>
                 <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700"><?= t('common.save') ?></button>
@@ -218,7 +232,7 @@ $searchQuery = $search ?? '';
                 <select id="product_category_id" name="category_id" class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
                     <option value=""><?= t('inventory.uncategorized') ?></option>
                     <?php foreach ($categories as $category): ?>
-                        <option value="<?= (int) $category['id'] ?>"><?= htmlspecialchars($category['name']) ?></option>
+                        <option value="<?= (int) $category['id'] ?>"><?= str_repeat('&nbsp;&nbsp;&nbsp;', (int) $category['depth'] - 1) . htmlspecialchars($category['name']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -270,12 +284,36 @@ function openExportModal() {
 function closeExportModal() {
     document.getElementById('exportModal').classList.add('hidden');
 }
-function openCategoryModal(id, name) {
+const inventoryCategoryTree = <?= json_encode((object) array_combine(
+    array_map(static fn(array $category): int => (int) $category['id'], $categories),
+    array_map(static fn(array $category): array => [
+        'depth' => (int) $category['depth'],
+        'height' => (int) $category['height'],
+        'subtree' => array_map('intval', $category['subtree_ids']),
+    ], $categories)
+)) ?>;
+function openCategoryModal(id, name, parentId) {
     const form = document.getElementById('categoryForm');
     const title = document.getElementById('categoryModalTitle');
+    const parentSelect = document.getElementById('category_parent_id');
     document.getElementById('category_name').value = name || '';
+    // A category cannot move under itself or its own subcategories, or push its branch
+    // past the maximum depth.
+    const self = id ? inventoryCategoryTree[id] : null;
+    Array.from(parentSelect.options).forEach(function (option) {
+        const parent = inventoryCategoryTree[option.value];
+        if (!parent) {
+            option.disabled = false;
+            return;
+        }
+        const ownBranch = self && self.subtree.indexOf(Number(option.value)) !== -1;
+        option.disabled = ownBranch || parent.depth + 1 + (self ? self.height : 0) > <?= (int) $maxCategoryDepth ?>;
+    });
+    parentSelect.value = parentId ? String(parentId) : '';
     form.action = id ? <?= json_encode(BASE_URL . '/inventory/categories/') ?> + id : <?= json_encode(BASE_URL . '/inventory/categories') ?>;
-    title.textContent = id ? <?= json_encode(t('inventory.edit_category')) ?> : <?= json_encode(t('inventory.add_category')) ?>;
+    title.textContent = id
+        ? <?= json_encode(t('inventory.edit_category')) ?>
+        : (parentId ? <?= json_encode(t('inventory.add_subcategory')) ?> : <?= json_encode(t('inventory.add_category')) ?>);
     document.getElementById('categoryModal').classList.remove('hidden');
 }
 function closeCategoryModal() {

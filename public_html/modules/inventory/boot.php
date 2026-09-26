@@ -4,7 +4,7 @@ require_once $definition['path'] . '/schema.php';
 require_once ROOT_PATH . '/models/Settings.php';
 
 motherboard_inventory_load_models();
-const MOTHERBOARD_INVENTORY_SCHEMA_VERSION = 2;
+const MOTHERBOARD_INVENTORY_SCHEMA_VERSION = 3;
 
 $inventoryPath = $definition['path'];
 $inventoryController = $definition['path'] . '/controllers/InventoryController.php';
