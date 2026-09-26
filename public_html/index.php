@@ -126,9 +126,30 @@ if ($installed) {
     require_once 'core/MigrationManager.php';
     MigrationManager::handleIfNeeded($database);
 
+    $timeoutMinutes = (int) $settingsModel->getSetting('session_timeout', 60);
+    $timeoutSeconds = max(5, min(1440, $timeoutMinutes)) * 60;
+
+    // The session cookie is issued with lifetime 0 (the timeout isn't known until settings
+    // load), which browsers discard when the window closes. Once a user is signed in, re-send
+    // it just before headers go out with an expiry matching the idle timeout, so it survives
+    // closing the window and slides forward with activity. Running at send time also covers
+    // the login request, whose session_regenerate_id() emits its own lifetime-0 cookie.
+    header_register_callback(function () use ($timeoutSeconds) {
+        if (session_status() !== PHP_SESSION_ACTIVE || !isset($_SESSION['user_id']) || !ini_get('session.use_cookies')) {
+            return;
+        }
+        $params = session_get_cookie_params();
+        setcookie(session_name(), session_id(), [
+            'expires' => time() + $timeoutSeconds,
+            'path' => $params['path'],
+            'domain' => $params['domain'],
+            'secure' => $params['secure'],
+            'httponly' => $params['httponly'],
+            'samesite' => $params['samesite'],
+        ]);
+    });
+
     if (isset($_SESSION['user_id'])) {
-        $timeoutMinutes = (int) $settingsModel->getSetting('session_timeout', 60);
-        $timeoutSeconds = max(5, min(1440, $timeoutMinutes)) * 60;
         $lastActivity = (int) ($_SESSION['last_activity'] ?? time());
 
         if (time() - $lastActivity > $timeoutSeconds) {
