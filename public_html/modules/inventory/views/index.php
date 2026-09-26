@@ -12,9 +12,22 @@ $searchQuery = $search ?? '';
             <p class="mt-2 text-sm text-gray-700"><?= t('inventory.subtitle') ?></p>
         </div>
         <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
-            <button type="button" onclick="openProductModal()" class="inline-flex items-center justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-                <?= t('inventory.add_product') ?>
-            </button>
+            <div class="relative inline-flex rounded-md shadow-sm" data-split-menu>
+                <button type="button" onclick="openProductModal()" class="inline-flex items-center justify-center whitespace-nowrap rounded-l-md border border-transparent bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+                    <?= t('inventory.add_product') ?>
+                </button>
+                <button type="button" onclick="toggleSplitMenu(event, this)" class="inline-flex items-center rounded-r-md border border-transparent border-l-primary-700 bg-primary-600 px-2 py-2 text-white hover:bg-primary-700 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" aria-haspopup="true" aria-expanded="false" aria-label="<?= htmlspecialchars(t('common.actions')) ?>" title="<?= htmlspecialchars(t('common.actions')) ?>">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <div class="hidden origin-top-right absolute right-0 top-full mt-1 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20" onclick="event.stopPropagation()">
+                    <div class="py-1">
+                        <a href="<?= BASE_URL ?>/inventory/export?type=current" onclick="closeSplitMenus()" title="<?= htmlspecialchars(t('inventory.export_current_help')) ?>" class="block whitespace-nowrap px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><?= t('inventory.export_current') ?></a>
+                        <a href="<?= BASE_URL ?>/inventory/export?type=movement" onclick="closeSplitMenus()" title="<?= htmlspecialchars(t('inventory.export_movement_help')) ?>" class="block whitespace-nowrap px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><?= t('inventory.export_movement') ?></a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -53,11 +66,11 @@ $searchQuery = $search ?? '';
                                     <?= htmlspecialchars($category['name']) ?>
                                     <span class="text-gray-400">(<?= (int) $category['total_count'] ?>)</span>
                                 </a>
-                                <div class="relative shrink-0 inline-flex rounded-md shadow-sm" data-category-menu>
+                                <div class="relative shrink-0 inline-flex rounded-md shadow-sm" data-split-menu>
                                     <button type="button" onclick="openProductModal(null, <?= (int) $category['id'] ?>)" class="inline-flex items-center whitespace-nowrap rounded-l-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary-500">
                                         <?= t('inventory.add_product') ?>
                                     </button>
-                                    <button type="button" onclick="toggleCategoryMenu(event, this)" class="-ml-px inline-flex items-center rounded-r-md border border-gray-300 bg-white px-1.5 py-1 text-gray-400 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary-500" aria-haspopup="true" aria-expanded="false" aria-label="<?= htmlspecialchars(t('common.actions')) ?>" title="<?= htmlspecialchars(t('common.actions')) ?>">
+                                    <button type="button" onclick="toggleSplitMenu(event, this)" class="-ml-px inline-flex items-center rounded-r-md border border-gray-300 bg-white px-1.5 py-1 text-gray-400 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary-500" aria-haspopup="true" aria-expanded="false" aria-label="<?= htmlspecialchars(t('common.actions')) ?>" title="<?= htmlspecialchars(t('common.actions')) ?>">
                                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                         </svg>
@@ -65,9 +78,9 @@ $searchQuery = $search ?? '';
                                     <div class="hidden origin-top-right absolute right-0 top-full mt-1 w-52 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-20" onclick="event.stopPropagation()">
                                         <div class="py-1">
                                             <?php if ((int) $category['depth'] < $maxCategoryDepth): ?>
-                                                <button type="button" onclick="closeCategoryMenus(); openCategoryModal(null, '', <?= (int) $category['id'] ?>)" class="block w-full whitespace-nowrap text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><?= t('inventory.add_subcategory') ?></button>
+                                                <button type="button" onclick="closeSplitMenus(); openCategoryModal(null, '', <?= (int) $category['id'] ?>)" class="block w-full whitespace-nowrap text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><?= t('inventory.add_subcategory') ?></button>
                                             <?php endif; ?>
-                                            <button type="button" onclick="closeCategoryMenus(); openCategoryModal(<?= (int) $category['id'] ?>, <?= htmlspecialchars(json_encode($category['name']), ENT_QUOTES) ?>, <?= $category['parent_id'] !== null ? (int) $category['parent_id'] : 'null' ?>)" class="block w-full whitespace-nowrap text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><?= t('common.edit') ?></button>
+                                            <button type="button" onclick="closeSplitMenus(); openCategoryModal(<?= (int) $category['id'] ?>, <?= htmlspecialchars(json_encode($category['name']), ENT_QUOTES) ?>, <?= $category['parent_id'] !== null ? (int) $category['parent_id'] : 'null' ?>)" class="block w-full whitespace-nowrap text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><?= t('common.edit') ?></button>
                                             <form method="POST" action="<?= BASE_URL ?>/inventory/categories/<?= (int) $category['id'] ?>/delete" onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('inventory.confirm_delete_category')), ENT_QUOTES) ?>)">
                                                 <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                                                 <button type="submit" class="block w-full whitespace-nowrap text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"><?= t('common.delete') ?></button>
@@ -179,32 +192,6 @@ $searchQuery = $search ?? '';
             <?php endif; ?>
         </div>
     </div>
-
-    <div class="mt-8 flex justify-end border-t border-gray-200 pt-6">
-        <button type="button" onclick="openExportModal()" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white shadow-sm hover:bg-gray-50">
-            <?= t('inventory.export') ?>
-        </button>
-    </div>
-</div>
-
-<div id="exportModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 1000;">
-    <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
-        <h3 class="text-lg font-medium text-gray-900"><?= t('inventory.export_title') ?></h3>
-        <p class="mt-1 mb-4 text-sm text-gray-500"><?= t('inventory.export_intro') ?></p>
-        <div class="space-y-3">
-            <a href="<?= BASE_URL ?>/inventory/export?type=current" onclick="closeExportModal()" class="block rounded-md border border-gray-300 px-4 py-3 hover:border-primary-500 hover:bg-primary-50">
-                <span class="block text-sm font-medium text-gray-900"><?= t('inventory.export_current') ?></span>
-                <span class="block mt-1 text-xs text-gray-500"><?= t('inventory.export_current_help') ?></span>
-            </a>
-            <a href="<?= BASE_URL ?>/inventory/export?type=movement" onclick="closeExportModal()" class="block rounded-md border border-gray-300 px-4 py-3 hover:border-primary-500 hover:bg-primary-50">
-                <span class="block text-sm font-medium text-gray-900"><?= t('inventory.export_movement') ?></span>
-                <span class="block mt-1 text-xs text-gray-500"><?= t('inventory.export_movement_help') ?></span>
-            </a>
-        </div>
-        <div class="mt-4 flex justify-end">
-            <button type="button" onclick="closeExportModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"><?= t('common.cancel') ?></button>
-        </div>
-    </div>
 </div>
 
 <div id="categoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 1000;">
@@ -290,12 +277,6 @@ $searchQuery = $search ?? '';
 </div>
 
 <script>
-function openExportModal() {
-    document.getElementById('exportModal').classList.remove('hidden');
-}
-function closeExportModal() {
-    document.getElementById('exportModal').classList.add('hidden');
-}
 const inventoryCategoryTree = <?= json_encode((object) array_combine(
     array_map(static fn(array $category): int => (int) $category['id'], $categories),
     array_map(static fn(array $category): array => [
@@ -332,28 +313,28 @@ function closeCategoryModal() {
     document.getElementById('categoryModal').classList.add('hidden');
     document.getElementById('categoryForm').reset();
 }
-function closeCategoryMenus() {
-    document.querySelectorAll('[data-category-menu] > div:last-child').forEach(function (menu) {
+function closeSplitMenus() {
+    document.querySelectorAll('[data-split-menu] > div:last-child').forEach(function (menu) {
         menu.classList.add('hidden');
     });
-    document.querySelectorAll('[data-category-menu] > button[aria-haspopup]').forEach(function (button) {
+    document.querySelectorAll('[data-split-menu] > button[aria-haspopup]').forEach(function (button) {
         button.setAttribute('aria-expanded', 'false');
     });
 }
-function toggleCategoryMenu(event, button) {
+function toggleSplitMenu(event, button) {
     event.stopPropagation();
     const menu = button.nextElementSibling;
     const wasHidden = menu.classList.contains('hidden');
-    closeCategoryMenus();
+    closeSplitMenus();
     if (wasHidden) {
         menu.classList.remove('hidden');
         button.setAttribute('aria-expanded', 'true');
     }
 }
-document.addEventListener('click', closeCategoryMenus);
+document.addEventListener('click', closeSplitMenus);
 document.addEventListener('keydown', function (event) {
     if (event.key === 'Escape') {
-        closeCategoryMenus();
+        closeSplitMenus();
     }
 });
 function openProductModal(product, categoryId) {
