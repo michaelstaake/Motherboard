@@ -3,6 +3,14 @@ $title = t('inventory.title') . ' - ' . ($companyName ?? APP_NAME);
 ob_start();
 $categoryId = $categoryId ?? null;
 $searchQuery = $search ?? '';
+// Product edits and deletes return to the category and search the list was showing.
+$returnFields = '';
+if ($categoryId) {
+    $returnFields .= '<input type="hidden" name="category" value="' . (int) $categoryId . '">';
+}
+if ($searchQuery !== '') {
+    $returnFields .= '<input type="hidden" name="search" value="' . htmlspecialchars($searchQuery) . '">';
+}
 ?>
 
 <div class="py-8">
@@ -166,6 +174,7 @@ $searchQuery = $search ?? '';
                                         ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>)'><?= t('common.edit') ?></button>
                                         <form method="POST" action="<?= BASE_URL ?>/inventory/products/<?= (int) $product['id'] ?>/delete" class="inline" onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('inventory.confirm_delete_product')), ENT_QUOTES) ?>)">
                                             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+                                            <?= $returnFields ?>
                                             <button type="submit" class="text-red-600 hover:text-red-900"><?= t('common.delete') ?></button>
                                         </form>
                                     </td>
@@ -249,6 +258,7 @@ $searchQuery = $search ?? '';
         <h3 id="productModalTitle" class="text-lg font-medium text-gray-900 mb-4"><?= t('inventory.add_product') ?></h3>
         <form id="productForm" method="POST" action="<?= BASE_URL ?>/inventory/products">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+            <?= $returnFields ?>
             <div class="mb-4">
                 <label for="product_category_id" class="block text-sm font-medium text-gray-700"><?= t('inventory.category') ?></label>
                 <select id="product_category_id" name="category_id" class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
