@@ -761,7 +761,7 @@
             toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
 
             const header = document.createElement('p');
-            header.className = 'text-sm font-semibold';
+            header.className = 'text-base font-semibold';
             header.textContent = style.header;
             const body = document.createElement('p');
             body.className = 'mt-1 text-sm break-words';
