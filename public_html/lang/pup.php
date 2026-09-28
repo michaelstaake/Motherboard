@@ -518,7 +518,7 @@ return [
     'settings.nav_always_expanded' => 'Always Keep the Sniff Trail Open on Big Screens',
     'settings.nav_always_expanded_help' => 'Flops the nav menu open on big-screen devices. Pocket screens stay curled up.',
     'settings.work_order_autosave' => 'Auto-Bury Woof Order Changes',
-    'settings.work_order_autosave_help' => 'When only the status, priority, or assigned pup changes on a woof order, it gets buried automatically after a 5 second sniff countdown you can call off.',
+    'settings.work_order_autosave_help' => 'Auto-buries woof order attribute changes when woof order content hasn\'t changed.',
     'settings.disclaimer_ph' => 'Fine print for the woof-order paw prints...',
     'settings.disclaimer_help' => 'This howl shows at the bottom of printed woof orders',
     'settings.print_customer_signature' => 'Put Good Boy Paw on paw prints',

@@ -518,7 +518,7 @@ return [
     'settings.nav_always_expanded' => 'Navigationspunkte auf dem Desktop immer anzeigen',
     'settings.nav_always_expanded_help' => 'Öffnet das Navigationsmenü auf Desktop-Geräten automatisch. Auf Mobilgeräten bleibt es eingeklappt.',
     'settings.work_order_autosave' => 'Änderungen an Arbeitsaufträgen automatisch speichern',
-    'settings.work_order_autosave_help' => 'Wenn sich bei einem Arbeitsauftrag nur Status, Priorität oder Zuweisung ändern, wird er nach einem abbrechbaren 5-Sekunden-Countdown automatisch gespeichert.',
+    'settings.work_order_autosave_help' => 'Speichert Attributänderungen an Arbeitsaufträgen automatisch, wenn sich der Inhalt des Arbeitsauftrags nicht geändert hat.',
     'settings.disclaimer_ph' => 'Rechtliche Hinweise oder Bedingungen für Arbeitsaufträge...',
     'settings.disclaimer_help' => 'Dieser Text erscheint unten auf gedruckten Arbeitsaufträgen',
     'settings.print_customer_signature' => 'Kundenunterschrift auf gedruckten Arbeitsaufträgen anzeigen',

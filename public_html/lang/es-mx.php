@@ -518,7 +518,7 @@ return [
     'settings.nav_always_expanded' => 'Mostrar siempre la navegación en computadoras',
     'settings.nav_always_expanded_help' => 'Abre el menú de navegación automáticamente en computadoras. En dispositivos móviles sigue contraído.',
     'settings.work_order_autosave' => 'Guardar automáticamente cambios en órdenes',
-    'settings.work_order_autosave_help' => 'Cuando solo cambia el estado, la prioridad o el asignado de una orden, se guarda automáticamente tras una cuenta regresiva de 5 segundos que se puede cancelar.',
+    'settings.work_order_autosave_help' => 'Guarda automáticamente los cambios de atributos de la orden cuando su contenido no ha cambiado.',
     'settings.disclaimer_ph' => 'Avisos legales o términos que deben aparecer en las órdenes...',
     'settings.disclaimer_help' => 'Este texto aparece al pie de las órdenes impresas',
     'settings.print_customer_signature' => 'Mostrar firma del cliente en las órdenes impresas',
