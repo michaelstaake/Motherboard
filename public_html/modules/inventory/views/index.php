@@ -77,13 +77,13 @@ $sortHeader = static function (string $column, string $label) use ($sortColumn, 
                         <p class="px-6 py-4 text-sm text-gray-500"><?= t('inventory.no_categories') ?></p>
                     <?php else: ?>
                         <?php foreach ($categories as $category): ?>
-                            <div class="pr-6 py-3 flex items-center justify-between gap-3 <?= (int) $categoryId === (int) $category['id'] ? 'bg-primary-50' : '' ?>" style="padding-left: <?= 1.5 + ((int) $category['depth'] - 1) * 1.25 ?>rem;">
-                                <a href="<?= BASE_URL ?>/inventory?category=<?= (int) $category['id'] ?><?= $searchQuery ? '&search=' . urlencode($searchQuery) : '' ?>" class="min-w-0 break-words text-sm <?= (int) $categoryId === (int) $category['id'] ? 'text-primary-700 font-medium' : 'text-gray-700 hover:text-gray-900' ?>">
+                            <div class="flex items-center <?= (int) $categoryId === (int) $category['id'] ? 'bg-primary-50' : 'hover:bg-gray-50' ?>">
+                                <a href="<?= BASE_URL ?>/inventory?category=<?= (int) $category['id'] ?><?= $searchQuery ? '&search=' . urlencode($searchQuery) : '' ?>" class="block flex-1 min-w-0 self-stretch py-3 pr-3 break-words text-sm <?= (int) $categoryId === (int) $category['id'] ? 'text-primary-700 font-medium' : 'text-gray-700 hover:text-gray-900' ?>" style="padding-left: <?= 1.5 + ((int) $category['depth'] - 1) * 1.25 ?>rem;">
                                     <?php if ((int) $category['depth'] > 1): ?><span class="mr-1 text-gray-300" aria-hidden="true">&#x2514;</span><?php endif; ?>
                                     <?= htmlspecialchars($category['name']) ?>
                                     <span class="text-gray-400">(<?= (int) $category['total_count'] ?>)</span>
                                 </a>
-                                <div class="relative shrink-0 inline-flex rounded-md shadow-sm" data-split-menu>
+                                <div class="relative shrink-0 mr-6 inline-flex rounded-md shadow-sm" data-split-menu>
                                     <button type="button" onclick="openProductModal(null, <?= (int) $category['id'] ?>)" class="inline-flex items-center whitespace-nowrap rounded-l-md border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-2 focus:ring-primary-500">
                                         <?= t('inventory.add_product') ?>
                                     </button>
