@@ -354,13 +354,15 @@ function motherboard_customer_email_notify(int $workOrderId, string $event): voi
             $workOrderModel->logWorkOrderAction(
                 $workOrderId,
                 'customer_email_sent',
-                t('customer_email.log_sent', ['type' => t('customer_email.' . $event . '.name'), 'email' => $to])
+                t('customer_email.log_sent', ['type' => t('customer_email.' . $event . '.name'), 'email' => $to]),
+                true
             );
         } else {
             $workOrderModel->logWorkOrderAction(
                 $workOrderId,
                 'customer_email_failed',
-                t('customer_email.log_failed', ['type' => t('customer_email.' . $event . '.name'), 'email' => $to])
+                t('customer_email.log_failed', ['type' => t('customer_email.' . $event . '.name'), 'email' => $to]),
+                true
             );
         }
     } catch (Throwable $e) {

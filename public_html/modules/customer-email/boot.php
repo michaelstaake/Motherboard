@@ -57,6 +57,12 @@ Hooks::addAction('work_order.status.changed', function (int $workOrderId, string
     }
 });
 
+// Emails go out automatically, so the Activity log credits them to System rather than to
+// whoever saved the change that triggered them. Matching on the action also covers older entries.
+Hooks::addFilter('work_order.log.by_system', function (bool $bySystem, array $log): bool {
+    return $bySystem || in_array($log['action'] ?? '', ['customer_email_sent', 'customer_email_failed'], true);
+});
+
 Hooks::addFilter('module.settings.save.customer-email', function (array $result, array $post, Settings $settings): array {
     foreach (MOTHERBOARD_CUSTOMER_EMAIL_EVENTS as $event => $key) {
         $settings->setSetting($key, isset($post[$key]) ? '1' : '0');

@@ -334,6 +334,10 @@ class WorkOrderController extends Controller {
         
         $technicians = $this->userModel->getTechnicians();
         $workOrderLogs = $this->workOrderModel->getWorkOrderLogs($id);
+        foreach ($workOrderLogs as &$log) {
+            $log['by_system'] = (bool) Hooks::applyFilters('work_order.log.by_system', false, $log);
+        }
+        unset($log);
         
         $this->view('work-orders/view', [
             'workOrder' => $workOrder,

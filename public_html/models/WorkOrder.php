@@ -273,14 +273,18 @@ class WorkOrder extends Model {
         return $prefix . $year . str_pad((string) $number, 4, '0', STR_PAD_LEFT);
     }
     
-    public function logWorkOrderAction($workOrderId, $action, $details) {
+    /**
+     * Pass $bySystem for entries Motherboard makes on its own (such as an automatic email), so
+     * they are not credited to whoever happened to trigger them.
+     */
+    public function logWorkOrderAction($workOrderId, $action, $details, bool $bySystem = false) {
         $stmt = $this->db->prepare("
             INSERT INTO work_order_logs (work_order_id, user_id, action, details, created_at) 
             VALUES (?, ?, ?, ?, NOW())
         ");
         return $stmt->execute([
             $workOrderId, 
-            $_SESSION['user_id'] ?? null, 
+            $bySystem ? null : ($_SESSION['user_id'] ?? null), 
             $action, 
             $details
         ]);

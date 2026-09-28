@@ -290,6 +290,15 @@ be saved and then duplicated on the next render.
 
 Output HTML with `echo` or `include`.
 
+### `work_order.log.by_system` (filter)
+
+**When:** Work order details view, once for each Activity log entry.
+
+**Arguments:** `bool $bySystem` (default `false`), `array $log` (the `work_order_logs` row)  
+Return `true` to show the entry as "by System" instead of by the user who triggered it. Use this
+for entries your module makes on its own; log them with
+`WorkOrder::logWorkOrderAction($id, $action, $details, true)` so no user is recorded.
+
 ### `work_order.view.before_attachments` (action)
 
 **When:** Work order details view, immediately before the Attachments section.

@@ -619,7 +619,7 @@ ob_start();
                                         echo '<p class="text-sm text-gray-900">' . htmlspecialchars($details) . '</p>';
                                     }
                                     ?>
-                                    <p class="text-xs text-gray-500 mt-1"><?= t('common.by', ['name' => htmlspecialchars($log['user_display_name'] ?? $log['username'] ?? t('common.unknown'))]) ?></p>
+                                    <p class="text-xs text-gray-500 mt-1"><?= t('common.by', ['name' => htmlspecialchars(!empty($log['by_system']) ? t('logs.system') : ($log['user_display_name'] ?? $log['username'] ?? t('common.unknown')))]) ?></p>
                                 </div>
                                 <div class="flex-shrink-0 ml-4">
                                     <span class="text-xs text-gray-500"><?= ldate($log['created_at'], 'M j, g:i A') ?></span>
