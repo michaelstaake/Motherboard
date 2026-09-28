@@ -12,6 +12,16 @@
     ?>
     <meta name="csrf-token" content="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
     <title><?= htmlspecialchars($title ?? ($companyName ?? APP_NAME), ENT_QUOTES, 'UTF-8') ?></title>
+    <?php
+        // Default favicon: first letter of the company name, white on the primary button blue.
+        $faviconLetter = mb_strtoupper(mb_substr(trim($companyName ?? APP_NAME), 0, 1, 'UTF-8'), 'UTF-8');
+        $faviconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+            . '<rect width="64" height="64" rx="12" fill="#2563eb"/>'
+            . '<text x="32" y="33" text-anchor="middle" dominant-baseline="central" fill="#fff" '
+            . 'font-family="Arial, Helvetica, sans-serif" font-size="40" font-weight="700">'
+            . htmlspecialchars($faviconLetter, ENT_XML1, 'UTF-8') . '</text></svg>';
+    ?>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<?= htmlspecialchars(rawurlencode($faviconSvg), ENT_QUOTES, 'UTF-8') ?>">
     <link rel="stylesheet" href="<?= htmlspecialchars(BASE_URL) ?>/assets/app.css">
     <script>
         /**
