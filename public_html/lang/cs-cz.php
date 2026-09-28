@@ -424,6 +424,7 @@ return [
     'customers.create_btn' => 'Vytvořit zákazníka',
     'customers.back' => 'Zpět na zákazníky',
     'customers.merge_one' => 'Sloučit zákazníka',
+    'customers.new_work_order' => 'Nová zakázka',
     'customers.delete' => 'Smazat zákazníka',
     'customers.info' => 'Informace o zákazníkovi',
     'customers.update' => 'Aktualizovat zákazníka',

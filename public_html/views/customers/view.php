@@ -12,9 +12,17 @@ ob_start();
                 <p class="mt-1 text-sm text-gray-600"><?= htmlspecialchars($customer['company']) ?></p>
                 <?php endif; ?>
             </div>
-            <?php if ($_SESSION['user_group'] === 'Admin'): ?>
             <div class="flex space-x-3">
-                <a href="<?= BASE_URL ?>/customers" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            <?php if ($_SESSION['user_group'] !== 'Limited'): ?>
+                <a href="<?= BASE_URL ?>/work-orders/create?customer_id=<?= $customer['id'] ?>" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700">
+                    <svg class="-ml-1 mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    <?= t('customers.new_work_order') ?>
+                </a>
+            <?php endif; ?>
+            <?php if ($_SESSION['user_group'] === 'Admin'): ?>
+                <a href="<?= BASE_URL ?>/customers"class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                     <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
                     </svg>
@@ -32,8 +40,8 @@ ob_start();
                     </svg>
                     <?= t('customers.delete') ?>
                 </button>
-            </div>
             <?php endif; ?>
+            </div>
         </div>
     </div>
 

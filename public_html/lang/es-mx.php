@@ -424,6 +424,7 @@ return [
     'customers.create_btn' => 'Crear cliente',
     'customers.back' => 'Volver a clientes',
     'customers.merge_one' => 'Fusionar cliente',
+    'customers.new_work_order' => 'Nueva orden de trabajo',
     'customers.delete' => 'Eliminar cliente',
     'customers.info' => 'Información del cliente',
     'customers.update' => 'Actualizar cliente',

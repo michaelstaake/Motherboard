@@ -58,7 +58,22 @@ class WorkOrderController extends Controller {
         
         $step = intval($_GET['step'] ?? 1);
         $error = '';
-        
+
+        // Started from a customer's page: begin a fresh work order for them and skip the customer step.
+        if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['customer_id'])) {
+            $customer = $this->customerModel->findById((int) $_GET['customer_id']);
+            if (!$customer) {
+                $this->redirect('/404');
+            }
+
+            foreach ($_SESSION['work_order_data']['pending_attachments'] ?? [] as $pendingAttachment) {
+                $this->attachmentModel->removePendingUpload($pendingAttachment);
+            }
+            unset($_SESSION['new_customer_data']);
+            $_SESSION['work_order_data'] = ['customer_id' => (int) $customer['id']];
+            $this->redirect('/work-orders/create?step=2');
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 if (WorkOrderAttachment::requestExceededPostLimit()) {

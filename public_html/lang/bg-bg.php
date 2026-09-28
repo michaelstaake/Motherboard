@@ -427,6 +427,7 @@ return [
     'customers.create_btn' => 'Създай клиент',
     'customers.back' => 'Назад към клиентите',
     'customers.merge_one' => 'Обедини клиента',
+    'customers.new_work_order' => 'Нова сервизна задача',
     'customers.delete' => 'Изтрий клиента',
     'customers.info' => 'Информация за клиента',
     'customers.update' => 'Обнови клиента',

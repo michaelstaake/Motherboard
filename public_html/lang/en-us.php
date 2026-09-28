@@ -427,6 +427,7 @@ return [
     'customers.create_btn' => 'Create Customer',
     'customers.back' => 'Back to Customers',
     'customers.merge_one' => 'Merge Customer',
+    'customers.new_work_order' => 'New Work Order',
     'customers.delete' => 'Delete Customer',
     'customers.info' => 'Customer Information',
     'customers.update' => 'Update Customer',
