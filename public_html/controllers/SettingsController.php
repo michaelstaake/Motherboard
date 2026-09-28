@@ -38,7 +38,7 @@ class SettingsController extends Controller {
                     ];
                     $this->settingsModel->updateCompanyInfo($companyData);
                     $this->logger->log('settings_updated', 'Company information updated', $_SESSION['user_id']);
-                    $message = t('settings.saved_company');
+                    $message = t('settings.saved');
 
                 } elseif ($section === 'printout') {
                     $printoutData = [
@@ -51,7 +51,7 @@ class SettingsController extends Controller {
                     ];
                     $this->settingsModel->updateCompanyInfo($printoutData);
                     $this->logger->log('settings_updated', 'Printout settings updated', $_SESSION['user_id']);
-                    $message = t('settings.saved_printout');
+                    $message = t('settings.saved');
 
                 } elseif ($section === 'security') {
                     $sessionTimeout = max(5, min(1440, intval($_POST['session_timeout'] ?? 60)));
@@ -62,7 +62,7 @@ class SettingsController extends Controller {
                     ];
                     $this->settingsModel->updateSecuritySettings($securityData);
                     $this->logger->log('settings_updated', 'Security settings updated', $_SESSION['user_id']);
-                    $message = t('settings.saved_security');
+                    $message = t('settings.saved');
 
                 } elseif ($section === 'localization') {
                     $formatData = [
@@ -85,7 +85,7 @@ class SettingsController extends Controller {
                         $loader->reloadLanguages();
                     }
                     $this->logger->log('settings_updated', 'Localization settings updated', $_SESSION['user_id']);
-                    $message = t('settings.saved_localization');
+                    $message = t('settings.saved');
 
                 } elseif ($section === 'attachments') {
                     $maxSize = intval($_POST['attachment_max_size_mb'] ?? 10);
@@ -115,7 +115,7 @@ class SettingsController extends Controller {
                         'attachment_allowed_extensions' => $extensions,
                     ]);
                     $this->logger->log('settings_updated', 'Attachment settings updated', $_SESSION['user_id']);
-                    $message = t('settings.saved_attachments');
+                    $message = t('settings.saved');
                 } else {
                     throw new Exception('Invalid settings section');
                 }
