@@ -34,6 +34,7 @@ class SettingsController extends Controller {
                         'company_website' => $this->sanitizeInput($_POST['company_website']),
                         'company_logo_url' => $this->sanitizeInput($_POST['company_logo_url']),
                         'nav_always_expanded' => isset($_POST['nav_always_expanded']) ? '1' : '0',
+                        'work_order_autosave' => isset($_POST['work_order_autosave']) ? '1' : '0',
                     ];
                     $this->settingsModel->updateCompanyInfo($companyData);
                     $this->logger->log('settings_updated', 'Company information updated', $_SESSION['user_id']);

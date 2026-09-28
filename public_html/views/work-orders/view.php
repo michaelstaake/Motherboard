@@ -11,8 +11,8 @@ ob_start();
                     <h1 class="text-2xl font-bold text-gray-900"><?= t('wo.work_order_label', ['id' => $workOrder['id']]) ?></h1>
                     
                     <!-- Status Badge -->
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                        <?php 
+                    <span id="workOrderStatusBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        <?php
                         switch($workOrder['status']) {
                             case 'Open': echo 'bg-orange-100 text-orange-800'; break;
                             case 'In Progress': echo 'bg-yellow-100 text-yellow-800'; break;
@@ -26,11 +26,9 @@ ob_start();
                     </span>
                     
                     <!-- Priority Badge (only show if Priority) -->
-                    <?php if ($workOrder['priority'] === 'Priority'): ?>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    <span id="workOrderPriorityBadge" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800<?= $workOrder['priority'] === 'Priority' ? '' : ' hidden' ?>">
                         <?= t('priority.Priority') ?>
                     </span>
-                    <?php endif; ?>
                 </div>
             </div>
             <div class="flex space-x-3">
@@ -303,12 +301,10 @@ ob_start();
                     <?php endif; ?>
 
                     <dl class="grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2 mt-4 border-t border-gray-100 pt-4">
-                        <?php if ($workOrder['technician_display_name']): ?>
-                        <div>
+                        <div id="workOrderAssignedTo"<?= $workOrder['technician_display_name'] ? '' : ' class="hidden"' ?>>
                             <dt class="text-sm font-medium text-gray-500"><?= t('wo.assigned_to') ?></dt>
-                            <dd class="mt-1 text-sm text-gray-900"><?= htmlspecialchars($workOrder['technician_display_name']) ?></dd>
+                            <dd class="mt-1 text-sm text-gray-900"><?= htmlspecialchars($workOrder['technician_display_name'] ?? '') ?></dd>
                         </div>
-                        <?php endif; ?>
                         <?php if (($_SESSION['user_group'] !== 'Limited') && ($workOrder['username'] || $workOrder['password'])): ?>
                         <div>
                             <dt class="text-sm font-medium text-gray-500"><?= t('wo.login_info') ?></dt>
@@ -375,7 +371,7 @@ ob_start();
             <div class="mt-6 bg-white shadow rounded-lg">
                 <div class="px-4 py-5">
                     <h3 class="text-lg font-medium text-gray-900 mb-4"><?= t('wo.contents') ?></h3>
-                    <form method="POST">
+                    <form method="POST" id="workOrderContentsForm">
                         <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-4">
                             <div>
@@ -426,10 +422,22 @@ ob_start();
                                 <textarea id="notes" name="notes" rows="5" class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white"><?= htmlspecialchars($workOrder['notes'] ?? '') ?></textarea>
                             </div>
 
-                            <div class="pt-4">
+                            <div class="pt-4 flex flex-wrap items-center gap-3">
                                 <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                     <?= t('wo.update') ?>
                                 </button>
+                                <?php if (!empty($autosaveEnabled)): ?>
+                                <button type="button" id="autosaveButton" class="hidden inline-flex items-center gap-2 px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                    <span class="relative inline-flex h-6 w-6 items-center justify-center">
+                                        <svg class="absolute inset-0 h-6 w-6 -rotate-90" viewBox="0 0 24 24" aria-hidden="true">
+                                            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.5" class="text-gray-200"></circle>
+                                            <circle id="autosaveRing" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="text-primary-600"></circle>
+                                        </svg>
+                                        <span id="autosaveSeconds" class="relative text-[10px] font-semibold tabular-nums text-gray-700"></span>
+                                    </span>
+                                    <span><?= t('wo.autosaving') ?></span>
+                                </button>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </form>
@@ -951,6 +959,172 @@ $printOptions = $printOptions ?? ['has_disclaimer' => true, 'customer_signature'
 </div>
 
 <script>
+<?php if (!empty($autosaveEnabled) && $_SESSION['user_group'] !== 'Limited'): ?>
+// Auto-save: when only status, priority, or assigned to changed (description, resolution,
+// and notes still match what was loaded), count down and save those three fields in the
+// background unless the user clicks the countdown button to cancel.
+(function() {
+    const form = document.getElementById('workOrderContentsForm');
+    const button = document.getElementById('autosaveButton');
+    const ring = document.getElementById('autosaveRing');
+    const secondsLabel = document.getElementById('autosaveSeconds');
+    if (!form || !button || !ring || !secondsLabel) {
+        return;
+    }
+
+    const DURATION_MS = 10000;
+    const CIRCUMFERENCE = 2 * Math.PI * 10;
+    const SELECT_FIELDS = ['status', 'priority', 'assigned_to'];
+    const TEXT_FIELDS = ['description', 'resolution', 'notes'];
+    const FAILED_MESSAGE = <?= json_encode(t('wo.autosave_failed')) ?>;
+    const STATUS_BADGE_CLASSES = {
+        'Open': 'bg-orange-100 text-orange-800',
+        'In Progress': 'bg-yellow-100 text-yellow-800',
+        'Awaiting Parts': 'bg-purple-100 text-purple-800',
+        'Closed': 'bg-green-100 text-green-800',
+        'Picked Up': 'bg-gray-100 text-gray-800'
+    };
+    const ALL_BADGE_CLASSES = Object.values(STATUS_BADGE_CLASSES).join(' ').split(' ');
+
+    const field = name => form.elements.namedItem(name);
+    const baseline = {};
+    [...SELECT_FIELDS, ...TEXT_FIELDS].forEach(name => {
+        baseline[name] = field(name) ? field(name).value : '';
+    });
+
+    ring.style.strokeDasharray = CIRCUMFERENCE;
+
+    // Timers rather than requestAnimationFrame, which pauses in background tabs and would
+    // hold the save until the user came back. The ring itself animates with a CSS transition.
+    let saveTimer = null;
+    let labelTimer = null;
+    let startedAt = 0;
+    let cancelled = false;
+    let saving = false;
+
+    const selectsChanged = () => SELECT_FIELDS.some(name => field(name) && field(name).value !== baseline[name]);
+    const textChanged = () => TEXT_FIELDS.some(name => field(name) && field(name).value !== baseline[name]);
+
+    function stop() {
+        clearTimeout(saveTimer);
+        clearInterval(labelTimer);
+        saveTimer = null;
+        labelTimer = null;
+        button.classList.add('hidden');
+    }
+
+    function updateLabel() {
+        const remaining = Math.max(0, DURATION_MS - (Date.now() - startedAt));
+        secondsLabel.textContent = Math.ceil(remaining / 1000);
+    }
+
+    function start() {
+        stop();
+        startedAt = Date.now();
+        button.classList.remove('hidden');
+
+        ring.style.transition = 'none';
+        ring.style.strokeDashoffset = 0;
+        ring.getBoundingClientRect();
+        ring.style.transition = `stroke-dashoffset ${DURATION_MS}ms linear`;
+        ring.style.strokeDashoffset = CIRCUMFERENCE;
+
+        updateLabel();
+        labelTimer = setInterval(updateLabel, 200);
+        saveTimer = setTimeout(save, DURATION_MS);
+    }
+
+    // restart: a select was just changed, so the full countdown starts over
+    function evaluate(restart) {
+        if (saving) {
+            return;
+        }
+        if (cancelled || textChanged() || !selectsChanged()) {
+            stop();
+            return;
+        }
+        if (restart || !saveTimer) {
+            start();
+        }
+    }
+
+    function updatePageDetails(data) {
+        const statusBadge = document.getElementById('workOrderStatusBadge');
+        if (statusBadge) {
+            statusBadge.classList.remove(...ALL_BADGE_CLASSES);
+            statusBadge.classList.add(...(STATUS_BADGE_CLASSES[data.status] || 'bg-gray-100 text-gray-800').split(' '));
+            statusBadge.textContent = data.status_label;
+        }
+        document.getElementById('workOrderPriorityBadge')?.classList.toggle('hidden', data.priority !== 'Priority');
+        const assigned = document.getElementById('workOrderAssignedTo');
+        if (assigned) {
+            assigned.querySelector('dd').textContent = data.technician_display_name;
+            assigned.classList.toggle('hidden', !data.technician_display_name);
+        }
+    }
+
+    async function save() {
+        stop();
+        saving = true;
+        const sent = {};
+        const body = new FormData();
+        body.append('csrf_token', field('csrf_token').value);
+        body.append('update_section', 'autosave');
+        SELECT_FIELDS.forEach(name => {
+            sent[name] = field(name).value;
+            body.append(name, sent[name]);
+        });
+
+        try {
+            const response = await fetch(window.location.href, {
+                method: 'POST',
+                body: body,
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin'
+            });
+            const data = await response.json().catch(() => null);
+            if (!response.ok || !data || !data.success) {
+                throw new Error((data && data.error) || FAILED_MESSAGE);
+            }
+            SELECT_FIELDS.forEach(name => {
+                baseline[name] = sent[name];
+            });
+            updatePageDetails(data);
+            showAlert(data.message, 'success');
+        } catch (e) {
+            // Leave the edited values in place so the user can still save with Update Work Order
+            cancelled = true;
+            showAlert(e.message || FAILED_MESSAGE, 'error');
+        } finally {
+            saving = false;
+            evaluate(false);
+        }
+    }
+
+    button.addEventListener('click', function() {
+        cancelled = true;
+        stop();
+    });
+
+    SELECT_FIELDS.forEach(name => {
+        field(name)?.addEventListener('change', function() {
+            // A new choice after cancelling starts a fresh countdown
+            cancelled = false;
+            evaluate(true);
+        });
+    });
+
+    TEXT_FIELDS.forEach(name => {
+        field(name)?.addEventListener('input', () => evaluate(false));
+    });
+
+    form.addEventListener('submit', function() {
+        cancelled = true;
+        stop();
+    });
+})();
+<?php endif; ?>
+
 function openDeviceEdit() {
     document.getElementById('deviceDetailsView')?.classList.add('hidden');
     document.getElementById('deviceDetailsEdit')?.classList.remove('hidden');

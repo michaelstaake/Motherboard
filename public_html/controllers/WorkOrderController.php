@@ -262,7 +262,12 @@ class WorkOrderController extends Controller {
         $error = '';
         $message = '';
         $editDevice = false;
-        
+        $autosaveEnabled = $this->settingsModel->getSetting('work_order_autosave', '1') === '1';
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['update_section'] ?? '') === 'autosave') {
+            $this->autosave($workOrder, $autosaveEnabled);
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SESSION['user_group'] !== 'Limited') {
             try {
                 $this->validateCSRF();
@@ -352,8 +357,66 @@ class WorkOrderController extends Controller {
             'csrf_token' => $this->generateCSRF(),
             'canEdit' => $_SESSION['user_group'] !== 'Limited',
             'editDevice' => $editDevice,
+            'autosaveEnabled' => $autosaveEnabled,
             'printOptions' => $this->printOptionDefaults()
         ]);
+    }
+
+    /**
+     * Saves only status, priority, and assigned to for the view page's auto-save countdown and
+     * answers with JSON. Description, resolution, and notes are left alone, so an auto-save can
+     * never overwrite text someone else saved since this page was loaded.
+     */
+    private function autosave(array $workOrder, bool $enabled): void {
+        $id = (int) $workOrder['id'];
+
+        try {
+            if ($_SESSION['user_group'] === 'Limited' || !$enabled) {
+                http_response_code(403);
+                $this->json(['success' => false, 'error' => t('wo.autosave_failed')]);
+            }
+
+            $this->validateCSRF();
+
+            $status = (string) ($_POST['status'] ?? '');
+            $priority = (string) ($_POST['priority'] ?? '');
+            if (!in_array($status, self::ALLOWED_STATUSES, true) ||
+                !in_array($priority, self::ALLOWED_PRIORITIES, true)) {
+                throw new Exception('Invalid work order status or priority');
+            }
+
+            $updateData = [
+                'status' => $status,
+                'priority' => $priority,
+                'assigned_to' => ($_POST['assigned_to'] ?? '') ?: null,
+            ];
+
+            if ($updateData['status'] === 'Closed' && !$workOrder['closed_at']) {
+                $updateData['closed_at'] = date('Y-m-d H:i:s');
+            }
+
+            $updateData = Hooks::applyFilters('work_order.update.data', $updateData, $id);
+            Hooks::doAction('work_order.update.before', $id, $updateData);
+            if (!$this->workOrderModel->updateWorkOrder($id, $updateData)) {
+                throw new Exception(t('wo.autosave_failed'));
+            }
+            Hooks::doAction('work_order.update.after', $id, $updateData);
+            $this->logger->log('work_order_updated', "Work order #{$workOrder['work_order_number']} auto-saved", $_SESSION['user_id']);
+
+            $saved = $this->workOrderModel->getWorkOrderById($id);
+            $this->json([
+                'success' => true,
+                'message' => t('wo.updated'),
+                'status' => $saved['status'],
+                'status_label' => tlabel('status', $saved['status']),
+                'priority' => $saved['priority'],
+                'assigned_to' => $saved['assigned_to'] !== null ? (string) $saved['assigned_to'] : '',
+                'technician_display_name' => (string) ($saved['technician_display_name'] ?? ''),
+            ]);
+        } catch (Exception $e) {
+            http_response_code(400);
+            $this->json(['success' => false, 'error' => t('wo.autosave_failed') . ' ' . $e->getMessage()]);
+        }
     }
     
     public function submitted($id) {
