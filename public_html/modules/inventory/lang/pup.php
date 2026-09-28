@@ -88,7 +88,7 @@ return [
     'inventory.line_total' => 'That pile',
     'inventory.select_product' => 'Pick a chew-toy',
     'inventory.wo_search' => 'Sniff for chew-toys',
-    'inventory.wo_search_ph' => 'Sniff by name or item number',
+    'inventory.wo_search_ph' => 'Sniff by name or tag number',
     'inventory.wo_search_help' => 'Or pick from the whole toy box below.',
     'inventory.wo_already_added' => 'already sniffed out',
     'inventory.insufficient_stock' => 'Not enough {name} in the stash. Only {available} left.',

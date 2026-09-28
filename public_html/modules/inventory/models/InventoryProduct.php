@@ -8,7 +8,11 @@ class InventoryProduct extends Model {
         return parent::findById($id);
     }
 
-    public function getAll(?string $search = null, ?array $categoryIds = null, $limit = null, int $offset = 0): array {
+    /**
+     * $sort is [column, 'asc'|'desc'] from motherboard_inventory_list_sort(). Sorting by
+     * category follows $categoryOrder, the category ids in the order they should list.
+     */
+    public function getAll(?string $search = null, ?array $categoryIds = null, $limit = null, int $offset = 0, array $sort = ['name', 'asc'], array $categoryOrder = []): array {
         $sql = "
             SELECT p.*, c.name AS category_name
             FROM inventory_products p
@@ -29,7 +33,36 @@ class InventoryProduct extends Model {
             array_push($params, ...array_map('intval', $categoryIds));
         }
 
-        $sql .= " ORDER BY p.name ASC";
+        [$column, $direction] = $sort;
+        $direction = $direction === 'desc' ? 'DESC' : 'ASC';
+        switch ($column) {
+            case 'item_number':
+                $order = "p.item_number {$direction}";
+                break;
+            case 'category':
+                // Uncategorized products list after every category.
+                $rank = "CASE p.category_id";
+                foreach (array_values($categoryOrder) as $position => $orderedId) {
+                    $rank .= " WHEN ? THEN " . (int) $position;
+                    $params[] = (int) $orderedId;
+                }
+                $rank .= " ELSE " . count($categoryOrder) . " END";
+                $order = ($categoryOrder ? "{$rank} {$direction}, " : "") . "p.item_number ASC";
+                break;
+            case 'price':
+                $order = "p.price {$direction}, p.item_number ASC";
+                break;
+            case 'stock':
+                // Unlimited stock (-1) counts as more than any number.
+                $order = "(p.stock = -1) {$direction}, p.stock {$direction}, p.item_number ASC";
+                break;
+            case 'sold':
+                $order = "p.sold_count {$direction}, p.item_number ASC";
+                break;
+            default:
+                $order = "p.name {$direction}, p.item_number ASC";
+        }
+        $sql .= " ORDER BY {$order}";
 
         if ($limit) {
             $sql .= " LIMIT ? OFFSET ?";

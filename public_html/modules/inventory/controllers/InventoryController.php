@@ -46,12 +46,26 @@ class InventoryController extends Controller {
         }
         $offset = ($page - 1) * $limit;
 
+        $sort = motherboard_inventory_list_sort(
+            isset($_GET['sort']) ? (string) $_GET['sort'] : null,
+            isset($_GET['dir']) ? (string) $_GET['dir'] : null
+        );
+        // The category column only shows under All categories, so a saved category sort
+        // falls back to SKU inside a single category.
+        if ($categoryId && $sort[0] === 'category') {
+            $sort = ['item_number', 'asc'];
+        }
+        $categoryPaths = $this->categoryModel->getPaths($categories);
+        $categoryOrder = array_keys($categoryPaths);
+        usort($categoryOrder, static fn($a, $b): int => strnatcasecmp($categoryPaths[$a], $categoryPaths[$b]));
+
         $this->viewPath(motherboard_inventory_path() . '/views/index.php', [
             'categories' => $categories,
-            'categoryPaths' => $this->categoryModel->getPaths($categories),
+            'categoryPaths' => $categoryPaths,
             'maxCategoryDepth' => InventoryCategory::MAX_DEPTH,
             'defaultTaxable' => motherboard_inventory_last_taxable(),
-            'products' => $this->productModel->getAll($search ?: null, $categoryIds, $limit, $offset),
+            'products' => $this->productModel->getAll($search ?: null, $categoryIds, $limit, $offset, $sort, $categoryOrder),
+            'sort' => $sort,
             'search' => $search,
             'categoryId' => $categoryId,
             'currentPage' => $page,

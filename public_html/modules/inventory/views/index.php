@@ -11,6 +11,27 @@ if ($categoryId) {
 if ($searchQuery !== '') {
     $returnFields .= '<input type="hidden" name="search" value="' . htmlspecialchars($searchQuery) . '">';
 }
+// Products in a single category do not need their category repeated on each row.
+$showCategoryColumn = $categoryId === null;
+$listColumnCount = $showCategoryColumn ? 7 : 6;
+[$sortColumn, $sortDirection] = $sort ?? ['item_number', 'asc'];
+// Clicking a column header sorts by it A to Z, or flips the direction if it is already sorted by it.
+$sortHeader = static function (string $column, string $label) use ($sortColumn, $sortDirection, $categoryId, $searchQuery): string {
+    $active = $sortColumn === $column;
+    $query = http_build_query(array_filter([
+        'category' => $categoryId ?: '',
+        'search' => $searchQuery,
+        'sort' => $column,
+        'dir' => $active && $sortDirection === 'asc' ? 'desc' : 'asc',
+    ], fn($value) => $value !== ''));
+    $arrow = $active ? ($sortDirection === 'asc' ? '&#x25B2;' : '&#x25BC;') : '';
+    return '<th scope="col"' . ($active ? ' aria-sort="' . ($sortDirection === 'asc' ? 'ascending' : 'descending') . '"' : '')
+        . ' class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">'
+        . '<a href="' . BASE_URL . '/inventory?' . htmlspecialchars($query) . '" class="inline-flex items-center gap-1 whitespace-nowrap ' . ($active ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700') . '">'
+        . htmlspecialchars($label)
+        . '<span aria-hidden="true">' . $arrow . '</span>'
+        . '</a></th>';
+};
 ?>
 
 <div class="py-8">
@@ -114,33 +135,37 @@ if ($searchQuery !== '') {
                 <table class="min-w-full divide-y divide-gray-300">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= t('inventory.product_name') ?></th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= t('inventory.price') ?></th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= t('inventory.stock') ?></th>
-                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= t('inventory.sold') ?></th>
+                            <?= $sortHeader('item_number', t('inventory.item_number')) ?>
+                            <?= $sortHeader('name', t('inventory.product_name')) ?>
+                            <?php if ($showCategoryColumn): ?>
+                                <?= $sortHeader('category', t('inventory.category')) ?>
+                            <?php endif; ?>
+                            <?= $sortHeader('price', t('inventory.price')) ?>
+                            <?= $sortHeader('stock', t('inventory.stock')) ?>
+                            <?= $sortHeader('sold', t('inventory.sold')) ?>
                             <th scope="col" class="relative px-4 py-3"><span class="sr-only"><?= t('common.actions') ?></span></th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php if (empty($products)): ?>
                             <tr>
-                                <td colspan="5" class="px-4 py-4 text-center text-sm text-gray-500">
+                                <td colspan="<?= $listColumnCount ?>" class="px-4 py-4 text-center text-sm text-gray-500">
                                     <?= $searchQuery ? t('inventory.none_search') : t('inventory.none_yet') ?>
                                 </td>
                             </tr>
                         <?php else: ?>
                             <?php foreach ($products as $product): ?>
                                 <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-4 relative group <?= !empty($product['description']) ? 'cursor-help' : '' ?>">
-                                        <div class="text-sm font-medium text-gray-900"><?= htmlspecialchars($product['name']) ?></div>
-                                        <?php if (!empty($product['item_number'])): ?>
-                                            <div class="text-sm text-gray-500"><?= htmlspecialchars($product['item_number']) ?></div>
-                                        <?php endif; ?>
-                                        <div class="text-xs text-gray-400"><?= htmlspecialchars($categoryPaths[(int) $product['category_id']] ?? t('inventory.uncategorized')) ?></div>
+                                    <td class="px-4 py-4 text-sm text-gray-500 break-words"><?= htmlspecialchars($product['item_number'] ?? '') ?></td>
+                                    <td class="px-4 py-4 relative group text-sm font-medium text-gray-900 <?= !empty($product['description']) ? 'cursor-help' : '' ?>">
+                                        <?= htmlspecialchars($product['name']) ?>
                                         <?php if (!empty($product['description'])): ?>
                                             <div role="tooltip" class="invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-opacity absolute z-30 left-4 top-full mt-1 w-max max-w-xs rounded-md bg-gray-900 px-3 py-2 text-left text-xs font-normal text-white shadow-lg pointer-events-none"><?= nl2br(htmlspecialchars($product['description'])) ?></div>
                                         <?php endif; ?>
                                     </td>
+                                    <?php if ($showCategoryColumn): ?>
+                                        <td class="px-4 py-4 text-sm text-gray-500"><?= htmlspecialchars($categoryPaths[(int) $product['category_id']] ?? t('inventory.uncategorized')) ?></td>
+                                    <?php endif; ?>
                                     <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                         <?= htmlspecialchars(motherboard_inventory_format_price($product['price'])) ?>
                                         <?php if (!empty($product['taxable'])): ?>

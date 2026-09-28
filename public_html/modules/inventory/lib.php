@@ -116,8 +116,33 @@ function motherboard_inventory_last_taxable(): bool {
 }
 
 function motherboard_inventory_remember_taxable(bool $taxable): void {
+    motherboard_inventory_set_cookie(MOTHERBOARD_INVENTORY_TAXABLE_COOKIE, $taxable ? '1' : '0');
+}
+
+const MOTHERBOARD_INVENTORY_SORT_COOKIE = 'motherboard_inventory_sort';
+const MOTHERBOARD_INVENTORY_SORT_COLUMNS = ['item_number', 'name', 'category', 'price', 'stock', 'sold'];
+
+/**
+ * The column and direction the inventory list is sorted by, as [column, 'asc'|'desc'].
+ * A column picked from the list headers is remembered on this computer; otherwise the
+ * last one picked is used, starting from SKU A to Z.
+ */
+function motherboard_inventory_list_sort(?string $column, ?string $direction): array {
+    if ($column !== null && in_array($column, MOTHERBOARD_INVENTORY_SORT_COLUMNS, true)) {
+        $sort = [$column, $direction === 'desc' ? 'desc' : 'asc'];
+        motherboard_inventory_set_cookie(MOTHERBOARD_INVENTORY_SORT_COOKIE, implode(':', $sort));
+        return $sort;
+    }
+    [$saved, $savedDirection] = array_pad(explode(':', (string) ($_COOKIE[MOTHERBOARD_INVENTORY_SORT_COOKIE] ?? ''), 2), 2, '');
+    if (in_array($saved, MOTHERBOARD_INVENTORY_SORT_COLUMNS, true)) {
+        return [$saved, $savedDirection === 'desc' ? 'desc' : 'asc'];
+    }
+    return ['item_number', 'asc'];
+}
+
+function motherboard_inventory_set_cookie(string $name, string $value): void {
     $params = session_get_cookie_params();
-    setcookie(MOTHERBOARD_INVENTORY_TAXABLE_COOKIE, $taxable ? '1' : '0', [
+    setcookie($name, $value, [
         'expires' => time() + 365 * 24 * 60 * 60,
         'path' => '/',
         'domain' => $params['domain'] ?? '',
