@@ -736,11 +736,14 @@
         // All page notifications go through here. Toasts stack in the top right of the same
         // max-width container the page content uses, so they line up with the page instead
         // of hugging the browser edge on wide screens.
-        function showAlert(message, type = 'info') {
+        // options.icon: an element shown beside the message.
+        // options.duration: milliseconds before it goes away; 0 keeps it until clicked or removed.
+        // Returns the toast element so the caller can remove it or listen for clicks.
+        function showAlert(message, type = 'info', options = {}) {
             const style = TOAST_STYLES[type] || TOAST_STYLES.info;
             const stack = document.getElementById('toast-stack');
             if (!stack) {
-                return;
+                return null;
             }
 
             const toast = document.createElement('div');
@@ -753,16 +756,28 @@
             const body = document.createElement('p');
             body.className = 'mt-1 text-sm break-words';
             body.textContent = message;
-            toast.append(header, body);
+            if (options.icon) {
+                const row = document.createElement('div');
+                row.className = 'mt-1 flex items-center gap-3';
+                body.classList.remove('mt-1');
+                row.append(options.icon, body);
+                toast.append(header, row);
+            } else {
+                toast.append(header, body);
+            }
 
             // Let the user click or tap the toast away if it's in the way
             toast.addEventListener('click', () => toast.remove());
             stack.appendChild(toast);
 
             // Errors stay up longer so there's time to read what went wrong
-            setTimeout(() => {
-                toast.remove();
-            }, type === 'error' ? 8000 : 5000);
+            const duration = options.duration ?? (type === 'error' ? 8000 : 5000);
+            if (duration > 0) {
+                setTimeout(() => {
+                    toast.remove();
+                }, duration);
+            }
+            return toast;
         }
 
         // Flash results from the controller ($message / $error) show as toasts on every page.

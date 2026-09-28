@@ -426,18 +426,6 @@ ob_start();
                                 <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                                     <?= t('wo.update') ?>
                                 </button>
-                                <?php if (!empty($autosaveEnabled)): ?>
-                                <button type="button" id="autosaveButton" class="hidden inline-flex items-center gap-2 px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                                    <span class="relative inline-flex h-6 w-6 items-center justify-center">
-                                        <svg class="absolute inset-0 h-6 w-6 -rotate-90" viewBox="0 0 24 24" aria-hidden="true">
-                                            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.5" class="text-gray-200"></circle>
-                                            <circle id="autosaveRing" cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="text-primary-600"></circle>
-                                        </svg>
-                                        <span id="autosaveSeconds" class="relative text-[10px] font-semibold tabular-nums text-gray-700"></span>
-                                    </span>
-                                    <span><?= t('wo.autosaving') ?></span>
-                                </button>
-                                <?php endif; ?>
                             </div>
                         </div>
                     </form>
@@ -1163,13 +1151,10 @@ const navigateWithUnsavedCheck = (function() {
 <?php if (!empty($autosaveEnabled) && $_SESSION['user_group'] !== 'Limited'): ?>
 // Auto-save: when only status, priority, or assigned to changed (description, resolution,
 // and notes still match what was loaded), count down and save those three fields in the
-// background unless the user clicks the countdown button to cancel.
+// background unless the user clicks the countdown toast to cancel.
 (function() {
     const form = document.getElementById('workOrderContentsForm');
-    const button = document.getElementById('autosaveButton');
-    const ring = document.getElementById('autosaveRing');
-    const secondsLabel = document.getElementById('autosaveSeconds');
-    if (!form || !button || !ring || !secondsLabel) {
+    if (!form) {
         return;
     }
 
@@ -1177,7 +1162,20 @@ const navigateWithUnsavedCheck = (function() {
     const CIRCUMFERENCE = 2 * Math.PI * 10;
     const SELECT_FIELDS = ['status', 'priority', 'assigned_to'];
     const TEXT_FIELDS = ['description', 'resolution', 'notes'];
+    const AUTOSAVING_MESSAGE = <?= json_encode(t('wo.autosaving')) ?>;
     const FAILED_MESSAGE = <?= json_encode(t('wo.autosave_failed')) ?>;
+
+    // Countdown ring shown in the toast beside the message
+    const icon = document.createElement('span');
+    icon.className = 'relative inline-flex h-6 w-6 shrink-0 items-center justify-center';
+    icon.innerHTML = `
+        <svg class="absolute inset-0 h-6 w-6 -rotate-90" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.5" class="text-blue-400"></circle>
+            <circle data-autosave-ring cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="text-white"></circle>
+        </svg>
+        <span data-autosave-seconds class="relative text-[10px] font-semibold tabular-nums"></span>`;
+    const ring = icon.querySelector('[data-autosave-ring]');
+    const secondsLabel = icon.querySelector('[data-autosave-seconds]');
     const STATUS_BADGE_CLASSES = {
         'Open': 'bg-orange-100 text-orange-800',
         'In Progress': 'bg-yellow-100 text-yellow-800',
@@ -1202,6 +1200,7 @@ const navigateWithUnsavedCheck = (function() {
     let startedAt = 0;
     let cancelled = false;
     let saving = false;
+    let toast = null;
 
     const selectsChanged = () => SELECT_FIELDS.some(name => field(name) && field(name).value !== baseline[name]);
     const textChanged = () => TEXT_FIELDS.some(name => field(name) && field(name).value !== baseline[name]);
@@ -1211,7 +1210,8 @@ const navigateWithUnsavedCheck = (function() {
         clearInterval(labelTimer);
         saveTimer = null;
         labelTimer = null;
-        button.classList.add('hidden');
+        toast?.remove();
+        toast = null;
     }
 
     function updateLabel() {
@@ -1222,7 +1222,12 @@ const navigateWithUnsavedCheck = (function() {
     function start() {
         stop();
         startedAt = Date.now();
-        button.classList.remove('hidden');
+        // Clicking the toast dismisses it (showAlert's own handler) and cancels the save
+        toast = showAlert(AUTOSAVING_MESSAGE, 'info', { icon: icon, duration: 0 });
+        toast?.addEventListener('click', function() {
+            cancelled = true;
+            stop();
+        });
 
         ring.style.transition = 'none';
         ring.style.strokeDashoffset = 0;
@@ -1305,11 +1310,6 @@ const navigateWithUnsavedCheck = (function() {
             evaluate(false);
         }
     }
-
-    button.addEventListener('click', function() {
-        cancelled = true;
-        stop();
-    });
 
     SELECT_FIELDS.forEach(name => {
         field(name)?.addEventListener('change', function() {
