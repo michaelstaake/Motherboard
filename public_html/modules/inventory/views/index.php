@@ -332,15 +332,6 @@ $sortHeader = static function (string $column, string $label) use ($sortColumn, 
 </div>
 
 <script>
-// Results of saving or deleting show as toasts. The layout defines showAlert after the page content.
-document.addEventListener('DOMContentLoaded', () => {
-<?php if (!empty($message)): ?>
-    showAlert(<?= json_encode($message, JSON_HEX_TAG | JSON_HEX_AMP) ?>, 'success');
-<?php endif; ?>
-<?php if (!empty($error)): ?>
-    showAlert(<?= json_encode($error, JSON_HEX_TAG | JSON_HEX_AMP) ?>, 'error');
-<?php endif; ?>
-});
 function openMovementExportModal() {
     document.getElementById('movementExportForm').reset();
     document.getElementById('movementExportModal').classList.remove('hidden');

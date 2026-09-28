@@ -16,17 +16,6 @@ ob_start();
         </a>
     </div>
 
-    <?php if (!empty($error)): ?>
-        <div class="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
-            <p class="text-sm text-red-600"><?= htmlspecialchars($error) ?></p>
-        </div>
-    <?php endif; ?>
-    <?php if (!empty($message)): ?>
-        <div class="mb-6 bg-green-50 border border-green-200 rounded-md p-4">
-            <p class="text-sm text-green-600"><?= htmlspecialchars($message) ?></p>
-        </div>
-    <?php endif; ?>
-
     <div class="bg-white shadow rounded-lg">
         <form method="POST" action="<?= BASE_URL ?>/module-manager/email-2fa/settings" class="px-6 py-4">
             <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">

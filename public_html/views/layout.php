@@ -442,6 +442,10 @@
         </div>
     <?php endif; ?>
 
+    <div class="pointer-events-none fixed inset-x-0 top-4 z-[60]" aria-live="polite">
+        <div id="toast-stack" class="<?= $appContainerClass ?> flex flex-col items-end gap-2"></div>
+    </div>
+
     <script>
         // Modals close only through their own buttons, so a stray click outside or an Escape
         // never throws away what was typed. This runs in the capture phase, ahead of any
@@ -723,23 +727,54 @@
         }
 
         // Global functions
-        function showAlert(message, type = 'info') {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `fixed top-4 right-4 z-50 p-4 rounded-md shadow-lg cursor-pointer ${
-                type === 'error' ? 'bg-red-100 text-red-700 border border-red-300' :
-                type === 'success' ? 'bg-green-100 text-green-700 border border-green-300' :
-                'bg-blue-100 text-blue-700 border border-blue-300'
-            }`;
-            alertDiv.textContent = message;
-            // Let the user click or tap the toast away if it's in the way
-            alertDiv.addEventListener('click', () => alertDiv.remove());
+        const TOAST_STYLES = {
+            success: { header: <?= json_encode(t('toast.success')) ?>, className: 'bg-green-600 border-green-700' },
+            error: { header: <?= json_encode(t('toast.error')) ?>, className: 'bg-red-600 border-red-700' },
+            info: { header: <?= json_encode(t('toast.message')) ?>, className: 'bg-blue-600 border-blue-700' }
+        };
 
-            document.body.appendChild(alertDiv);
-            
+        // All page notifications go through here. Toasts stack in the top right of the same
+        // max-width container the page content uses, so they line up with the page instead
+        // of hugging the browser edge on wide screens.
+        function showAlert(message, type = 'info') {
+            const style = TOAST_STYLES[type] || TOAST_STYLES.info;
+            const stack = document.getElementById('toast-stack');
+            if (!stack) {
+                return;
+            }
+
+            const toast = document.createElement('div');
+            toast.className = `pointer-events-auto w-full max-w-sm rounded-md border p-4 text-white shadow-lg cursor-pointer ${style.className}`;
+            toast.setAttribute('role', type === 'error' ? 'alert' : 'status');
+
+            const header = document.createElement('p');
+            header.className = 'text-sm font-semibold';
+            header.textContent = style.header;
+            const body = document.createElement('p');
+            body.className = 'mt-1 text-sm break-words';
+            body.textContent = message;
+            toast.append(header, body);
+
+            // Let the user click or tap the toast away if it's in the way
+            toast.addEventListener('click', () => toast.remove());
+            stack.appendChild(toast);
+
+            // Errors stay up longer so there's time to read what went wrong
             setTimeout(() => {
-                alertDiv.remove();
-            }, 5000);
+                toast.remove();
+            }, type === 'error' ? 8000 : 5000);
         }
+
+        // Flash results from the controller ($message / $error) show as toasts on every page.
+        // A view whose whole purpose is explaining the error can opt out with $skipFlashToasts.
+        <?php if (empty($skipFlashToasts)): ?>
+        <?php if (!empty($message)): ?>
+        showAlert(<?= json_encode((string) $message, JSON_HEX_TAG | JSON_HEX_AMP) ?>, 'success');
+        <?php endif; ?>
+        <?php if (!empty($error)): ?>
+        showAlert(<?= json_encode((string) $error, JSON_HEX_TAG | JSON_HEX_AMP) ?>, 'error');
+        <?php endif; ?>
+        <?php endif; ?>
 
         function copyToClipboard(text) {
             if (!text) {

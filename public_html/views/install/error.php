@@ -1,6 +1,8 @@
 <?php
 $title = t('install.error_title');
 $hideNavigation = true;
+// The configuration error is the page itself, so it stays inline instead of also toasting
+$skipFlashToasts = true;
 ob_start();
 ?>
 

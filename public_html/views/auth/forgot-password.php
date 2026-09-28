@@ -15,20 +15,11 @@ ob_start();
             </p>
         </div>
         
-        <?php if (!empty($error)): ?>
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                <?= htmlspecialchars($error) ?>
-            </div>
-        <?php endif; ?>
-
         <?php if (!empty($message)): ?>
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                <?= htmlspecialchars($message) ?>
-                <div class="mt-4">
-                    <a href="<?= BASE_URL ?>/login" class="text-primary-600 hover:text-primary-500">
-                        <?= t('auth.return_login') ?>
-                    </a>
-                </div>
+            <div class="text-center">
+                <a href="<?= BASE_URL ?>/login" class="text-primary-600 hover:text-primary-500">
+                    <?= t('auth.return_login') ?>
+                </a>
             </div>
         <?php else: ?>
             <form class="mt-8 space-y-6" method="POST">

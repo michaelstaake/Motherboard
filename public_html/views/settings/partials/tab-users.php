@@ -206,7 +206,7 @@ function goToUsersPage(page) {
     if (page >= 1 && page <= maxPage) {
         window.location.href = '<?= BASE_URL ?>/settings?tab=users&page=' + page;
     } else {
-        alert(<?= json_encode(t('js.page_range')) ?>.replace('{max}', String(maxPage)));
+        showAlert(<?= json_encode(t('js.page_range')) ?>.replace('{max}', String(maxPage)), 'error');
     }
 }
 
