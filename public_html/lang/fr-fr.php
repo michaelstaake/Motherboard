@@ -562,6 +562,7 @@ return [
     'wo.computer_ph' => 'ex. portable Dell, bureau HP',
     'wo.remarks_ph' => 'État physique, dommages ou autres notes sur l’appareil...',
     'wo.sn_short' => 'N/S : {sn}',
+    'wo.days_open' => 'Jours ouverts : {count}',
     'wo.imei_short' => 'IMEI : {imei}',
     'wo.model_short' => 'Modèle : {model}',
     'wo.login_no_permission' => 'Vous n’avez pas la permission de voir les identifiants.',

@@ -562,6 +562,7 @@ return [
     'wo.computer_ph' => 'např. Dell notebook, HP desktop',
     'wo.remarks_ph' => 'Stav, poškození nebo jiné poznámky k zařízení...',
     'wo.sn_short' => 'S/N: {sn}',
+    'wo.days_open' => 'Dnů otevřeno: {count}',
     'wo.imei_short' => 'IMEI: {imei}',
     'wo.model_short' => 'Model: {model}',
     'wo.login_no_permission' => 'Nemáte oprávnění zobrazit přihlašovací údaje.',

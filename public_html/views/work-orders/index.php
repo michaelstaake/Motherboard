@@ -1,4 +1,8 @@
 <?php 
+// Active work orders at least this many days old are tinted amber, then red, in the list.
+const DAYS_OPEN_STALE = 7;
+const DAYS_OPEN_OVERDUE = 14;
+
 $title = t('wo.title') . ' - ' . ($companyName ?? APP_NAME);
 ob_start(); 
 ?>
@@ -143,6 +147,12 @@ ob_start();
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <?= ldate($workOrder['created_at'], 'M j, Y') ?>
+                                    <?php if (!in_array($workOrder['status'], ['Closed', 'Picked Up'], true)): ?>
+                                        <?php $daysOpen = (new DateTime(date('Y-m-d', strtotime($workOrder['created_at']))))->diff(new DateTime('today'))->days; ?>
+                                        <div class="text-xs <?= $daysOpen >= DAYS_OPEN_OVERDUE ? 'text-red-600 font-medium' : ($daysOpen >= DAYS_OPEN_STALE ? 'text-amber-600' : 'text-gray-400') ?>">
+                                            <?= t('wo.days_open', ['count' => $daysOpen]) ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900" title="<?= htmlspecialchars($workOrder['computer']) ?>">

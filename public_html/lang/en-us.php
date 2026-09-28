@@ -565,6 +565,7 @@ return [
     'wo.computer_ph' => 'e.g., Dell Laptop, HP Desktop',
     'wo.remarks_ph' => 'Physical condition, damage, or other device notes...',
     'wo.sn_short' => 'S/N: {sn}',
+    'wo.days_open' => 'Days open: {count}',
     'wo.imei_short' => 'IMEI: {imei}',
     'wo.model_short' => 'Model: {model}',
     'wo.login_no_permission' => 'You do not have permission to view login information.',

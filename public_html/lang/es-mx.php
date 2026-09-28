@@ -562,6 +562,7 @@ return [
     'wo.computer_ph' => 'p. ej., laptop Dell, escritorio HP',
     'wo.remarks_ph' => 'Estado físico, daños u otras notas del dispositivo...',
     'wo.sn_short' => 'N/S: {sn}',
+    'wo.days_open' => 'Días abierta: {count}',
     'wo.imei_short' => 'IMEI: {imei}',
     'wo.model_short' => 'Modelo: {model}',
     'wo.login_no_permission' => 'No tienes permiso para ver la información de acceso.',

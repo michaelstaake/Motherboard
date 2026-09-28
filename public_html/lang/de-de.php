@@ -562,6 +562,7 @@ return [
     'wo.computer_ph' => 'z. B. Dell Laptop, HP Desktop',
     'wo.remarks_ph' => 'Zustand, Beschädigungen oder andere Gerätehinweise...',
     'wo.sn_short' => 'S/N: {sn}',
+    'wo.days_open' => 'Tage offen: {count}',
     'wo.imei_short' => 'IMEI: {imei}',
     'wo.model_short' => 'Modell: {model}',
     'wo.login_no_permission' => 'Sie haben keine Berechtigung, Anmeldeinformationen anzuzeigen.',

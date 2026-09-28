@@ -565,6 +565,7 @@ return [
     'wo.computer_ph' => 'напр. лаптоп Dell, настолен компютър HP',
     'wo.remarks_ph' => 'Външно състояние, повреди или други бележки за устройството...',
     'wo.sn_short' => 'Сериен №: {sn}',
+    'wo.days_open' => 'Отворена от дни: {count}',
     'wo.imei_short' => 'IMEI: {imei}',
     'wo.model_short' => 'Модел: {model}',
     'wo.login_no_permission' => 'Нямате права да преглеждате данните за вход.',
