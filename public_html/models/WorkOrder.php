@@ -6,7 +6,41 @@ class WorkOrder extends Model {
     protected $table = 'work_orders';
     
     public function countWorkOrders($status = null, $priority = null, $search = null, $assignedTo = null) {
-        $sql = "SELECT COUNT(*) as count FROM work_orders wo LEFT JOIN customers c ON wo.customer_id = c.id WHERE 1=1";
+        [$where, $params] = $this->buildListFilters($status, $priority, $search, $assignedTo);
+        $sql = "SELECT COUNT(*) as count FROM work_orders wo LEFT JOIN customers c ON wo.customer_id = c.id WHERE 1=1" . $where;
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetch()['count'];
+    }
+    
+    public function getWorkOrders($status = null, $priority = null, $search = null, $limit = 10, $offset = 0, $assignedTo = null) {
+        [$where, $params] = $this->buildListFilters($status, $priority, $search, $assignedTo);
+        $sql = "
+            SELECT wo.*, c.name as customer_name, c.company as customer_company,
+                   u.username as technician_username, u.name as technician_name,
+                   COALESCE(NULLIF(u.name, ''), u.username) as technician_display_name
+            FROM work_orders wo
+            LEFT JOIN customers c ON wo.customer_id = c.id
+            LEFT JOIN users u ON wo.assigned_to = u.id
+            WHERE 1=1
+        " . $where;
+        
+        $sql .= " ORDER BY wo.created_at DESC LIMIT ? OFFSET ?";
+        $params[] = $limit;
+        $params[] = $offset;
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Shared by the list and its count so the two always match, which pagination relies on.
+     * Expects work_orders aliased as wo and customers as c.
+     */
+    private function buildListFilters($status, $priority, $search, $assignedTo): array {
+        $sql = '';
         $params = [];
         
         if ($status && $status !== 'All') {
@@ -29,56 +63,15 @@ class WorkOrder extends Model {
         }
         
         if ($search) {
-            $sql .= " AND (c.name LIKE ? OR c.company LIKE ? OR wo.computer LIKE ? OR wo.model LIKE ? OR wo.description LIKE ? OR wo.imei LIKE ? OR wo.serial_number LIKE ? OR wo.remarks LIKE ?)";
-            $searchTerm = "%$search%";
-            $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm]);
+            $columns = [
+                'wo.work_order_number', 'c.name', 'c.phone', 'c.company', 'c.email',
+                'wo.imei', 'wo.serial_number', 'wo.computer', 'wo.model', 'wo.description', 'wo.remarks',
+            ];
+            $sql .= ' AND (' . implode(' OR ', array_map(fn($column) => "$column LIKE ?", $columns)) . ')';
+            $params = array_merge($params, array_fill(0, count($columns), "%$search%"));
         }
         
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetch()['count'];
-    }
-    
-    public function getWorkOrders($status = null, $priority = null, $search = null, $limit = 10, $offset = 0, $assignedTo = null) {
-        $sql = "
-            SELECT wo.*, c.name as customer_name, c.company as customer_company,
-                   u.username as technician_username, u.name as technician_name,
-                   COALESCE(NULLIF(u.name, ''), u.username) as technician_display_name
-            FROM work_orders wo
-            LEFT JOIN customers c ON wo.customer_id = c.id
-            LEFT JOIN users u ON wo.assigned_to = u.id
-            WHERE 1=1
-        ";
-        
-        $params = [];
-        
-        if ($status && $status !== 'All') {
-            if ($status === 'Priority') {
-                $sql .= " AND wo.priority = 'Priority'";
-            } else {
-                $sql .= " AND wo.status = ?";
-                $params[] = $status;
-            }
-        }
-        
-        if ($assignedTo) {
-            $sql .= " AND wo.assigned_to = ? AND wo.status NOT IN ('Closed', 'Picked Up')";
-            $params[] = $assignedTo;
-        }
-        
-        if ($search) {
-            $sql .= " AND (wo.work_order_number LIKE ? OR c.name LIKE ? OR c.phone LIKE ? OR c.company LIKE ? OR c.email LIKE ? OR wo.imei LIKE ? OR wo.serial_number LIKE ? OR wo.computer LIKE ? OR wo.model LIKE ? OR wo.remarks LIKE ?)";
-            $searchTerm = "%$search%";
-            $params = array_merge($params, [$searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm, $searchTerm]);
-        }
-        
-        $sql .= " ORDER BY wo.created_at DESC LIMIT ? OFFSET ?";
-        $params[] = $limit;
-        $params[] = $offset;
-        
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll();
+        return [$sql, $params];
     }
     
     public function getWorkOrderById($id) {
