@@ -946,6 +946,14 @@ $printOptions = $printOptions ?? ['has_disclaimer' => true, 'customer_signature'
     <pre id="attachmentLightboxText" class="hidden w-full max-w-3xl max-h-[calc(100vh-200px)] overflow-auto bg-white text-gray-900 text-sm p-6 rounded-lg whitespace-pre-wrap" onclick="event.stopPropagation()"></pre>
 </div>
 
+<style>
+    /* Fields the unsaved changes modal was warning about, until the user goes back to them */
+    .unsaved-field {
+        border-color: #f97316 !important;
+        box-shadow: 0 0 0 1px #f97316;
+    }
+</style>
+
 <!-- Unsaved changes modal. Last in the page so it stacks above any modal it interrupts. -->
 <div id="unsavedChangesModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
     <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -991,6 +999,7 @@ const navigateWithUnsavedCheck = (function() {
     const saveButton = document.getElementById('unsavedSaveBtn');
     const BODY_SAVE = <?= json_encode(t('wo.unsaved_body')) ?>;
     const BODY_DISCARD = <?= json_encode(t('wo.unsaved_body_discard')) ?>;
+    const UNSAVED_CLASS = 'unsaved-field';
 
     let pending = null;
     let allowUnload = false;
@@ -1043,6 +1052,10 @@ const navigateWithUnsavedCheck = (function() {
         pending = { action: action, saveForm: canSave ? dirty[0] : null };
         body.textContent = canSave ? BODY_SAVE : BODY_DISCARD;
         saveButton.classList.toggle('hidden', !canSave);
+        // Outline the unsaved fields so they're easy to find after cancelling
+        dirty.forEach(form => {
+            Array.from(form.elements).filter(isFieldDirty).forEach(field => field.classList.add(UNSAVED_CLASS));
+        });
         modal.classList.remove('hidden');
     }
 
@@ -1093,6 +1106,14 @@ const navigateWithUnsavedCheck = (function() {
     });
 
     document.getElementById('unsavedCancelBtn').addEventListener('click', close);
+
+    // The outline goes away once the user clicks into or changes the field. Saving reloads
+    // the page, except auto-save, which clears it itself.
+    ['focusin', 'input', 'change'].forEach(type => {
+        document.addEventListener(type, function(e) {
+            e.target.classList?.remove(UNSAVED_CLASS);
+        });
+    });
 
     document.addEventListener('click', function(e) {
         const link = e.target.closest('a[href]');
@@ -1298,6 +1319,7 @@ const navigateWithUnsavedCheck = (function() {
                 Array.from(field(name).options).forEach(option => {
                     option.defaultSelected = option.value === sent[name];
                 });
+                field(name).classList.remove('unsaved-field');
             });
             updatePageDetails(data);
             showAlert(data.message, 'success');
