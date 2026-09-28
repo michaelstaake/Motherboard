@@ -513,7 +513,7 @@ return [
     'settings.nav_always_expanded' => 'Toujours afficher la navigation sur ordinateur',
     'settings.nav_always_expanded_help' => 'Ouvre automatiquement le menu de navigation sur ordinateur. Sur mobile, il reste replié.',
     'settings.work_order_autosave' => 'Enregistrer automatiquement les modifications des ordres',
-    'settings.work_order_autosave_help' => 'Lorsque seuls le statut, la priorité ou l’assignation d’un ordre de travail changent, il est enregistré automatiquement après un compte à rebours de 10 secondes annulable.',
+    'settings.work_order_autosave_help' => 'Lorsque seuls le statut, la priorité ou l’assignation d’un ordre de travail changent, il est enregistré automatiquement après un compte à rebours de 5 secondes annulable.',
     'settings.disclaimer_ph' => 'Mentions légales ou conditions à afficher sur les ordres...',
     'settings.disclaimer_help' => 'Ce texte apparaît en bas des ordres imprimés',
     'settings.print_customer_signature' => 'Afficher la signature du client sur les ordres imprimés',

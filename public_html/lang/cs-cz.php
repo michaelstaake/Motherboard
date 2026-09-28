@@ -513,7 +513,7 @@ return [
     'settings.nav_always_expanded' => 'Vždy zobrazovat navigaci na počítači',
     'settings.nav_always_expanded_help' => 'Automaticky otevře navigační nabídku na počítačích. Na mobilních zařízeních zůstává sbalená.',
     'settings.work_order_autosave' => 'Automaticky ukládat změny zakázek',
-    'settings.work_order_autosave_help' => 'Když se u zakázky změní pouze stav, priorita nebo přiřazení, uloží se automaticky po 10sekundovém odpočtu, který lze zrušit.',
+    'settings.work_order_autosave_help' => 'Když se u zakázky změní pouze stav, priorita nebo přiřazení, uloží se automaticky po 5sekundovém odpočtu, který lze zrušit.',
     'settings.disclaimer_ph' => 'Právní doložky nebo podmínky na zakázkách...',
     'settings.disclaimer_help' => 'Tento text se zobrazí dole na vytištěných zakázkách',
     'settings.print_customer_signature' => 'Zobrazit podpis zákazníka na vytištěných zakázkách',

@@ -972,7 +972,7 @@ $printOptions = $printOptions ?? ['has_disclaimer' => true, 'customer_signature'
         return;
     }
 
-    const DURATION_MS = 10000;
+    const DURATION_MS = 5000;
     const CIRCUMFERENCE = 2 * Math.PI * 10;
     const SELECT_FIELDS = ['status', 'priority', 'assigned_to'];
     const TEXT_FIELDS = ['description', 'resolution', 'notes'];

@@ -516,7 +516,7 @@ return [
     'settings.nav_always_expanded' => 'Always Display Nav Items on Desktop',
     'settings.nav_always_expanded_help' => 'Opens the navigation menu automatically on desktop devices. Mobile devices still start collapsed.',
     'settings.work_order_autosave' => 'Auto-save Work Order Changes',
-    'settings.work_order_autosave_help' => 'When only the status, priority, or assigned to changes on a work order, save it automatically after a 10 second countdown that can be cancelled.',
+    'settings.work_order_autosave_help' => 'When only the status, priority, or assigned to changes on a work order, save it automatically after a 5 second countdown that can be cancelled.',
     'settings.disclaimer_ph' => 'Enter any legal disclaimers or terms that should appear on work orders...',
     'settings.disclaimer_help' => 'This text will appear at the bottom of printed work orders',
     'settings.print_customer_signature' => 'Show Customer Signature on printed work orders',
