@@ -39,18 +39,6 @@ if ($searchQuery !== '') {
         </div>
     </div>
 
-    <?php if (!empty($message)): ?>
-        <div class="mt-6 bg-green-50 border border-green-200 rounded-md p-4">
-            <p class="text-sm text-green-600"><?= htmlspecialchars($message) ?></p>
-        </div>
-    <?php endif; ?>
-
-    <?php if (!empty($error)): ?>
-        <div class="mt-6 bg-red-50 border border-red-200 rounded-md p-4">
-            <p class="text-sm text-red-600"><?= htmlspecialchars($error) ?></p>
-        </div>
-    <?php endif; ?>
-
     <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div class="lg:col-span-1">
             <div class="bg-white shadow rounded-lg">
@@ -310,6 +298,15 @@ if ($searchQuery !== '') {
 </div>
 
 <script>
+// Results of saving or deleting show as toasts. The layout defines showAlert after the page content.
+document.addEventListener('DOMContentLoaded', () => {
+<?php if (!empty($message)): ?>
+    showAlert(<?= json_encode($message, JSON_HEX_TAG | JSON_HEX_AMP) ?>, 'success');
+<?php endif; ?>
+<?php if (!empty($error)): ?>
+    showAlert(<?= json_encode($error, JSON_HEX_TAG | JSON_HEX_AMP) ?>, 'error');
+<?php endif; ?>
+});
 function openMovementExportModal() {
     document.getElementById('movementExportForm').reset();
     document.getElementById('movementExportModal').classList.remove('hidden');
