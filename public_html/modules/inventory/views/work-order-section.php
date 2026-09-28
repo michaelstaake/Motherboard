@@ -237,6 +237,7 @@ function openEditInventoryPriceModal(button) {
     document.getElementById('editInventoryPriceForm').action = button.dataset.action;
     document.getElementById('editInventoryPriceName').textContent = button.dataset.name;
     const priceField = document.getElementById('inventory_line_price');
+    priceField.defaultValue = button.dataset.price;
     priceField.value = button.dataset.price;
     // Custom lines have no inventory price to compare against.
     const productPrice = document.getElementById('editInventoryPriceProductPrice');

@@ -958,7 +958,208 @@ $printOptions = $printOptions ?? ['has_disclaimer' => true, 'customer_signature'
     <pre id="attachmentLightboxText" class="hidden w-full max-w-3xl max-h-[calc(100vh-200px)] overflow-auto bg-white text-gray-900 text-sm p-6 rounded-lg whitespace-pre-wrap" onclick="event.stopPropagation()"></pre>
 </div>
 
+<!-- Unsaved changes modal. Last in the page so it stacks above any modal it interrupts. -->
+<div id="unsavedChangesModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div class="sm:flex sm:items-start">
+                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <svg class="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                </div>
+                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900"><?= t('wo.unsaved_title') ?></h3>
+                    <p id="unsavedChangesBody" class="mt-2 text-sm text-gray-500"></p>
+                </div>
+            </div>
+            <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-2">
+                <button type="button" id="unsavedSaveBtn" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 sm:w-auto sm:text-sm">
+                    <?= t('wo.unsaved_save') ?>
+                </button>
+                <button type="button" id="unsavedDiscardBtn" class="mt-3 sm:mt-0 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto sm:text-sm">
+                    <?= t('wo.unsaved_discard') ?>
+                </button>
+                <button type="button" id="unsavedCancelBtn" class="mt-3 sm:mt-0 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto sm:text-sm">
+                    <?= t('common.cancel') ?>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+// Unsaved changes: every POST form on the page (including the ones module sections add) is
+// compared against the values it was loaded with. Leaving the page, or submitting one form
+// while another has unsaved edits, asks first. Forms that aren't shown, like a closed modal
+// or the collapsed device editor, don't count.
+const navigateWithUnsavedCheck = (function() {
+    const modal = document.getElementById('unsavedChangesModal');
+    const body = document.getElementById('unsavedChangesBody');
+    const saveButton = document.getElementById('unsavedSaveBtn');
+    const BODY_SAVE = <?= json_encode(t('wo.unsaved_body')) ?>;
+    const BODY_DISCARD = <?= json_encode(t('wo.unsaved_body_discard')) ?>;
+
+    let pending = null;
+    let allowUnload = false;
+    let bypassSubmitGuard = false;
+    let lastSubmitEvent = null;
+
+    function isFieldDirty(field) {
+        if (!field.name || field.disabled) {
+            return false;
+        }
+        switch (field.type) {
+            case 'hidden':
+            case 'submit':
+            case 'button':
+            case 'reset':
+                return false;
+            case 'checkbox':
+            case 'radio':
+                return field.checked !== field.defaultChecked;
+            case 'select-one': {
+                // With no selected attribute the first option is the loaded value
+                let loaded = field.options.length ? 0 : -1;
+                Array.from(field.options).forEach((option, index) => {
+                    if (option.defaultSelected) {
+                        loaded = index;
+                    }
+                });
+                return field.selectedIndex !== loaded;
+            }
+            case 'select-multiple':
+                return Array.from(field.options).some(option => option.selected !== option.defaultSelected);
+            default:
+                return field.value !== field.defaultValue;
+        }
+    }
+
+    function dirtyForms(except) {
+        return Array.from(document.querySelectorAll('form')).filter(form =>
+            form !== except
+            && (form.getAttribute('method') || '').toUpperCase() === 'POST'
+            && form.getClientRects().length > 0
+            && Array.from(form.elements).some(isFieldDirty)
+        );
+    }
+
+    function open(action, dirty) {
+        // Save only makes sense for one form, and only when leaving; for a submit it would
+        // save a different form than the one the user just asked to submit.
+        const canSave = action.url && dirty.length === 1;
+        pending = { action: action, saveForm: canSave ? dirty[0] : null };
+        body.textContent = canSave ? BODY_SAVE : BODY_DISCARD;
+        saveButton.classList.toggle('hidden', !canSave);
+        modal.classList.remove('hidden');
+    }
+
+    function close() {
+        pending = null;
+        modal.classList.add('hidden');
+    }
+
+    function navigate(url) {
+        allowUnload = true;
+        window.location.href = url;
+    }
+
+    function proceed(action) {
+        if (action.url) {
+            navigate(action.url);
+            return;
+        }
+        bypassSubmitGuard = true;
+        try {
+            action.form.requestSubmit(action.submitter || undefined);
+        } finally {
+            bypassSubmitGuard = false;
+        }
+    }
+
+    function navigateWithUnsavedCheck(url) {
+        const dirty = dirtyForms(null);
+        if (dirty.length === 0) {
+            navigate(url);
+            return;
+        }
+        open({ url: url }, dirty);
+    }
+
+    saveButton.addEventListener('click', function() {
+        const form = pending && pending.saveForm;
+        close();
+        form?.requestSubmit();
+    });
+
+    document.getElementById('unsavedDiscardBtn').addEventListener('click', function() {
+        const action = pending && pending.action;
+        close();
+        if (action) {
+            proceed(action);
+        }
+    });
+
+    document.getElementById('unsavedCancelBtn').addEventListener('click', close);
+
+    document.addEventListener('click', function(e) {
+        const link = e.target.closest('a[href]');
+        if (!link || e.defaultPrevented || e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) {
+            return;
+        }
+        if (link.hasAttribute('download') || (link.target && link.target !== '_self')) {
+            return;
+        }
+        const url = new URL(link.href, window.location.href);
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+            return;
+        }
+        // A jump within this page doesn't unload it
+        if (url.hash && url.href.split('#')[0] === window.location.href.split('#')[0]) {
+            return;
+        }
+        const dirty = dirtyForms(null);
+        if (dirty.length === 0) {
+            return;
+        }
+        e.preventDefault();
+        open({ url: link.href }, dirty);
+    }, true);
+
+    // Capture phase, so the question comes before the form's own checks and confirmations,
+    // which run again when the user chooses to continue.
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        if (!bypassSubmitGuard) {
+            const dirty = dirtyForms(form);
+            if (dirty.length > 0) {
+                e.preventDefault();
+                open({ form: form, submitter: e.submitter }, dirty);
+                return;
+            }
+        }
+        // Checked in beforeunload, once every handler has had its chance to cancel the submit
+        lastSubmitEvent = e;
+    }, true);
+
+    window.addEventListener('beforeunload', function(e) {
+        if (allowUnload || (lastSubmitEvent && !lastSubmitEvent.defaultPrevented)) {
+            return;
+        }
+        if (dirtyForms(null).length > 0) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    return navigateWithUnsavedCheck;
+})();
+
+
 <?php if (!empty($autosaveEnabled) && $_SESSION['user_group'] !== 'Limited'): ?>
 // Auto-save: when only status, priority, or assigned to changed (description, resolution,
 // and notes still match what was loaded), count down and save those three fields in the
@@ -1088,6 +1289,10 @@ $printOptions = $printOptions ?? ['has_disclaimer' => true, 'customer_signature'
             }
             SELECT_FIELDS.forEach(name => {
                 baseline[name] = sent[name];
+                // The saved choice is now the loaded one, so leaving the page won't warn about it
+                Array.from(field(name).options).forEach(option => {
+                    option.defaultSelected = option.value === sent[name];
+                });
             });
             updatePageDetails(data);
             showAlert(data.message, 'success');
@@ -1132,6 +1337,7 @@ function openDeviceEdit() {
 }
 
 function closeDeviceEdit() {
+    document.querySelector('#deviceDetailsEdit form')?.reset();
     document.getElementById('deviceDetailsEdit')?.classList.add('hidden');
     document.getElementById('deviceDetailsView')?.classList.remove('hidden');
     document.getElementById('deviceEditButton')?.classList.remove('hidden');
@@ -1351,6 +1557,7 @@ function openEditAttachmentModal(id, name, description) {
     }
     form.action = <?= json_encode(BASE_URL . '/work-orders/attachments/') ?> + id + '/update';
     filename.textContent = name;
+    field.defaultValue = description || '';
     field.value = description || '';
     modal.classList.remove('hidden');
     field.focus();
@@ -1407,7 +1614,7 @@ function submitPrintOptions() {
     params.set('technician_signature', document.getElementById('print_technician_signature_option').checked ? '1' : '0');
 
     closePrintOptionsModal();
-    window.location.href = <?= json_encode(BASE_URL . '/work-orders/print/' . $workOrder['id']) ?> + '?' + params.toString();
+    navigateWithUnsavedCheck(<?= json_encode(BASE_URL . '/work-orders/print/' . $workOrder['id']) ?> + '?' + params.toString());
 }
 
 // Delete modal functions
