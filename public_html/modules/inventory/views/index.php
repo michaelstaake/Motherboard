@@ -2,24 +2,27 @@
 $title = t('inventory.title') . ' - ' . ($companyName ?? APP_NAME);
 ob_start();
 $categoryId = $categoryId ?? null;
+$uncategorized = $uncategorized ?? false;
+// The category query value: a category id, "uncategorized", or '' for all categories.
+$categoryParam = $uncategorized ? 'uncategorized' : ($categoryId ? (string) (int) $categoryId : '');
 $searchQuery = $search ?? '';
 // Product edits and deletes return to the category and search the list was showing.
 $returnFields = '';
-if ($categoryId) {
-    $returnFields .= '<input type="hidden" name="category" value="' . (int) $categoryId . '">';
+if ($categoryParam !== '') {
+    $returnFields .= '<input type="hidden" name="category" value="' . $categoryParam . '">';
 }
 if ($searchQuery !== '') {
     $returnFields .= '<input type="hidden" name="search" value="' . htmlspecialchars($searchQuery) . '">';
 }
 // Products in a single category do not need their category repeated on each row.
-$showCategoryColumn = $categoryId === null;
+$showCategoryColumn = $categoryParam === '';
 $listColumnCount = $showCategoryColumn ? 7 : 6;
 [$sortColumn, $sortDirection] = $sort ?? ['item_number', 'asc'];
 // Clicking a column header sorts by it A to Z, or flips the direction if it is already sorted by it.
-$sortHeader = static function (string $column, string $label) use ($sortColumn, $sortDirection, $categoryId, $searchQuery): string {
+$sortHeader = static function (string $column, string $label) use ($sortColumn, $sortDirection, $categoryParam, $searchQuery): string {
     $active = $sortColumn === $column;
     $query = http_build_query(array_filter([
-        'category' => $categoryId ?: '',
+        'category' => $categoryParam,
         'search' => $searchQuery,
         'sort' => $column,
         'dir' => $active && $sortDirection === 'asc' ? 'desc' : 'asc',
@@ -70,9 +73,15 @@ $sortHeader = static function (string $column, string $label) use ($sortColumn, 
                     </button>
                 </div>
                 <div class="divide-y divide-gray-200">
-                    <a href="<?= BASE_URL ?>/inventory<?= $searchQuery ? '?search=' . urlencode($searchQuery) : '' ?>" class="block px-6 py-3 text-sm <?= $categoryId === null ? 'bg-primary-50 text-primary-700 font-medium' : 'text-gray-700 hover:bg-gray-50' ?>">
+                    <a href="<?= BASE_URL ?>/inventory<?= $searchQuery ? '?search=' . urlencode($searchQuery) : '' ?>" class="block px-6 py-3 text-sm <?= $categoryParam === '' ? 'bg-primary-50 text-primary-700 font-medium' : 'text-gray-700 hover:bg-gray-50' ?>">
                         <?= t('inventory.all_categories') ?>
                     </a>
+                    <?php if (($uncategorizedCount ?? 0) > 0 || $uncategorized): ?>
+                        <a href="<?= BASE_URL ?>/inventory?category=uncategorized<?= $searchQuery ? '&search=' . urlencode($searchQuery) : '' ?>" class="block px-6 py-3 text-sm <?= $uncategorized ? 'bg-primary-50 text-primary-700 font-medium' : 'text-gray-700 hover:bg-gray-50' ?>">
+                            <?= t('inventory.uncategorized') ?>
+                            <span class="text-gray-400">(<?= (int) ($uncategorizedCount ?? 0) ?>)</span>
+                        </a>
+                    <?php endif; ?>
                     <?php if (empty($categories)): ?>
                         <p class="px-6 py-4 text-sm text-gray-500"><?= t('inventory.no_categories') ?></p>
                     <?php else: ?>
@@ -114,8 +123,8 @@ $sortHeader = static function (string $column, string $label) use ($sortColumn, 
 
         <div class="lg:col-span-2">
             <form method="GET" action="<?= BASE_URL ?>/inventory" class="flex space-x-4">
-                <?php if ($categoryId): ?>
-                    <input type="hidden" name="category" value="<?= (int) $categoryId ?>">
+                <?php if ($categoryParam !== ''): ?>
+                    <input type="hidden" name="category" value="<?= $categoryParam ?>">
                 <?php endif; ?>
                 <div class="flex-1">
                     <label for="search" class="sr-only"><?= t('common.search') ?></label>
@@ -125,7 +134,7 @@ $sortHeader = static function (string $column, string $label) use ($sortColumn, 
                     <?= t('common.search') ?>
                 </button>
                 <?php if ($searchQuery): ?>
-                    <a href="<?= BASE_URL ?>/inventory<?= $categoryId ? '?category=' . (int) $categoryId : '' ?>" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    <a href="<?= BASE_URL ?>/inventory<?= $categoryParam !== '' ? '?category=' . $categoryParam : '' ?>" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                         <?= t('common.clear') ?>
                     </a>
                 <?php endif; ?>
@@ -205,7 +214,7 @@ $sortHeader = static function (string $column, string $label) use ($sortColumn, 
                     </p>
                     <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                         <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                            <a href="?page=<?= $i ?><?= $searchQuery ? '&search=' . urlencode($searchQuery) : '' ?><?= $categoryId ? '&category=' . (int) $categoryId : '' ?>" class="<?= $i === $currentPage ? 'bg-primary-50 border-primary-500 text-primary-600' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50' ?> relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                            <a href="?page=<?= $i ?><?= $searchQuery ? '&search=' . urlencode($searchQuery) : '' ?><?= $categoryParam !== '' ? '&category=' . $categoryParam : '' ?>" class="<?= $i === $currentPage ? 'bg-primary-50 border-primary-500 text-primary-600' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50' ?> relative inline-flex items-center px-4 py-2 border text-sm font-medium">
                                 <?= $i ?>
                             </a>
                         <?php endfor; ?>

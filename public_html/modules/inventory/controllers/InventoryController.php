@@ -22,14 +22,17 @@ class InventoryController extends Controller {
         $this->requireTechnician();
 
         $search = $_GET['search'] ?? '';
-        $categoryId = isset($_GET['category']) && $_GET['category'] !== '' ? (int) $_GET['category'] : null;
+        $uncategorized = ($_GET['category'] ?? '') === 'uncategorized';
+        $categoryId = !$uncategorized && isset($_GET['category']) && $_GET['category'] !== '' ? (int) $_GET['category'] : null;
         $page = max(1, intval($_GET['page'] ?? 1));
         $limit = PAGINATION_LIMIT;
 
         // A category also shows the products filed in its subcategories.
         $categories = $this->categoryModel->getTree();
         $categoryIds = null;
-        if ($categoryId) {
+        if ($uncategorized) {
+            $categoryIds = [null];
+        } elseif ($categoryId) {
             $categoryIds = [$categoryId];
             foreach ($categories as $category) {
                 if ((int) $category['id'] === $categoryId) {
@@ -52,7 +55,7 @@ class InventoryController extends Controller {
         );
         // The category column only shows under All categories, so a saved category sort
         // falls back to SKU inside a single category.
-        if ($categoryId && $sort[0] === 'category') {
+        if (($categoryId || $uncategorized) && $sort[0] === 'category') {
             $sort = ['item_number', 'asc'];
         }
         $categoryPaths = $this->categoryModel->getPaths($categories);
@@ -68,6 +71,8 @@ class InventoryController extends Controller {
             'sort' => $sort,
             'search' => $search,
             'categoryId' => $categoryId,
+            'uncategorized' => $uncategorized,
+            'uncategorizedCount' => $this->productModel->getCount(null, [null]),
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalCount' => $totalCount,

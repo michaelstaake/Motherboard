@@ -29,8 +29,7 @@ class InventoryProduct extends Model {
             $params[] = $term;
         }
         if ($categoryIds) {
-            $sql .= " AND p.category_id IN (" . implode(',', array_fill(0, count($categoryIds), '?')) . ")";
-            array_push($params, ...array_map('intval', $categoryIds));
+            $sql .= $this->categoryCondition($categoryIds, $params);
         }
 
         [$column, $direction] = $sort;
@@ -87,13 +86,26 @@ class InventoryProduct extends Model {
             $params[] = $term;
         }
         if ($categoryIds) {
-            $sql .= " AND p.category_id IN (" . implode(',', array_fill(0, count($categoryIds), '?')) . ")";
-            array_push($params, ...array_map('intval', $categoryIds));
+            $sql .= $this->categoryCondition($categoryIds, $params);
         }
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute($params);
         return (int) $stmt->fetch()['count'];
+    }
+
+    // A null among the category ids matches uncategorized products.
+    private function categoryCondition(array $categoryIds, array &$params): string {
+        $conditions = [];
+        $ids = array_map('intval', array_filter($categoryIds, fn($id) => $id !== null));
+        if ($ids) {
+            $conditions[] = "p.category_id IN (" . implode(',', array_fill(0, count($ids), '?')) . ")";
+            array_push($params, ...$ids);
+        }
+        if (in_array(null, $categoryIds, true)) {
+            $conditions[] = "p.category_id IS NULL";
+        }
+        return " AND (" . implode(' OR ', $conditions) . ")";
     }
 
     /**
