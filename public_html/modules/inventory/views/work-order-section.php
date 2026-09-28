@@ -58,7 +58,18 @@ $totals = motherboard_inventory_work_order_totals($assigned);
                                         <?php endif; ?>
                                     </td>
                                     <td class="px-2 py-3 text-sm text-gray-900">
-                                        <?= htmlspecialchars(motherboard_inventory_format_money($line['unit_price'])) ?>
+                                        <?php if ($canEdit): ?>
+                                            <button type="button"
+                                                    class="text-primary-600 hover:text-primary-500 hover:underline"
+                                                    title="<?= htmlspecialchars(t('inventory.wo_edit_price')) ?>"
+                                                    data-action="<?= htmlspecialchars(BASE_URL . '/work-orders/view/' . $workOrderId . '/products/' . (int) $line['id'] . '/price') ?>"
+                                                    data-name="<?= htmlspecialchars($line['product_name']) ?>"
+                                                    data-price="<?= htmlspecialchars(number_format((float) $line['stored_unit_price'], 2, '.', '')) ?>"
+                                                    data-product-price="<?= empty($line['is_custom']) && $line['product_price'] !== null ? htmlspecialchars(motherboard_inventory_format_money($line['product_price'])) : '' ?>"
+                                                    onclick="openEditInventoryPriceModal(this)"><?= htmlspecialchars(motherboard_inventory_format_money($line['unit_price'])) ?></button>
+                                        <?php else: ?>
+                                            <?= htmlspecialchars(motherboard_inventory_format_money($line['unit_price'])) ?>
+                                        <?php endif; ?>
                                         <?php if (!empty($line['taxable'])): ?>
                                             <span class="ml-1 text-xs font-medium text-gray-500" title="<?= htmlspecialchars(t('inventory.taxable')) ?>"><?= t('inventory.taxable_mark') ?></span>
                                         <?php endif; ?>
@@ -184,7 +195,62 @@ $totals = motherboard_inventory_work_order_totals($assigned);
         </div>
     </div>
 </div>
+<div id="editInventoryPriceModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900"><?= t('inventory.wo_edit_price') ?></h3>
+                <button type="button" onclick="closeEditInventoryPriceModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="editInventoryPriceForm" method="POST" action="">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+                <div class="space-y-4">
+                    <p id="editInventoryPriceName" class="text-sm font-medium text-gray-900"></p>
+                    <div>
+                        <label for="inventory_line_price" class="block text-sm font-medium text-gray-700"><?= t('inventory.price') ?></label>
+                        <input type="number" id="inventory_line_price" name="price" min="0" step="0.01" required class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
+                        <p id="editInventoryPriceProductPrice" class="mt-1 text-xs text-gray-500 hidden"></p>
+                    </div>
+                </div>
+                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 sm:ml-3 sm:w-auto sm:text-sm">
+                        <?= t('common.save') ?>
+                    </button>
+                    <button type="button" onclick="closeEditInventoryPriceModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                        <?= t('common.cancel') ?>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <script>
+function openEditInventoryPriceModal(button) {
+    document.getElementById('editInventoryPriceForm').action = button.dataset.action;
+    document.getElementById('editInventoryPriceName').textContent = button.dataset.name;
+    const priceField = document.getElementById('inventory_line_price');
+    priceField.value = button.dataset.price;
+    // Custom lines have no inventory price to compare against.
+    const productPrice = document.getElementById('editInventoryPriceProductPrice');
+    const template = <?= json_encode(t('inventory.wo_edit_price_inventory')) ?>;
+    productPrice.textContent = button.dataset.productPrice ? template.replace('{price}', button.dataset.productPrice) : '';
+    productPrice.classList.toggle('hidden', !button.dataset.productPrice);
+    document.getElementById('editInventoryPriceModal').classList.remove('hidden');
+    priceField.focus();
+    priceField.select();
+}
+function closeEditInventoryPriceModal() {
+    document.getElementById('editInventoryPriceModal').classList.add('hidden');
+}
+
 function toggleInventoryCustomFields() {
     const select = document.getElementById('inventory_product_id');
     const customFields = document.getElementById('inventoryCustomFields');

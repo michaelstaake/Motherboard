@@ -683,6 +683,7 @@ return [
     'log.inventory_product_added' => 'Inventory product added to work order',
     'log.inventory_product_removed' => 'Inventory product removed from work order',
     'log.inventory_quantity_updated' => 'Inventory quantity updated',
+    'log.inventory_price_updated' => 'Inventory price updated on work order',
     'log.inventory_exported' => 'Inventory exported',
     'date.month_short.1' => 'Jan',
     'date.month_short.2' => 'Feb',

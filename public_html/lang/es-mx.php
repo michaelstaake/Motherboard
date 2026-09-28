@@ -680,6 +680,7 @@ return [
     'log.inventory_product_added' => 'Producto de inventario agregado a la orden',
     'log.inventory_product_removed' => 'Producto de inventario quitado de la orden',
     'log.inventory_quantity_updated' => 'Cantidad de inventario actualizada',
+    'log.inventory_price_updated' => 'Precio de inventario actualizado en la orden de trabajo',
     'log.inventory_exported' => 'Inventario exportado',
     'date.month_short.1' => 'ene',
     'date.month_short.2' => 'feb',

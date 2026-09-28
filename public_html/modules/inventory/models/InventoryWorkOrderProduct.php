@@ -6,7 +6,7 @@ class InventoryWorkOrderProduct extends Model {
 
     public function getByWorkOrder(int $workOrderId): array {
         $stmt = $this->db->prepare("
-            SELECT wop.*, p.stock AS current_stock, p.sold_count, p.description AS product_description, c.name AS category_name
+            SELECT wop.*, p.stock AS current_stock, p.sold_count, p.price AS product_price, p.description AS product_description, c.name AS category_name
             FROM work_order_products wop
             LEFT JOIN inventory_products p ON p.id = wop.product_id
             LEFT JOIN inventory_categories c ON c.id = p.category_id
@@ -21,6 +21,8 @@ class InventoryWorkOrderProduct extends Model {
             $row['description'] = $lineDescription !== '' ? $lineDescription : $productDescription;
             $row['is_custom'] = motherboard_inventory_is_custom_item($row['item_number'] ?? null);
             $row['line_total'] = round((float) $row['unit_price'] * (int) $row['quantity'], 2);
+            // The filter below may restate unit_price; editing the price starts from what is stored.
+            $row['stored_unit_price'] = $row['unit_price'];
         }
         unset($row);
 
@@ -130,6 +132,20 @@ class InventoryWorkOrderProduct extends Model {
             $this->db->rollback();
             throw $e;
         }
+    }
+
+    /**
+     * Overrides the price on this line only. The product's own price in inventory is untouched,
+     * and later additions of the same product merge into this line at the overridden price.
+     */
+    public function updatePrice(int $lineId, $price): void {
+        if (!is_numeric($price) || (float) $price < 0) {
+            throw new Exception(t('inventory.invalid_price'));
+        }
+        $this->update($lineId, [
+            'unit_price' => number_format((float) $price, 2, '.', ''),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ]);
     }
 
     public function removeProduct(int $lineId, InventoryProduct $productModel): array {

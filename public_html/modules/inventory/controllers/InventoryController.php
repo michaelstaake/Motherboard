@@ -355,6 +355,31 @@ class InventoryController extends Controller {
         }
     }
 
+    public function updateWorkOrderProductPrice($id, $lineId) {
+        $this->requireWorkOrderEditor();
+        $this->requirePost();
+        $workOrder = $this->requireWorkOrder($id);
+        try {
+            $this->validateCSRF();
+            $line = $this->requireLine((int) $lineId, (int) $workOrder['id']);
+            $price = trim((string) ($_POST['price'] ?? ''));
+            $this->lineModel->updatePrice((int) $line['id'], $price);
+            $this->workOrderModel->logWorkOrderAction(
+                (int) $workOrder['id'],
+                'inventory_price_updated',
+                t('inventory.log_price', [
+                    'name' => $line['product_name'],
+                    'old' => motherboard_inventory_format_money($line['unit_price']),
+                    'new' => motherboard_inventory_format_money($price),
+                ])
+            );
+            $this->logger->log('inventory_price_updated', "Updated price of {$line['product_name']} on work order #{$workOrder['id']}", $_SESSION['user_id']);
+            $this->redirectWorkOrder($workOrder['id'], 'message', t('inventory.wo_price_updated'));
+        } catch (Exception $e) {
+            $this->redirectWorkOrder($workOrder['id'], 'error', $e->getMessage());
+        }
+    }
+
     public function removeWorkOrderProduct($id, $lineId) {
         $this->requireWorkOrderEditor();
         $this->requirePost();
