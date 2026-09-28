@@ -132,6 +132,5 @@ Self-contained PHP arrays in `public_html/lang/`:
 - `cs-cz.php`
 - `de-de.php`
 - `fr-fr.php`
-- `pup.php` (fictional)
 
 Add more files using the same keys as `en-us.php`.
