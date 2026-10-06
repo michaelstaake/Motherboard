@@ -56,6 +56,30 @@ class WorkOrderAttachment extends Model {
         return ROOT_PATH . '/attachments';
     }
 
+    public static function localStorageWritable(string $subdir = ''): bool {
+        $path = self::storagePath();
+        if (!is_dir($path)) {
+            return is_writable(dirname($path));
+        }
+        if (!is_writable($path)) {
+            return false;
+        }
+        if ($subdir !== '') {
+            $dir = $path . '/' . $subdir;
+            if (is_dir($dir) && !is_writable($dir)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function canAcceptUploads(?int $workOrderId = null): bool {
+        if ($workOrderId === null) {
+            return self::localStorageWritable('pending');
+        }
+        return $this->currentDestination() !== 'local' || self::localStorageWritable((string) $workOrderId);
+    }
+
     public function getByWorkOrder($workOrderId) {
         return $this->findWhere('work_order_id = ? ORDER BY created_at ASC', [$workOrderId]);
     }
@@ -305,6 +329,9 @@ class WorkOrderAttachment extends Model {
 
     public function storePendingUpload(array $file, string $description): array {
         $this->validateUpload($file);
+        if (!self::localStorageWritable('pending')) {
+            throw new Exception(t('wo.attachment_storage_not_writable'));
+        }
         $this->ensureStorage();
 
         $sessionKey = $this->sessionStorageKey();
@@ -423,6 +450,9 @@ class WorkOrderAttachment extends Model {
         $size = filesize($source) ?: 0;
 
         if ($destination === 'local') {
+            if (!self::localStorageWritable((string) $workOrderId)) {
+                throw new Exception(t('wo.attachment_storage_not_writable'));
+            }
             $targetDir = self::storagePath() . '/' . $workOrderId;
             if (!is_dir($targetDir) && !mkdir($targetDir, 0755, true) && !is_dir($targetDir)) {
                 throw new Exception(t('wo.attachment_upload_fail'));

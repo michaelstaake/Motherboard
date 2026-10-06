@@ -257,6 +257,7 @@ class WorkOrderController extends Controller {
             'attachmentSettings' => $this->attachmentModel->getSettings(),
             'attachmentMaxBytes' => $this->attachmentModel->maxSizeBytes(),
             'attachmentAllowedLabel' => $this->attachmentModel->allowedExtensionsLabel(),
+            'attachmentStorageWritable' => $this->attachmentModel->canAcceptUploads(),
             'csrf_token' => $this->generateCSRF()
         ]);
     }
@@ -367,6 +368,7 @@ class WorkOrderController extends Controller {
             'attachmentModel' => $this->attachmentModel,
             'attachmentMaxBytes' => $this->attachmentModel->maxSizeBytes(),
             'attachmentAllowedLabel' => $this->attachmentModel->allowedExtensionsLabel(),
+            'attachmentStorageWritable' => $this->attachmentModel->canAcceptUploads((int) $id),
             'error' => $error,
             'message' => $message,
             'csrf_token' => $this->generateCSRF(),

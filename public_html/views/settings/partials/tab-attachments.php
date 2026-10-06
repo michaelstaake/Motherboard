@@ -21,6 +21,11 @@
                 <?php endforeach; ?>
             </select>
             <p class="mt-1 text-sm text-gray-500"><?= t('settings.attachment_destination_help') ?></p>
+            <?php if (!WorkOrderAttachment::localStorageWritable()): ?>
+                <p class="mt-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+                    <?= t('settings.attachment_folder_not_writable', ['path' => htmlspecialchars(WorkOrderAttachment::storagePath())]) ?>
+                </p>
+            <?php endif; ?>
             <?php Hooks::doAction('settings.attachments.destination_help', $settings['attachment_destination'] ?? 'local'); ?>
         </div>
 

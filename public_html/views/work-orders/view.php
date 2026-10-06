@@ -834,10 +834,13 @@ $printOptions = $printOptions ?? ['has_disclaimer' => true, 'customer_signature'
             <form method="POST" action="<?= BASE_URL ?>/work-orders/view/<?= $workOrder['id'] ?>/attachments" enctype="multipart/form-data" data-attachment-upload>
                 <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                 <input type="hidden" name="MAX_FILE_SIZE" value="<?= (int) $attachmentMaxBytes ?>">
+                <?php if (!($attachmentStorageWritable ?? true)): ?>
+                    <p class="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2"><?= t('wo.attachment_storage_not_writable') ?></p>
+                <?php endif; ?>
                 <div class="space-y-4">
                     <div>
                         <label for="attachment" class="block text-sm font-medium text-gray-700"><?= t('wo.attachment_file') ?></label>
-                        <input type="file" name="attachment" id="attachment" required class="mt-1 block w-full text-sm text-gray-700" data-max-bytes="<?= (int) $attachmentMaxBytes ?>" data-allowed="<?= htmlspecialchars(implode(',', $attachmentModel->allowedExtensions())) ?>"<?php if (!$attachmentModel->allowsAllTypes()): ?> accept="<?= htmlspecialchars(implode(',', array_map(function ($ext) { return '.' . $ext; }, $attachmentModel->allowedExtensions()))) ?>"<?php endif; ?>>
+                        <input type="file" name="attachment" id="attachment" required<?= ($attachmentStorageWritable ?? true) ? '' : ' disabled' ?> class="mt-1 block w-full text-sm text-gray-700" data-max-bytes="<?= (int) $attachmentMaxBytes ?>" data-allowed="<?= htmlspecialchars(implode(',', $attachmentModel->allowedExtensions())) ?>"<?php if (!$attachmentModel->allowsAllTypes()): ?> accept="<?= htmlspecialchars(implode(',', array_map(function ($ext) { return '.' . $ext; }, $attachmentModel->allowedExtensions()))) ?>"<?php endif; ?>>
                         <p class="mt-1 text-xs text-gray-500">
                             <?= t('wo.attachment_limits', ['size' => htmlspecialchars($attachmentModel->formatSize($attachmentMaxBytes)), 'types' => htmlspecialchars($attachmentAllowedLabel)]) ?>
                         </p>
@@ -845,11 +848,11 @@ $printOptions = $printOptions ?? ['has_disclaimer' => true, 'customer_signature'
                     </div>
                     <div>
                         <label for="attachment_description" class="block text-sm font-medium text-gray-700"><?= t('wo.attachment_description') ?></label>
-                        <textarea id="attachment_description" name="attachment_description" rows="3" placeholder="<?= htmlspecialchars(t('wo.attachment_description_ph')) ?>" class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white"></textarea>
+                        <textarea id="attachment_description" name="attachment_description" rows="3"<?= ($attachmentStorageWritable ?? true) ? '' : ' disabled' ?> placeholder="<?= htmlspecialchars(t('wo.attachment_description_ph')) ?>" class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white"></textarea>
                     </div>
                 </div>
                 <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 sm:ml-3 sm:w-auto sm:text-sm">
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed sm:ml-3 sm:w-auto sm:text-sm"<?= ($attachmentStorageWritable ?? true) ? '' : ' disabled' ?>>
                         <?= t('wo.add_attachment') ?>
                     </button>
                     <button type="button" onclick="closeAddAttachmentModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
