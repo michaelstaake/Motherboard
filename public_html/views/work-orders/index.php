@@ -1,5 +1,6 @@
 <?php 
-// Active work orders at least this many days old are tinted amber, then red, in the list.
+// Active work orders this many days after opening, and closed ones this many days after closing
+// (until picked up), have their date tinted amber, then red, in the list.
 const DAYS_OPEN_STALE = 7;
 const DAYS_OPEN_OVERDUE = 14;
 
@@ -146,12 +147,14 @@ ob_start();
                                     <?php endif; ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    <?= ldate($workOrder['created_at'], 'M j, Y') ?>
-                                    <?php if (!in_array($workOrder['status'], ['Closed', 'Picked Up'], true)): ?>
-                                        <?php $daysOpen = (new DateTime(date('Y-m-d', strtotime($workOrder['created_at']))))->diff(new DateTime('today'))->days; ?>
-                                        <div class="text-xs <?= $daysOpen >= DAYS_OPEN_OVERDUE ? 'text-red-600 font-medium' : ($daysOpen >= DAYS_OPEN_STALE ? 'text-amber-600' : 'text-gray-400') ?>">
-                                            <?= t('wo.days_open', ['count' => $daysOpen]) ?>
-                                        </div>
+                                    <?php $isClosed = $workOrder['status'] === 'Closed' && !empty($workOrder['closed_at']); ?>
+                                    <?php if ($isClosed || !in_array($workOrder['status'], ['Closed', 'Picked Up'], true)): ?>
+                                        <?php $days = (new DateTime(date('Y-m-d', strtotime($isClosed ? $workOrder['closed_at'] : $workOrder['created_at']))))->diff(new DateTime('today'))->days; ?>
+                                        <span class="<?= $days >= DAYS_OPEN_OVERDUE ? 'text-red-600 font-medium' : ($days >= DAYS_OPEN_STALE ? 'text-amber-600' : '') ?>" title="<?= htmlspecialchars(t($isClosed ? 'wo.days_closed' : 'wo.days_open', ['count' => $days])) ?>">
+                                            <?= ldate($workOrder['created_at'], 'M j, Y') ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <?= ldate($workOrder['created_at'], 'M j, Y') ?>
                                     <?php endif; ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
