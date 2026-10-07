@@ -21,7 +21,7 @@ class WorkOrder extends Model {
      * $sort is [column, 'asc'|'desc'] with a column from LIST_SORT_COLUMNS. Ties fall back to
      * newest first so the order stays stable across pages.
      */
-    public function getWorkOrders($status = null, $priority = null, $search = null, $limit = 10, $offset = 0, $assignedTo = null, array $sort = ['opened', 'desc']) {
+    public function getWorkOrders($status = null, $priority = null, $search = null, $limit = 10, $offset = 0, $assignedTo = null, array $sort = ['number', 'desc']) {
         [$where, $params] = $this->buildListFilters($status, $priority, $search, $assignedTo);
         $sql = "
             SELECT wo.*, c.name as customer_name, c.company as customer_company,
@@ -36,8 +36,8 @@ class WorkOrder extends Model {
         [$column, $direction] = $sort;
         $direction = $direction === 'asc' ? 'ASC' : 'DESC';
         switch ($column) {
-            case 'number':
-                $order = "wo.id {$direction}";
+            case 'opened':
+                $order = "wo.created_at {$direction}, wo.id {$direction}";
                 break;
             case 'customer':
                 $order = "c.name {$direction}, wo.id DESC";
@@ -54,7 +54,7 @@ class WorkOrder extends Model {
                 $order = "FIELD(wo.status, 'Open', 'In Progress', 'Awaiting Parts', 'Closed', 'Picked Up') {$direction}, wo.id DESC";
                 break;
             default:
-                $order = "wo.created_at {$direction}, wo.id {$direction}";
+                $order = "wo.id {$direction}";
         }
         $sql .= " ORDER BY {$order} LIMIT ? OFFSET ?";
         $params[] = $limit;

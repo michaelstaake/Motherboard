@@ -9,7 +9,6 @@ require_once 'models/Settings.php';
 class WorkOrderController extends Controller {
     private const ALLOWED_STATUSES = ['Open', 'In Progress', 'Awaiting Parts', 'Closed', 'Picked Up'];
     private const ALLOWED_PRIORITIES = ['Standard', 'Priority'];
-    private const LIST_SORT_COOKIE = 'motherboard_work_order_sort';
     private $workOrderModel;
     private $attachmentModel;
     private $customerModel;
@@ -60,28 +59,14 @@ class WorkOrderController extends Controller {
     }
     
     /**
-     * Returns [column, 'asc'|'desc'] for the work order list. A sort picked from a column
-     * header is remembered in a cookie so it sticks when coming back to the list.
+     * Returns [column, 'asc'|'desc'] for the work order list. The sort only lives in the URL,
+     * so opening the list fresh always starts from newest work order number first.
      */
     private function listSort(?string $column, ?string $direction): array {
         if ($column !== null && in_array($column, WorkOrder::LIST_SORT_COLUMNS, true)) {
-            $sort = [$column, $direction === 'desc' ? 'desc' : 'asc'];
-            $params = session_get_cookie_params();
-            setcookie(self::LIST_SORT_COOKIE, implode(':', $sort), [
-                'expires' => time() + 365 * 24 * 60 * 60,
-                'path' => '/',
-                'domain' => $params['domain'] ?? '',
-                'secure' => (bool) ($params['secure'] ?? false),
-                'httponly' => true,
-                'samesite' => 'Lax',
-            ]);
-            return $sort;
+            return [$column, $direction === 'desc' ? 'desc' : 'asc'];
         }
-        [$saved, $savedDirection] = array_pad(explode(':', (string) ($_COOKIE[self::LIST_SORT_COOKIE] ?? ''), 2), 2, '');
-        if (in_array($saved, WorkOrder::LIST_SORT_COLUMNS, true)) {
-            return [$saved, $savedDirection === 'desc' ? 'desc' : 'asc'];
-        }
-        return ['opened', 'desc'];
+        return ['number', 'desc'];
     }
     
     public function create() {
