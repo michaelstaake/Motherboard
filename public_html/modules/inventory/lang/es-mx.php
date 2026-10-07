@@ -68,6 +68,7 @@ return [
     'inventory.product_not_found' => 'No se encontró el producto.',
     'inventory.product_in_use' => 'Este producto está asignado a una orden de trabajo y no se puede eliminar.',
     'inventory.invalid_price' => 'Ingresa un precio válido de 0 o más.',
+    'inventory.invalid_line_price' => 'Ingresa un precio válido.',
     'inventory.invalid_stock' => 'Las existencias deben ser un número entero. Usa -1 para ilimitado.',
     'inventory.invalid_quantity' => 'La cantidad debe ser al menos 1.',
     'inventory.none_yet' => 'Aún no hay productos.',

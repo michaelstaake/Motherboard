@@ -30,7 +30,9 @@ function motherboard_inventory_format_money($amount, ?Settings $settings = null)
     }
     // Word-like currencies ("USD") need the space that symbols ("$", "€") do not.
     $separator = preg_match('/[\p{L}\p{N}]$/u', $currency) ? ' ' : '';
-    return $currency . $separator . motherboard_inventory_format_price($amount);
+    // Discount lines are negative; show "-$5.00" rather than "$-5.00".
+    $sign = round((float) $amount, 2) < 0 ? '-' : '';
+    return $sign . $currency . $separator . motherboard_inventory_format_price(abs((float) $amount));
 }
 
 function motherboard_inventory_format_tax_rate($rate): string {

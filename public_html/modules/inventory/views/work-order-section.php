@@ -169,7 +169,7 @@ $totals = motherboard_inventory_work_order_totals($assigned);
                         </div>
                         <div>
                             <label for="inventory_custom_price" class="block text-sm font-medium text-gray-700"><?= t('inventory.price') ?></label>
-                            <input type="number" id="inventory_custom_price" name="price" min="0" step="0.01" value="0.00" class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
+                            <input type="number" id="inventory_custom_price" name="price" step="0.01" value="0.00" class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
                         </div>
                         <div>
                             <label class="inline-flex items-center">
@@ -216,7 +216,7 @@ $totals = motherboard_inventory_work_order_totals($assigned);
                     <p id="editInventoryPriceName" class="text-sm font-medium text-gray-900"></p>
                     <div>
                         <label for="inventory_line_price" class="block text-sm font-medium text-gray-700"><?= t('inventory.price') ?></label>
-                        <input type="number" id="inventory_line_price" name="price" min="0" step="0.01" required class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
+                        <input type="number" id="inventory_line_price" name="price" step="0.01" required class="mt-1 block w-full px-4 py-3 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
                         <p id="editInventoryPriceProductPrice" class="mt-1 text-xs text-gray-500 hidden"></p>
                     </div>
                 </div>

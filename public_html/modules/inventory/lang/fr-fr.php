@@ -68,6 +68,7 @@ return [
     'inventory.product_not_found' => 'Produit introuvable.',
     'inventory.product_in_use' => 'Ce produit est attribué à un ordre de travail et ne peut pas être supprimé.',
     'inventory.invalid_price' => 'Saisissez un prix valide de 0 ou plus.',
+    'inventory.invalid_line_price' => 'Saisissez un prix valide.',
     'inventory.invalid_stock' => 'Le stock doit être un nombre entier. Utilisez -1 pour illimité.',
     'inventory.invalid_quantity' => 'La quantité doit être d’au moins 1.',
     'inventory.none_yet' => 'Aucun produit pour le moment.',

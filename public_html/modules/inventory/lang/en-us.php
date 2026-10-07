@@ -68,6 +68,7 @@ return [
     'inventory.product_not_found' => 'Product not found.',
     'inventory.product_in_use' => 'This product is assigned to a work order and cannot be deleted.',
     'inventory.invalid_price' => 'Enter a valid price of 0 or more.',
+    'inventory.invalid_line_price' => 'Enter a valid price.',
     'inventory.invalid_stock' => 'Stock must be a whole number. Use -1 for unlimited.',
     'inventory.invalid_quantity' => 'Quantity must be at least 1.',
     'inventory.none_yet' => 'No products yet.',

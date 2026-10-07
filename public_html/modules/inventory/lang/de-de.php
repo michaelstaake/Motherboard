@@ -68,6 +68,7 @@ return [
     'inventory.product_not_found' => 'Produkt nicht gefunden.',
     'inventory.product_in_use' => 'Dieses Produkt ist einem Arbeitsauftrag zugeordnet und kann nicht gelöscht werden.',
     'inventory.invalid_price' => 'Geben Sie einen gültigen Preis von 0 oder mehr ein.',
+    'inventory.invalid_line_price' => 'Geben Sie einen gültigen Preis ein.',
     'inventory.invalid_stock' => 'Der Bestand muss eine ganze Zahl sein. Verwenden Sie -1 für unbegrenzt.',
     'inventory.invalid_quantity' => 'Die Menge muss mindestens 1 sein.',
     'inventory.none_yet' => 'Noch keine Produkte.',

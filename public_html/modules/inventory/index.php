@@ -3,7 +3,7 @@ return [
     'slug' => 'inventory',
     'name' => 'Inventory',
     'description' => 'Track product categories, stock, pricing, and assign products to work orders.',
-    'version' => '1.16.3',
+    'version' => '1.16.4',
     'min_motherboard_version' => '26.9.28.2',
     'min_php_version' => '8.1',
     'default_enabled' => false,

@@ -68,6 +68,7 @@ return [
     'inventory.product_not_found' => 'Produkt nebyl nalezen.',
     'inventory.product_in_use' => 'Tento produkt je přiřazen k zakázce a nelze ho smazat.',
     'inventory.invalid_price' => 'Zadejte platnou cenu 0 nebo vyšší.',
+    'inventory.invalid_line_price' => 'Zadejte platnou cenu.',
     'inventory.invalid_stock' => 'Zásoby musí být celé číslo. Použijte -1 pro neomezené.',
     'inventory.invalid_quantity' => 'Množství musí být alespoň 1.',
     'inventory.none_yet' => 'Zatím žádné produkty.',

@@ -67,6 +67,7 @@ return [
     'inventory.product_not_found' => 'Продуктът не е намерен.',
     'inventory.product_in_use' => 'Този продукт е добавен към сервизна задача и не може да бъде изтрит.',
     'inventory.invalid_price' => 'Въведете валидна цена, равна на или по-голяма от 0.',
+    'inventory.invalid_line_price' => 'Въведете валидна цена.',
     'inventory.invalid_stock' => 'Наличността трябва да бъде цяло число. Използвайте -1 за неограничена наличност.',
     'inventory.invalid_quantity' => 'Количеството трябва да бъде поне 1.',
     'inventory.none_yet' => 'Все още няма продукти.',

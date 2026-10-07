@@ -91,8 +91,8 @@ class InventoryWorkOrderProduct extends Model {
         }
 
         $price = $data['price'] ?? 0;
-        if (!is_numeric($price) || (float) $price < 0) {
-            throw new Exception(t('inventory.invalid_price'));
+        if (!is_numeric($price)) {
+            throw new Exception(t('inventory.invalid_line_price'));
         }
 
         $this->db->beginTransaction();
@@ -139,8 +139,8 @@ class InventoryWorkOrderProduct extends Model {
      * and later additions of the same product merge into this line at the overridden price.
      */
     public function updatePrice(int $lineId, $price): void {
-        if (!is_numeric($price) || (float) $price < 0) {
-            throw new Exception(t('inventory.invalid_price'));
+        if (!is_numeric($price)) {
+            throw new Exception(t('inventory.invalid_line_price'));
         }
         $this->update($lineId, [
             'unit_price' => number_format((float) $price, 2, '.', ''),
