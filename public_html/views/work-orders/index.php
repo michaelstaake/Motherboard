@@ -5,6 +5,26 @@ const DAYS_OPEN_STALE = 7;
 const DAYS_OPEN_OVERDUE = 14;
 
 $title = t('wo.title') . ' - ' . ($companyName ?? APP_NAME);
+[$sortColumn, $sortDirection] = $sort ?? ['opened', 'desc'];
+// Clicking a column header sorts by it A to Z (oldest first for dates), or flips the direction
+// if it is already sorted by it. The controller remembers the choice, so other links leave it out.
+$sortHeader = static function (string $column, string $label) use ($sortColumn, $sortDirection, $status, $search, $assignedTo): string {
+    $active = $sortColumn === $column;
+    $query = http_build_query(array_filter([
+        'status' => $status !== 'All' ? $status : '',
+        'search' => $search,
+        'assigned_to' => (string) $assignedTo,
+        'sort' => $column,
+        'dir' => $active && $sortDirection === 'asc' ? 'desc' : 'asc',
+    ], fn($value) => $value !== ''));
+    $arrow = $active ? ($sortDirection === 'asc' ? '&#x25B2;' : '&#x25BC;') : '';
+    return '<th scope="col"' . ($active ? ' aria-sort="' . ($sortDirection === 'asc' ? 'ascending' : 'descending') . '"' : '')
+        . ' class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">'
+        . '<a href="' . BASE_URL . '/work-orders?' . htmlspecialchars($query) . '" class="inline-flex items-center gap-1 whitespace-nowrap ' . ($active ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700') . '">'
+        . htmlspecialchars($label)
+        . '<span aria-hidden="true">' . $arrow . '</span>'
+        . '</a></th>';
+};
 ob_start(); 
 ?>
 
@@ -30,13 +50,25 @@ ob_start();
         <div class="px-6 py-4 border-b border-gray-200">
             <div class="flex flex-wrap items-center gap-4">
                 <!-- Status Filter -->
-                <div class="flex space-x-2">
+                <div class="flex flex-wrap gap-2">
                     <?php 
-                    $statuses = ['All', 'Priority', 'Open', 'In Progress', 'Awaiting Parts', 'Closed', 'Picked Up'];
+                    $statuses = ['All', 'Priority', 'Active', 'Open', 'In Progress', 'Awaiting Parts', 'Closed', 'Picked Up'];
+                    $activeIncludes = implode(', ', array_map(fn($included) => t('status.' . $included), WorkOrder::ACTIVE_STATUSES));
                     foreach ($statuses as $filterStatus): 
+                        // Active sits right before the statuses it covers. Those are tinted while Active is
+                        // selected, and while hovering it (Tailwind peer), to show what it includes.
+                        $isIncluded = in_array($filterStatus, WorkOrder::ACTIVE_STATUSES, true);
+                        if ($status === $filterStatus) {
+                            $pillClass = 'bg-primary-600 text-white';
+                        } elseif ($isIncluded && $status === 'Active') {
+                            $pillClass = 'bg-primary-100 text-primary-700 hover:bg-primary-200';
+                        } else {
+                            $pillClass = 'bg-gray-100 text-gray-700 hover:bg-gray-200' . ($isIncluded ? ' peer-hover:bg-primary-100 peer-hover:text-primary-700' : '');
+                        }
                     ?>
                         <a href="<?= BASE_URL ?>/work-orders?status=<?= urlencode($filterStatus) ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?>"
-                           class="px-3 py-1 rounded-full text-sm <?= $status === $filterStatus ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' ?>">
+                           <?php if ($filterStatus === 'Active'): ?>title="<?= htmlspecialchars($activeIncludes) ?>"<?php endif; ?>
+                           class="<?= $filterStatus === 'Active' ? 'peer ' : '' ?>px-3 py-1 rounded-full text-sm transition-colors <?= $pillClass ?>">
                             <?= t('status.' . $filterStatus) ?>
                         </a>
                     <?php endforeach; ?>
@@ -94,24 +126,12 @@ ob_start();
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <?= t('wo.number') ?>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <?= t('wo.customer') ?>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <?= t('wo.date_opened') ?>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <?= t('wo.computer') ?>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <?= t('wo.technician') ?>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <?= t('common.status') ?>
-                        </th>
+                        <?= $sortHeader('number', t('wo.number')) ?>
+                        <?= $sortHeader('customer', t('wo.customer')) ?>
+                        <?= $sortHeader('opened', t('wo.date_opened')) ?>
+                        <?= $sortHeader('computer', t('wo.computer')) ?>
+                        <?= $sortHeader('technician', t('wo.technician')) ?>
+                        <?= $sortHeader('status', t('common.status')) ?>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <?= t('common.actions') ?>
                         </th>

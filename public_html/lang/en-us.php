@@ -42,6 +42,7 @@ return [
     'status.Closed' => 'Closed',
     'status.Picked Up' => 'Picked Up',
     'status.All' => 'All',
+    'status.Active' => 'Active',
     'status.Priority' => 'Priority',
     'priority.Standard' => 'Standard',
     'priority.Priority' => 'Priority',

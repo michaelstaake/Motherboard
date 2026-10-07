@@ -39,6 +39,7 @@ return [
     'status.Closed' => 'Fermé',
     'status.Picked Up' => 'Récupéré',
     'status.All' => 'Tous',
+    'status.Active' => 'Actifs',
     'status.Priority' => 'Priorité',
     'priority.Standard' => 'Standard',
     'priority.Priority' => 'Priorité',

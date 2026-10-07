@@ -4,6 +4,9 @@ require_once 'core/Crypto.php';
 
 class WorkOrder extends Model {
     protected $table = 'work_orders';
+
+    public const ACTIVE_STATUSES = ['Open', 'In Progress', 'Awaiting Parts'];
+    public const LIST_SORT_COLUMNS = ['number', 'customer', 'opened', 'computer', 'technician', 'status'];
     
     public function countWorkOrders($status = null, $priority = null, $search = null, $assignedTo = null) {
         [$where, $params] = $this->buildListFilters($status, $priority, $search, $assignedTo);
@@ -14,7 +17,11 @@ class WorkOrder extends Model {
         return $stmt->fetch()['count'];
     }
     
-    public function getWorkOrders($status = null, $priority = null, $search = null, $limit = 10, $offset = 0, $assignedTo = null) {
+    /**
+     * $sort is [column, 'asc'|'desc'] with a column from LIST_SORT_COLUMNS. Ties fall back to
+     * newest first so the order stays stable across pages.
+     */
+    public function getWorkOrders($status = null, $priority = null, $search = null, $limit = 10, $offset = 0, $assignedTo = null, array $sort = ['opened', 'desc']) {
         [$where, $params] = $this->buildListFilters($status, $priority, $search, $assignedTo);
         $sql = "
             SELECT wo.*, c.name as customer_name, c.company as customer_company,
@@ -26,7 +33,30 @@ class WorkOrder extends Model {
             WHERE 1=1
         " . $where;
         
-        $sql .= " ORDER BY wo.created_at DESC LIMIT ? OFFSET ?";
+        [$column, $direction] = $sort;
+        $direction = $direction === 'asc' ? 'ASC' : 'DESC';
+        switch ($column) {
+            case 'number':
+                $order = "wo.id {$direction}";
+                break;
+            case 'customer':
+                $order = "c.name {$direction}, wo.id DESC";
+                break;
+            case 'computer':
+                $order = "wo.computer {$direction}, wo.model {$direction}, wo.id DESC";
+                break;
+            case 'technician':
+                // Unassigned work orders list after every technician.
+                $order = "(wo.assigned_to IS NULL) ASC, technician_display_name {$direction}, wo.id DESC";
+                break;
+            case 'status':
+                // Statuses sort in workflow order rather than alphabetically.
+                $order = "FIELD(wo.status, 'Open', 'In Progress', 'Awaiting Parts', 'Closed', 'Picked Up') {$direction}, wo.id DESC";
+                break;
+            default:
+                $order = "wo.created_at {$direction}, wo.id {$direction}";
+        }
+        $sql .= " ORDER BY {$order} LIMIT ? OFFSET ?";
         $params[] = $limit;
         $params[] = $offset;
         
@@ -46,6 +76,8 @@ class WorkOrder extends Model {
         if ($status && $status !== 'All') {
             if ($status === 'Priority') {
                 $sql .= " AND wo.priority = 'Priority'";
+            } elseif ($status === 'Active') {
+                $sql .= " AND wo.status IN ('" . implode("', '", self::ACTIVE_STATUSES) . "')";
             } else {
                 $sql .= " AND wo.status = ?";
                 $params[] = $status;

@@ -42,6 +42,7 @@ return [
     'status.Closed' => 'Приключена',
     'status.Picked Up' => 'Предадена на клиента',
     'status.All' => 'Всички',
+    'status.Active' => 'Активни',
     'status.Priority' => 'Приоритетни',
     'priority.Standard' => 'Стандартен',
     'priority.Priority' => 'Приоритетен',

@@ -39,6 +39,7 @@ return [
     'status.Closed' => 'Dokončeno',
     'status.Picked Up' => 'Vyzvednuto',
     'status.All' => 'Vše',
+    'status.Active' => 'Aktivní',
     'status.Priority' => 'Priorita',
     'priority.Standard' => 'Standardní',
     'priority.Priority' => 'Vysoká',

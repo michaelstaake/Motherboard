@@ -9,6 +9,7 @@ require_once 'models/Settings.php';
 class WorkOrderController extends Controller {
     private const ALLOWED_STATUSES = ['Open', 'In Progress', 'Awaiting Parts', 'Closed', 'Picked Up'];
     private const ALLOWED_PRIORITIES = ['Standard', 'Priority'];
+    private const LIST_SORT_COOKIE = 'motherboard_work_order_sort';
     private $workOrderModel;
     private $attachmentModel;
     private $customerModel;
@@ -30,6 +31,10 @@ class WorkOrderController extends Controller {
         $assignedTo = $_GET['assigned_to'] ?? null;
         $page = max(1, intval($_GET['page'] ?? 1));
         $limit = PAGINATION_LIMIT;
+        $sort = $this->listSort(
+            isset($_GET['sort']) ? (string) $_GET['sort'] : null,
+            isset($_GET['dir']) ? (string) $_GET['dir'] : null
+        );
         
         $totalCount = $this->workOrderModel->countWorkOrders($status, null, $search, $assignedTo);
         $totalPages = ceil($totalCount / $limit);
@@ -40,17 +45,43 @@ class WorkOrderController extends Controller {
         }
 
         $offset = ($page - 1) * $limit;
-        $workOrders = $this->workOrderModel->getWorkOrders($status, null, $search, $limit, $offset, $assignedTo);
+        $workOrders = $this->workOrderModel->getWorkOrders($status, null, $search, $limit, $offset, $assignedTo, $sort);
         
         $this->view('work-orders/index', [
             'workOrders' => $workOrders,
             'status' => $status,
             'search' => $search,
             'assignedTo' => $assignedTo,
+            'sort' => $sort,
             'currentPage' => $page,
             'totalPages' => $totalPages,
             'totalCount' => $totalCount
         ]);
+    }
+    
+    /**
+     * Returns [column, 'asc'|'desc'] for the work order list. A sort picked from a column
+     * header is remembered in a cookie so it sticks when coming back to the list.
+     */
+    private function listSort(?string $column, ?string $direction): array {
+        if ($column !== null && in_array($column, WorkOrder::LIST_SORT_COLUMNS, true)) {
+            $sort = [$column, $direction === 'desc' ? 'desc' : 'asc'];
+            $params = session_get_cookie_params();
+            setcookie(self::LIST_SORT_COOKIE, implode(':', $sort), [
+                'expires' => time() + 365 * 24 * 60 * 60,
+                'path' => '/',
+                'domain' => $params['domain'] ?? '',
+                'secure' => (bool) ($params['secure'] ?? false),
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+            return $sort;
+        }
+        [$saved, $savedDirection] = array_pad(explode(':', (string) ($_COOKIE[self::LIST_SORT_COOKIE] ?? ''), 2), 2, '');
+        if (in_array($saved, WorkOrder::LIST_SORT_COLUMNS, true)) {
+            return [$saved, $savedDirection === 'desc' ? 'desc' : 'asc'];
+        }
+        return ['opened', 'desc'];
     }
     
     public function create() {
