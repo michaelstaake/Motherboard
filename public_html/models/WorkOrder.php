@@ -178,6 +178,20 @@ class WorkOrder extends Model {
     public function getWorkOrdersByCustomer($customerId) {
         return $this->findWhere('customer_id = ? ORDER BY created_at DESC', [$customerId]);
     }
+
+    // Distinct devices from a customer's past work orders, most recently seen first.
+    public function getRecentDevicesByCustomer(int $customerId, int $limit = 5) {
+        $stmt = $this->db->prepare("
+            SELECT computer, model, serial_number, imei, MAX(created_at) AS last_seen
+            FROM work_orders
+            WHERE customer_id = ?
+            GROUP BY computer, model, serial_number, imei
+            ORDER BY last_seen DESC
+            LIMIT " . max(1, $limit)
+        );
+        $stmt->execute([$customerId]);
+        return $stmt->fetchAll();
+    }
     
     public function getWorkOrdersByTechnician($technicianId) {
         $stmt = $this->db->prepare("

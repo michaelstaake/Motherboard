@@ -244,13 +244,19 @@ class WorkOrderController extends Controller {
         } elseif ($step >= 2 && isset($_SESSION['new_customer_data'])) {
             $customer = $_SESSION['new_customer_data'];
         }
-        
+
+        $previousDevices = [];
+        if ($step === 2 && isset($_SESSION['work_order_data']['customer_id'])) {
+            $previousDevices = $this->workOrderModel->getRecentDevicesByCustomer((int) $_SESSION['work_order_data']['customer_id']);
+        }
+
         $this->view('work-orders/create', [
             'step' => $step,
             'error' => $error,
             'customers' => $customers,
             'technicians' => $technicians,
             'customer' => $customer,
+            'previousDevices' => $previousDevices,
             'workOrderData' => $_SESSION['work_order_data'] ?? [],
             'pendingAttachments' => $_SESSION['work_order_data']['pending_attachments'] ?? [],
             'attachmentModel' => $this->attachmentModel,

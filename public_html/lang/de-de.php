@@ -562,6 +562,8 @@ return [
     'wo.days_closed' => 'Seit {count} Tagen geschlossen',
     'wo.imei_short' => 'IMEI: {imei}',
     'wo.model_short' => 'Modell: {model}',
+    'wo.previous_devices' => 'Frühere Geräte',
+    'wo.previous_devices_help' => 'Klicken, um ein Gerät einzutragen, das dieser Kunde schon einmal gebracht hat.',
     'wo.login_no_permission' => 'Sie haben keine Berechtigung, Anmeldeinformationen anzuzeigen.',
     'wo.login_none' => 'Keine Anmeldeinformationen für diesen Arbeitsauftrag.',
     'wo.work_performed' => 'Durchgeführte Arbeiten',

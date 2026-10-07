@@ -565,6 +565,8 @@ return [
     'wo.days_closed' => 'Затворена от {count} дни',
     'wo.imei_short' => 'IMEI: {imei}',
     'wo.model_short' => 'Модел: {model}',
+    'wo.previous_devices' => 'Предишни устройства',
+    'wo.previous_devices_help' => 'Щракнете, за да попълните устройство, което този клиент е носил преди.',
     'wo.login_no_permission' => 'Нямате права да преглеждате данните за вход.',
     'wo.login_none' => 'Няма данни за вход за тази сервизна задача.',
     'wo.work_performed' => 'Извършена работа',

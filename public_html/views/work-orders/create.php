@@ -135,6 +135,30 @@ ob_start();
                     <input type="hidden" name="csrf_token" value="<?= $csrf_token ?>">
                     
                     <div class="space-y-4">
+                        <?php if (!empty($previousDevices)): ?>
+                        <div>
+                            <p class="block text-sm font-medium text-gray-700"><?= t('wo.previous_devices') ?></p>
+                            <p class="text-xs text-gray-500"><?= t('wo.previous_devices_help') ?></p>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                                <?php foreach ($previousDevices as $device): ?>
+                                    <button type="button"
+                                            class="previous-device text-left px-3 py-2 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                            data-computer="<?= htmlspecialchars($device['computer'] ?? '') ?>"
+                                            data-model="<?= htmlspecialchars($device['model'] ?? '') ?>"
+                                            data-serial="<?= htmlspecialchars($device['serial_number'] ?? '') ?>"
+                                            data-imei="<?= htmlspecialchars($device['imei'] ?? '') ?>">
+                                        <span class="block text-gray-900"><?= htmlspecialchars(trim(($device['computer'] ?? '') . ' ' . ($device['model'] ?? ''))) ?></span>
+                                        <?php if (!empty($device['serial_number'])): ?>
+                                            <span class="block text-xs text-gray-500"><?= htmlspecialchars($device['serial_number']) ?></span>
+                                        <?php elseif (!empty($device['imei'])): ?>
+                                            <span class="block text-xs text-gray-500"><?= t('wo.imei_short', ['imei' => htmlspecialchars($device['imei'])]) ?></span>
+                                        <?php endif; ?>
+                                    </button>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="computer" class="block text-sm font-medium text-gray-700">
@@ -605,6 +629,17 @@ ob_start();
 </div>
 
 <script>
+// Fill the device fields from one of the customer's previous devices
+document.querySelectorAll('.previous-device').forEach(function(button) {
+    button.addEventListener('click', function() {
+        document.getElementById('computer').value = this.dataset.computer;
+        document.getElementById('model').value = this.dataset.model;
+        document.getElementById('serial_number').value = this.dataset.serial;
+        document.getElementById('imei').value = this.dataset.imei;
+        document.getElementById('remarks').focus();
+    });
+});
+
 // Customer search functionality
 document.getElementById('customer_search')?.addEventListener('input', function() {
     const query = this.value.trim();

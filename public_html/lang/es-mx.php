@@ -562,6 +562,8 @@ return [
     'wo.days_closed' => '{count} días cerrada',
     'wo.imei_short' => 'IMEI: {imei}',
     'wo.model_short' => 'Modelo: {model}',
+    'wo.previous_devices' => 'Dispositivos anteriores',
+    'wo.previous_devices_help' => 'Haga clic para llenar con un dispositivo que este cliente trajo antes.',
     'wo.login_no_permission' => 'No tienes permiso para ver la información de acceso.',
     'wo.login_none' => 'No hay información de acceso para esta orden.',
     'wo.work_performed' => 'Trabajo realizado',

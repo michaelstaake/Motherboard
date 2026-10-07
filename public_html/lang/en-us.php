@@ -565,6 +565,8 @@ return [
     'wo.days_closed' => '{count} days closed',
     'wo.imei_short' => 'IMEI: {imei}',
     'wo.model_short' => 'Model: {model}',
+    'wo.previous_devices' => 'Previous devices',
+    'wo.previous_devices_help' => 'Click to fill in a device this customer has brought in before.',
     'wo.login_no_permission' => 'You do not have permission to view login information.',
     'wo.login_none' => 'No login information available for this work order.',
     'wo.work_performed' => 'Work Performed',

@@ -562,6 +562,8 @@ return [
     'wo.days_closed' => 'Fermé depuis {count} jours',
     'wo.imei_short' => 'IMEI : {imei}',
     'wo.model_short' => 'Modèle : {model}',
+    'wo.previous_devices' => 'Appareils précédents',
+    'wo.previous_devices_help' => 'Cliquez pour remplir avec un appareil que ce client a déjà apporté.',
     'wo.login_no_permission' => 'Vous n’avez pas la permission de voir les identifiants.',
     'wo.login_none' => 'Aucun identifiant pour cet ordre de travail.',
     'wo.work_performed' => 'Travaux effectués',

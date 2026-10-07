@@ -562,6 +562,8 @@ return [
     'wo.days_closed' => 'Uzavřeno {count} dní',
     'wo.imei_short' => 'IMEI: {imei}',
     'wo.model_short' => 'Model: {model}',
+    'wo.previous_devices' => 'Předchozí zařízení',
+    'wo.previous_devices_help' => 'Kliknutím vyplníte zařízení, které tento zákazník již dříve přinesl.',
     'wo.login_no_permission' => 'Nemáte oprávnění zobrazit přihlašovací údaje.',
     'wo.login_none' => 'Pro tuto zakázku nejsou přihlašovací údaje.',
     'wo.work_performed' => 'Provedená práce',
