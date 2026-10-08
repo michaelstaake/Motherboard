@@ -137,26 +137,22 @@ ob_start();
                         <?= $sortHeader('computer', t('wo.computer')) ?>
                         <?= $sortHeader('technician', t('wo.technician')) ?>
                         <?= $sortHeader('status', t('common.status')) ?>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <?= t('common.actions') ?>
-                        </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     <?php if (empty($workOrders)): ?>
                         <tr>
-                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
                                 <?= t('wo.none') ?>
                             </td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($workOrders as $workOrder): ?>
-                            <tr class="hover:bg-gray-50">
+                            <?php // Clicking anywhere on a work order row opens it, except on the customer and technician links. ?>
+                            <tr class="hover:bg-gray-50 cursor-pointer focus:outline-none focus:bg-gray-50" tabindex="0" role="link" data-href="<?= BASE_URL ?>/work-orders/view/<?= $workOrder['id'] ?>">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">
-                                        <a href="<?= BASE_URL ?>/work-orders/view/<?= $workOrder['id'] ?>" class="text-primary-600 hover:text-primary-500">
-                                            #<?= $workOrder['id'] ?>
-                                        </a>
+                                    <div class="text-base font-medium text-gray-900">
+                                        #<?= $workOrder['id'] ?>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -230,11 +226,6 @@ ob_start();
                                             </span>
                                         <?php endif; ?>
                                     </div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <a href="<?= BASE_URL ?>/work-orders/view/<?= $workOrder['id'] ?>" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                                        <?= t('common.view') ?>
-                                    </a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -331,6 +322,32 @@ ob_start();
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+document.querySelectorAll('tr[data-href]').forEach(function (row) {
+    row.addEventListener('click', function (event) {
+        // Links inside the row go to their own page, and selecting text should not navigate.
+        if (event.target.closest('a') || window.getSelection().toString()) {
+            return;
+        }
+        if (event.ctrlKey || event.metaKey) {
+            window.open(row.dataset.href, '_blank');
+        } else {
+            window.location.href = row.dataset.href;
+        }
+    });
+    row.addEventListener('auxclick', function (event) {
+        if (event.button === 1 && !event.target.closest('a')) {
+            window.open(row.dataset.href, '_blank');
+        }
+    });
+    row.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' && event.target === row) {
+            window.location.href = row.dataset.href;
+        }
+    });
+});
+</script>
 
 <?php 
 $content = ob_get_clean();
