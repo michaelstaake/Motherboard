@@ -190,7 +190,7 @@ ob_start();
                             <tr class="hover:bg-gray-50 cursor-pointer focus:outline-none focus:bg-gray-50" tabindex="0" role="link" data-href="<?= BASE_URL ?>/work-orders/view/<?= $workOrder['id'] ?>">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center gap-2">
-                                        <span class="text-base font-medium text-gray-900">#<?= $workOrder['id'] ?></span>
+                                        <span class="text-base font-medium text-gray-900"><?= $workOrder['id'] ?></span>
                                         <?php if ($workOrder['priority'] === 'Priority'): ?>
                                             <span title="<?= htmlspecialchars(t('priority.Priority')) ?>">
                                                 <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
