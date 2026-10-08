@@ -146,6 +146,7 @@ return [
     'wo.assigned_filter' => 'Es werden Ihnen zugewiesene Arbeitsaufträge angezeigt',
     'wo.search' => 'Arbeitsaufträge suchen...',
     'wo.active_filters' => 'Aktive Filter:',
+    'wo.any_status' => 'Jeder Status',
     'wo.assigned_to_me' => 'Mir zugewiesen',
     'wo.clear_filters' => 'Alle Filter löschen',
     'wo.number' => 'Arbeitsauftrag Nr.',

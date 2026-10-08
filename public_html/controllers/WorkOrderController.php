@@ -28,6 +28,12 @@ class WorkOrderController extends Controller {
         $status = $_GET['status'] ?? 'All';
         $search = $_GET['search'] ?? '';
         $assignedTo = $_GET['assigned_to'] ?? null;
+        // Priority combines with any status. Older links used it as a status of its own.
+        $priority = ($_GET['priority'] ?? '') === 'Priority' ? 'Priority' : null;
+        if ($status === 'Priority') {
+            $status = 'All';
+            $priority = 'Priority';
+        }
         $page = max(1, intval($_GET['page'] ?? 1));
         $limit = PAGINATION_LIMIT;
         $sort = $this->listSort(
@@ -35,7 +41,7 @@ class WorkOrderController extends Controller {
             isset($_GET['dir']) ? (string) $_GET['dir'] : null
         );
         
-        $totalCount = $this->workOrderModel->countWorkOrders($status, null, $search, $assignedTo);
+        $totalCount = $this->workOrderModel->countWorkOrders($status, $priority, $search, $assignedTo);
         $totalPages = ceil($totalCount / $limit);
 
         // Validate page number
@@ -44,12 +50,14 @@ class WorkOrderController extends Controller {
         }
 
         $offset = ($page - 1) * $limit;
-        $workOrders = $this->workOrderModel->getWorkOrders($status, null, $search, $limit, $offset, $assignedTo, $sort);
+        $workOrders = $this->workOrderModel->getWorkOrders($status, $priority, $search, $limit, $offset, $assignedTo, $sort);
         
         $this->view('work-orders/index', [
             'workOrders' => $workOrders,
             'status' => $status,
             'search' => $search,
+            'priority' => $priority,
+            'statusCounts' => $this->workOrderModel->countByStatus($priority, $search, $assignedTo),
             'assignedTo' => $assignedTo,
             'sort' => $sort,
             'currentPage' => $page,

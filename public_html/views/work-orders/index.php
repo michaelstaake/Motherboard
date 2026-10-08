@@ -6,27 +6,48 @@ const DAYS_OPEN_OVERDUE = 14;
 
 $title = t('wo.title') . ' - ' . ($companyName ?? APP_NAME);
 [$sortColumn, $sortDirection] = $sort ?? ['number', 'desc'];
-// Clicking a column header sorts by it A to Z (oldest first for dates), or flips the direction
-// if it is already sorted by it. Filter, search, and page links carry a non-default sort along.
-$sortQuery = [$sortColumn, $sortDirection] === ['number', 'desc'] ? '' : '&sort=' . urlencode($sortColumn) . '&dir=' . urlencode($sortDirection);
-$sortHeader = static function (string $column, string $label) use ($sortColumn, $sortDirection, $status, $search, $assignedTo): string {
-    $active = $sortColumn === $column;
-    $query = http_build_query(array_filter([
+$priority = $priority ?? null;
+$statusCounts = $statusCounts ?? [];
+$sortQuery = [$sortColumn, $sortDirection] !== ['number', 'desc'];
+// Builds a list URL that keeps the current filters, search, and non-default sort, with $overrides
+// applied on top. Empty values are left out, so pass '' to drop one (status '' means All).
+$listUrl = static function (array $overrides = []) use ($status, $priority, $search, $assignedTo, $sortColumn, $sortDirection, $sortQuery): string {
+    $query = array_merge([
+        'page' => '',
         'status' => $status !== 'All' ? $status : '',
+        'priority' => (string) $priority,
         'search' => $search,
         'assigned_to' => (string) $assignedTo,
-        'sort' => $column,
-        'dir' => $active && $sortDirection === 'asc' ? 'desc' : 'asc',
-    ], fn($value) => $value !== ''));
+        'sort' => $sortQuery ? $sortColumn : '',
+        'dir' => $sortQuery ? $sortDirection : '',
+    ], $overrides);
+    return BASE_URL . '/work-orders?' . http_build_query(array_filter($query, fn($value) => (string) $value !== ''));
+};
+// Clicking a column header sorts by it A to Z (oldest first for dates), or flips the direction
+// if it is already sorted by it.
+$sortHeader = static function (string $column, string $label) use ($sortColumn, $sortDirection, $listUrl): string {
+    $active = $sortColumn === $column;
+    $url = $listUrl(['sort' => $column, 'dir' => $active && $sortDirection === 'asc' ? 'desc' : 'asc']);
     $arrow = $active ? ($sortDirection === 'asc' ? '&#x25B2;' : '&#x25BC;') : '';
     return '<th scope="col"' . ($active ? ' aria-sort="' . ($sortDirection === 'asc' ? 'ascending' : 'descending') . '"' : '')
         . ' class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">'
-        . '<a href="' . BASE_URL . '/work-orders?' . htmlspecialchars($query) . '" class="inline-flex items-center gap-1 whitespace-nowrap ' . ($active ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700') . '">'
+        . '<a href="' . htmlspecialchars($url) . '" class="inline-flex items-center gap-1 whitespace-nowrap ' . ($active ? 'text-gray-900' : 'text-gray-500 hover:text-gray-700') . '">'
         . htmlspecialchars($label)
         . '<span aria-hidden="true">' . $arrow . '</span>'
         . '</a></th>';
 };
-ob_start(); 
+// Tabs split work orders by where they are in their life. Active also covers its own statuses,
+// which get sub-chips under the tabs while it (or one of them) is selected.
+$inActive = $status === 'Active' || in_array($status, WorkOrder::ACTIVE_STATUSES, true);
+$activeCounts = array_map(fn($included) => $statusCounts[$included] ?? 0, WorkOrder::ACTIVE_STATUSES);
+$tabs = [
+    'All' => array_sum($statusCounts),
+    'Active' => array_sum($activeCounts),
+    'Closed' => $statusCounts['Closed'] ?? 0,
+    'Picked Up' => $statusCounts['Picked Up'] ?? 0,
+];
+$chips = ['Active' => array_sum($activeCounts)] + array_combine(WorkOrder::ACTIVE_STATUSES, $activeCounts);
+ob_start();
 ?>
 
 <div>
@@ -48,58 +69,75 @@ ob_start();
 
     <!-- Filters -->
     <div class="bg-white rounded-lg shadow mb-6">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <div class="flex flex-wrap items-center gap-4">
-                <!-- Status Filter -->
-                <div class="flex flex-wrap gap-2">
-                    <?php 
-                    $statuses = ['All', 'Priority', 'Active', 'Open', 'In Progress', 'Awaiting Parts', 'Closed', 'Picked Up'];
-                    $activeIncludes = implode(', ', array_map(fn($included) => t('status.' . $included), WorkOrder::ACTIVE_STATUSES));
-                    foreach ($statuses as $filterStatus): 
-                        // Active sits right before the statuses it covers. Those are tinted while Active is
-                        // selected, and while hovering it (Tailwind peer), to show what it includes.
-                        $isIncluded = in_array($filterStatus, WorkOrder::ACTIVE_STATUSES, true);
-                        if ($status === $filterStatus) {
-                            $pillClass = 'bg-primary-600 text-white';
-                        } elseif ($isIncluded && $status === 'Active') {
-                            $pillClass = 'bg-primary-100 text-primary-700 hover:bg-primary-200';
-                        } else {
-                            $pillClass = 'bg-gray-100 text-gray-700 hover:bg-gray-200' . ($isIncluded ? ' peer-hover:bg-primary-100 peer-hover:text-primary-700' : '');
-                        }
-                    ?>
-                        <a href="<?= BASE_URL ?>/work-orders?status=<?= urlencode($filterStatus) ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?><?= $sortQuery ?>"
-                           <?php if ($filterStatus === 'Active'): ?>title="<?= htmlspecialchars($activeIncludes) ?>"<?php endif; ?>
-                           class="<?= $filterStatus === 'Active' ? 'peer ' : '' ?>px-3 py-1 rounded-full text-sm transition-colors <?= $pillClass ?>">
-                            <?= t('status.' . $filterStatus) ?>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
+        <div class="px-6 pt-3 sm:pt-0 border-b border-gray-200 flex flex-col-reverse gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <!-- Status Tabs -->
+            <nav class="-mb-px flex gap-6 overflow-x-auto">
+                <?php foreach ($tabs as $tab => $count):
+                    $selected = $tab === 'Active' ? $inActive : $status === $tab;
+                ?>
+                    <a href="<?= htmlspecialchars($listUrl(['status' => $tab !== 'All' ? $tab : ''])) ?>"
+                       <?= $selected ? 'aria-current="page"' : '' ?>
+                       class="inline-flex items-center gap-2 py-4 border-b-2 text-sm font-medium whitespace-nowrap transition-colors <?= $selected ? 'border-primary-600 text-primary-700' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' ?>">
+                        <?= t('status.' . $tab) ?>
+                        <span class="px-2 py-0.5 rounded-full text-xs <?= $selected ? 'bg-primary-100 text-primary-700' : 'bg-gray-100 text-gray-600' ?>"><?= $count ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </nav>
+
+            <div class="flex items-center gap-3 sm:py-3">
+                <!-- Priority Toggle -->
+                <a href="<?= htmlspecialchars($listUrl(['priority' => $priority ? '' : 'Priority'])) ?>"
+                   aria-pressed="<?= $priority ? 'true' : 'false' ?>"
+                   class="inline-flex items-center gap-1.5 px-3 py-1.5 whitespace-nowrap rounded-full text-sm border transition-colors <?= $priority ? 'bg-red-50 border-red-300 text-red-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50' ?>">
+                    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2z"></path>
+                    </svg>
+                    <?= t('status.Priority') ?>
+                </a>
 
                 <!-- Search -->
-                <div class="flex-1 max-w-md">
-                    <form method="GET" class="flex">
-                        <input type="hidden" name="status" value="<?= htmlspecialchars($status) ?>">
-                        <?php if ($assignedTo): ?>
-                            <input type="hidden" name="assigned_to" value="<?= htmlspecialchars($assignedTo) ?>">
-                        <?php endif; ?>
-                        <?php if ($sortQuery): ?>
-                            <input type="hidden" name="sort" value="<?= htmlspecialchars($sortColumn) ?>">
-                            <input type="hidden" name="dir" value="<?= htmlspecialchars($sortDirection) ?>">
-                        <?php endif; ?>
-                        <input type="text" 
-                               name="search" 
+                <form method="GET" class="flex-1 sm:flex-none sm:w-80">
+                    <input type="hidden" name="status" value="<?= htmlspecialchars($status) ?>">
+                    <?php if ($priority): ?>
+                        <input type="hidden" name="priority" value="<?= htmlspecialchars($priority) ?>">
+                    <?php endif; ?>
+                    <?php if ($assignedTo): ?>
+                        <input type="hidden" name="assigned_to" value="<?= htmlspecialchars($assignedTo) ?>">
+                    <?php endif; ?>
+                    <?php if ($sortQuery): ?>
+                        <input type="hidden" name="sort" value="<?= htmlspecialchars($sortColumn) ?>">
+                        <input type="hidden" name="dir" value="<?= htmlspecialchars($sortDirection) ?>">
+                    <?php endif; ?>
+                    <div class="relative">
+                        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="search"
+                               name="search"
                                value="<?= htmlspecialchars($search) ?>"
                                placeholder="<?= htmlspecialchars(t('wo.search')) ?>"
-                               class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-l-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
-                        <button type="submit" class="px-4 py-3 bg-gray-100 border-2 border-l-0 border-gray-300 rounded-r-md hover:bg-gray-200">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </button>
-                    </form>
-                </div>
+                               aria-label="<?= htmlspecialchars(t('wo.search')) ?>"
+                               class="w-full pl-9 pr-3 py-2 border-2 border-gray-300 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm bg-white">
+                    </div>
+                </form>
             </div>
         </div>
+
+        <!-- Active Status Chips -->
+        <?php if ($inActive): ?>
+            <div class="px-6 py-3 flex flex-wrap items-center gap-2">
+                <?php foreach ($chips as $chip => $count):
+                    $selected = $status === $chip;
+                ?>
+                    <a href="<?= htmlspecialchars($listUrl(['status' => $chip])) ?>"
+                       <?= $selected ? 'aria-current="page"' : '' ?>
+                       class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm border transition-colors <?= $selected ? 'bg-primary-50 border-primary-200 text-primary-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50' ?>">
+                        <?= $chip === 'Active' ? t('wo.any_status') : t('status.' . $chip) ?>
+                        <span class="text-xs <?= $selected ? 'text-primary-600' : 'text-gray-500' ?>"><?= $count ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
         
         <!-- Active Filters -->
         <?php if ($assignedTo): ?>
@@ -109,7 +147,7 @@ ob_start();
                         <span class="text-sm text-blue-700"><?= t('wo.active_filters') ?></span>
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             <?= t('wo.assigned_to_me') ?>
-                            <a href="<?= BASE_URL ?>/work-orders?<?= $status !== 'All' ? 'status=' . urlencode($status) : '' ?><?= $search ? ($status !== 'All' ? '&' : '') . 'search=' . urlencode($search) : '' ?><?= $sortQuery ?>" 
+                            <a href="<?= htmlspecialchars($listUrl(['assigned_to' => ''])) ?>" 
                                class="ml-1 inline-flex items-center justify-center w-4 h-4 text-blue-400 hover:text-blue-600">
                                 <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
@@ -239,13 +277,13 @@ ob_start();
             <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                 <div class="flex-1 flex justify-between sm:hidden">
                     <?php if ($currentPage > 1): ?>
-                        <a href="<?= BASE_URL ?>/work-orders?page=<?= $currentPage - 1 ?><?= $status !== 'All' ? '&status=' . urlencode($status) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?><?= $sortQuery ?>" 
+                        <a href="<?= htmlspecialchars($listUrl(['page' => $currentPage - 1])) ?>" 
                            class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                             <?= t('common.previous') ?>
                         </a>
                     <?php endif; ?>
                     <?php if ($currentPage < $totalPages): ?>
-                        <a href="<?= BASE_URL ?>/work-orders?page=<?= $currentPage + 1 ?><?= $status !== 'All' ? '&status=' . urlencode($status) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?><?= $sortQuery ?>" 
+                        <a href="<?= htmlspecialchars($listUrl(['page' => $currentPage + 1])) ?>" 
                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                             <?= t('common.next') ?>
                         </a>
@@ -266,7 +304,7 @@ ob_start();
                             
                             // Always show page 1
                             if ($showFirst): ?>
-                                <a href="<?= BASE_URL ?>/work-orders?page=1<?= $status !== 'All' ? '&status=' . urlencode($status) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?><?= $sortQuery ?>" 
+                                <a href="<?= htmlspecialchars($listUrl(['page' => 1])) ?>" 
                                    class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">1</a>
                                 <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400">...</span>
                             <?php endif; ?>
@@ -278,7 +316,7 @@ ob_start();
                                 
                                 if ($i >= $currentPage - $range && $i <= $currentPage + $range):
                             ?>
-                                <a href="<?= BASE_URL ?>/work-orders?page=<?= $i ?><?= $status !== 'All' ? '&status=' . urlencode($status) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?><?= $sortQuery ?>" 
+                                <a href="<?= htmlspecialchars($listUrl(['page' => $i])) ?>" 
                                    class="relative inline-flex items-center px-4 py-2 border text-sm font-medium 
                                    <?= $i === $currentPage ? 'z-10 bg-primary-50 border-primary-500 text-primary-600' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50' ?>">
                                     <?= $i ?>
@@ -290,7 +328,7 @@ ob_start();
 
                             <?php if ($showLast): ?>
                                 <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-gray-100 text-sm font-medium text-gray-400">...</span>
-                                <a href="<?= BASE_URL ?>/work-orders?page=<?= $totalPages ?><?= $status !== 'All' ? '&status=' . urlencode($status) : '' ?><?= $search ? '&search=' . urlencode($search) : '' ?><?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?><?= $sortQuery ?>" 
+                                <a href="<?= htmlspecialchars($listUrl(['page' => $totalPages])) ?>" 
                                    class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium"><?= $totalPages ?></a>
                             <?php endif; ?>
                         </nav>
@@ -308,12 +346,11 @@ ob_start();
             function goToPage(page) {
                 page = parseInt(page);
                 const maxPage = <?= $totalPages ?>;
-                const status = '<?= $status !== 'All' ? '&status=' . urlencode($status) : '' ?>';
-                const search = '<?= $search ? '&search=' . urlencode($search) : '' ?>';
-                const assignedTo = '<?= $assignedTo ? '&assigned_to=' . urlencode($assignedTo) : '' ?>';
+                // The current filters and sort; the page number is added on the end.
+                const listUrl = <?= json_encode($listUrl()) ?>;
                 
                 if (page >= 1 && page <= maxPage) {
-                    window.location.href = '<?= BASE_URL ?>/work-orders?page=' + page + status + search + assignedTo + <?= json_encode($sortQuery) ?>;
+                    window.location.href = listUrl + (listUrl.endsWith('?') ? '' : '&') + 'page=' + page;
                 } else {
                     showAlert(<?= json_encode(t('js.page_range')) ?>.replace('{max}', String(maxPage)), 'error');
                 }

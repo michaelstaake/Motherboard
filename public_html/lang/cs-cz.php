@@ -146,6 +146,7 @@ return [
     'wo.assigned_filter' => 'Zobrazeny zakázky přiřazené vám',
     'wo.search' => 'Hledat zakázky...',
     'wo.active_filters' => 'Aktivní filtry:',
+    'wo.any_status' => 'Jakýkoli stav',
     'wo.assigned_to_me' => 'Přiřazeno mně',
     'wo.clear_filters' => 'Vymazat filtry',
     'wo.number' => 'Zakázka č.',

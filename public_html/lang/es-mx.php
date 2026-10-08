@@ -146,6 +146,7 @@ return [
     'wo.assigned_filter' => 'Mostrando órdenes asignadas a ti',
     'wo.search' => 'Buscar órdenes...',
     'wo.active_filters' => 'Filtros activos:',
+    'wo.any_status' => 'Cualquier estado',
     'wo.assigned_to_me' => 'Asignadas a mí',
     'wo.clear_filters' => 'Borrar filtros',
     'wo.number' => 'Orden #',

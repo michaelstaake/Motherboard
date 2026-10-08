@@ -16,7 +16,20 @@ class WorkOrder extends Model {
         $stmt->execute($params);
         return $stmt->fetch()['count'];
     }
-    
+
+    /**
+     * Returns [status => count] under the same priority, search, and assignee filters as the list,
+     * so the counts on the status tabs match what clicking them shows.
+     */
+    public function countByStatus($priority = null, $search = null, $assignedTo = null): array {
+        [$where, $params] = $this->buildListFilters(null, $priority, $search, $assignedTo);
+        $sql = "SELECT wo.status, COUNT(*) as count FROM work_orders wo LEFT JOIN customers c ON wo.customer_id = c.id WHERE 1=1" . $where . " GROUP BY wo.status";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return array_map('intval', array_column($stmt->fetchAll(), 'count', 'status'));
+    }
+
     /**
      * $sort is [column, 'asc'|'desc'] with a column from LIST_SORT_COLUMNS. Ties fall back to
      * newest first so the order stays stable across pages.

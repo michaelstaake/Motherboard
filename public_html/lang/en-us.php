@@ -149,6 +149,7 @@ return [
     'wo.assigned_filter' => 'Showing work orders assigned to you',
     'wo.search' => 'Search work orders...',
     'wo.active_filters' => 'Active filters:',
+    'wo.any_status' => 'Any status',
     'wo.assigned_to_me' => 'Assigned to Me',
     'wo.clear_filters' => 'Clear all filters',
     'wo.number' => 'Work Order #',
