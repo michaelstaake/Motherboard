@@ -127,16 +127,14 @@ ob_start();
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= t('wo.technician') ?></th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= t('common.status') ?></th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= t('common.created') ?></th>
-                            <th scope="col" class="relative px-6 py-3"><span class="sr-only"><?= t('common.actions') ?></span></th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php foreach ($workOrders as $workOrder): ?>
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                <a href="<?= BASE_URL ?>/work-orders/view/<?= $workOrder['id'] ?>" class="text-primary-600 hover:text-primary-500">
-                                    #<?= $workOrder['id'] ?>
-                                </a>
+                        <?php // Clicking anywhere on a work order row opens it, except on the technician link. ?>
+                        <tr class="hover:bg-gray-50 cursor-pointer focus:outline-none focus:bg-gray-50" tabindex="0" role="link" data-href="<?= BASE_URL ?>/work-orders/view/<?= $workOrder['id'] ?>">
+                            <td class="px-6 py-4 whitespace-nowrap text-base font-medium text-gray-900">
+                                #<?= $workOrder['id'] ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900" title="<?= htmlspecialchars($workOrder['computer'] ?? t('wo.na')) ?>">
@@ -193,11 +191,6 @@ ob_start();
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 <?= ldate($workOrder['created_at'], 'M j, Y') ?>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="<?= BASE_URL ?>/work-orders/view/<?= $workOrder['id'] ?>" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
-                                    <?= t('common.view') ?>
-                                </a>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -275,6 +268,30 @@ function closeDeleteModal() {
 document.querySelectorAll('[data-copy-input]').forEach(input => {
     input.addEventListener('input', () => {
         input.nextElementSibling.classList.toggle('hidden', input.value.trim() === '');
+    });
+});
+
+document.querySelectorAll('tr[data-href]').forEach(function (row) {
+    row.addEventListener('click', function (event) {
+        // Links inside the row go to their own page, and selecting text should not navigate.
+        if (event.target.closest('a') || window.getSelection().toString()) {
+            return;
+        }
+        if (event.ctrlKey || event.metaKey) {
+            window.open(row.dataset.href, '_blank');
+        } else {
+            window.location.href = row.dataset.href;
+        }
+    });
+    row.addEventListener('auxclick', function (event) {
+        if (event.button === 1 && !event.target.closest('a')) {
+            window.open(row.dataset.href, '_blank');
+        }
+    });
+    row.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' && event.target === row) {
+            window.location.href = row.dataset.href;
+        }
     });
 });
 </script>
