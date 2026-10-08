@@ -1,3 +1,3 @@
 <?php
-$version = '26.10.7.3';
+$version = '26.10.8.1';
 $channel = 'release';
