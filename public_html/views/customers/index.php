@@ -51,19 +51,19 @@ ob_start();
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= t('common.contact') ?></th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= t('customers.orders') ?></th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"><?= t('common.created') ?></th>
-                                <th scope="col" class="relative px-6 py-3"><span class="sr-only"><?= t('common.actions') ?></span></th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             <?php if (empty($customers)): ?>
                             <tr>
-                                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
                                     <?= $search ? t('customers.none_search') : t('customers.none_yet') ?>
                                 </td>
                             </tr>
                             <?php else: ?>
                             <?php foreach ($customers as $customer): ?>
-                            <tr class="hover:bg-gray-50">
+                            <?php // Clicking anywhere on a customer row opens their profile, except on the contact details, which copy them. ?>
+                            <tr class="hover:bg-gray-50 cursor-pointer focus:outline-none focus:bg-gray-50" tabindex="0" role="link" data-href="<?= BASE_URL ?>/customers/view/<?= $customer['id'] ?>">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div>
                                         <div class="text-sm font-medium text-gray-900"><?= htmlspecialchars($customer['name']) ?></div>
@@ -87,9 +87,6 @@ ob_start();
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <?= ldate($customer['created_at'], 'M j, Y') ?>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="<?= BASE_URL ?>/customers/view/<?= $customer['id'] ?>" class="text-primary-600 hover:text-primary-900"><?= t('common.view') ?></a>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -219,6 +216,30 @@ ob_start();
 </div>
 
 <script>
+document.querySelectorAll('tr[data-href]').forEach(function (row) {
+    row.addEventListener('click', function (event) {
+        // Links and buttons inside the row do their own thing, and selecting text should not navigate.
+        if (event.target.closest('a, button') || window.getSelection().toString()) {
+            return;
+        }
+        if (event.ctrlKey || event.metaKey) {
+            window.open(row.dataset.href, '_blank');
+        } else {
+            window.location.href = row.dataset.href;
+        }
+    });
+    row.addEventListener('auxclick', function (event) {
+        if (event.button === 1 && !event.target.closest('a, button')) {
+            window.open(row.dataset.href, '_blank');
+        }
+    });
+    row.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' && event.target === row) {
+            window.location.href = row.dataset.href;
+        }
+    });
+});
+
 function showCreateModal() {
     document.getElementById('createModal').classList.remove('hidden');
 }
