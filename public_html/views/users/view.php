@@ -197,13 +197,15 @@ ob_start();
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         <?php foreach ($workOrders as $workOrder): ?>
-                        <?php // Clicking anywhere on a work order row opens it. ?>
+                        <?php // Clicking anywhere on a work order row opens it, except on the customer link. ?>
                         <tr class="hover:bg-gray-50 cursor-pointer focus:outline-none focus:bg-gray-50" tabindex="0" role="link" data-href="<?= BASE_URL ?>/work-orders/view/<?= $workOrder['id'] ?>">
                             <td class="px-6 py-4 whitespace-nowrap text-base font-medium text-gray-900">
                                 #<?= $workOrder['id'] ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <?= htmlspecialchars($workOrder['customer_name']) ?>
+                                <a href="<?= BASE_URL ?>/customers/view/<?= $workOrder['customer_id'] ?>" class="text-primary-600 hover:text-primary-500">
+                                    <?= htmlspecialchars($workOrder['customer_name']) ?>
+                                </a>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900" title="<?= htmlspecialchars($workOrder['device_type']) ?>">
