@@ -189,8 +189,16 @@ ob_start();
                             <?php // Clicking anywhere on a work order row opens it, except on the customer and technician links. ?>
                             <tr class="hover:bg-gray-50 cursor-pointer focus:outline-none focus:bg-gray-50" tabindex="0" role="link" data-href="<?= BASE_URL ?>/work-orders/view/<?= $workOrder['id'] ?>">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-base font-medium text-gray-900">
-                                        #<?= $workOrder['id'] ?>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-base font-medium text-gray-900">#<?= $workOrder['id'] ?></span>
+                                        <?php if ($workOrder['priority'] === 'Priority'): ?>
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border bg-red-50 border-red-300 text-red-700">
+                                                <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2z"></path>
+                                                </svg>
+                                                <?= t('priority.Priority') ?>
+                                            </span>
+                                        <?php endif; ?>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -250,20 +258,13 @@ ob_start();
                                     <?php endif; ?>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                            <?= $workOrder['status'] === 'Open' ? 'bg-orange-100 text-orange-800' :
-                                                ($workOrder['status'] === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
-                                                ($workOrder['status'] === 'Awaiting Parts' ? 'bg-purple-100 text-purple-800' :
-                                                ($workOrder['status'] === 'Closed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'))) ?>">
-                                            <?= htmlspecialchars(tlabel('status', $workOrder['status'])) ?>
-                                        </span>
-                                        <?php if ($workOrder['priority'] === 'Priority'): ?>
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                <?= t('priority.Priority') ?>
-                                            </span>
-                                        <?php endif; ?>
-                                    </div>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        <?= $workOrder['status'] === 'Open' ? 'bg-orange-100 text-orange-800' :
+                                            ($workOrder['status'] === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
+                                            ($workOrder['status'] === 'Awaiting Parts' ? 'bg-purple-100 text-purple-800' :
+                                            ($workOrder['status'] === 'Closed' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'))) ?>">
+                                        <?= htmlspecialchars(tlabel('status', $workOrder['status'])) ?>
+                                    </span>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
