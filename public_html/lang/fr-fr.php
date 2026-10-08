@@ -517,6 +517,8 @@ return [
     'settings.nav_always_expanded_help' => 'Ouvre automatiquement le menu de navigation sur ordinateur. Sur mobile, il reste replié.',
     'settings.work_order_autosave' => 'Enregistrer automatiquement les modifications des ordres',
     'settings.work_order_autosave_help' => 'Enregistre automatiquement les modifications d’attributs d’un ordre de travail lorsque son contenu n’a pas changé.',
+    'settings.work_order_days_under_date' => 'Afficher les jours ouverts/fermés sous la date',
+    'settings.work_order_days_under_date_help' => 'Affiche les jours ouverts ou fermés sous la date d’ouverture dans la liste des ordres de travail au lieu d’une infobulle.',
     'settings.disclaimer_ph' => 'Mentions légales ou conditions à afficher sur les ordres...',
     'settings.disclaimer_help' => 'Ce texte apparaît en bas des ordres imprimés',
     'settings.print_customer_signature' => 'Afficher la signature du client sur les ordres imprimés',

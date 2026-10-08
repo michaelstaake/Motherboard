@@ -175,9 +175,13 @@ ob_start();
                                     <?php $isClosed = $workOrder['status'] === 'Closed' && !empty($workOrder['closed_at']); ?>
                                     <?php if ($isClosed || !in_array($workOrder['status'], ['Closed', 'Picked Up'], true)): ?>
                                         <?php $days = (new DateTime(date('Y-m-d', strtotime($isClosed ? $workOrder['closed_at'] : $workOrder['created_at']))))->diff(new DateTime('today'))->days; ?>
-                                        <span class="<?= $days >= DAYS_OPEN_OVERDUE ? 'text-red-600 font-medium' : ($days >= DAYS_OPEN_STALE ? 'text-amber-600' : '') ?>" title="<?= htmlspecialchars(t($isClosed ? 'wo.days_closed' : 'wo.days_open', ['count' => $days])) ?>">
+                                        <?php $daysLabel = t($isClosed ? 'wo.days_closed' : 'wo.days_open', ['count' => $days]); ?>
+                                        <span class="<?= $days >= DAYS_OPEN_OVERDUE ? 'text-red-600 font-medium' : ($days >= DAYS_OPEN_STALE ? 'text-amber-600' : '') ?>"<?php if (empty($daysUnderDate)): ?> title="<?= htmlspecialchars($daysLabel) ?>"<?php endif; ?>>
                                             <?= ldate($workOrder['created_at'], 'M j, Y') ?>
                                         </span>
+                                        <?php if (!empty($daysUnderDate)): ?>
+                                            <div class="text-xs"><?= htmlspecialchars($daysLabel) ?></div>
+                                        <?php endif; ?>
                                     <?php else: ?>
                                         <?= ldate($workOrder['created_at'], 'M j, Y') ?>
                                     <?php endif; ?>

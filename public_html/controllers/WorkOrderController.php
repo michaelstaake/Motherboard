@@ -54,7 +54,8 @@ class WorkOrderController extends Controller {
             'sort' => $sort,
             'currentPage' => $page,
             'totalPages' => $totalPages,
-            'totalCount' => $totalCount
+            'totalCount' => $totalCount,
+            'daysUnderDate' => $this->settingsModel->getSetting('work_order_days_under_date', '0') === '1'
         ]);
     }
     

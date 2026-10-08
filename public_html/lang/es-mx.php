@@ -517,6 +517,8 @@ return [
     'settings.nav_always_expanded_help' => 'Abre el menú de navegación automáticamente en computadoras. En dispositivos móviles sigue contraído.',
     'settings.work_order_autosave' => 'Guardar automáticamente cambios en órdenes',
     'settings.work_order_autosave_help' => 'Guarda automáticamente los cambios de atributos de la orden cuando su contenido no ha cambiado.',
+    'settings.work_order_days_under_date' => 'Mostrar días abierta/cerrada debajo de la fecha',
+    'settings.work_order_days_under_date_help' => 'Muestra los días abierta o cerrada debajo de la fecha de apertura en la lista de órdenes en lugar de en una descripción emergente.',
     'settings.disclaimer_ph' => 'Avisos legales o términos que deben aparecer en las órdenes...',
     'settings.disclaimer_help' => 'Este texto aparece al pie de las órdenes impresas',
     'settings.print_customer_signature' => 'Mostrar firma del cliente en las órdenes impresas',

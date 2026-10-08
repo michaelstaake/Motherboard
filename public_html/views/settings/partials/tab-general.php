@@ -51,6 +51,14 @@
                 <p class="mt-1 text-sm text-gray-500"><?= t('settings.work_order_autosave_help') ?></p>
             </div>
         </div>
+
+        <div class="flex items-start">
+            <input id="work_order_days_under_date" name="work_order_days_under_date" type="checkbox" value="1" <?= ($settings['work_order_days_under_date'] ?? '0') === '1' ? 'checked' : '' ?> class="h-4 w-4 mt-0.5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+            <div class="ml-2">
+                <label for="work_order_days_under_date" class="block text-sm text-gray-700"><?= t('settings.work_order_days_under_date') ?></label>
+                <p class="mt-1 text-sm text-gray-500"><?= t('settings.work_order_days_under_date_help') ?></p>
+            </div>
+        </div>
     </div>
 
     <div class="mt-6 flex justify-end">

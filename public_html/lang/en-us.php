@@ -520,6 +520,8 @@ return [
     'settings.nav_always_expanded_help' => 'Opens the navigation menu automatically on desktop devices. Mobile devices still start collapsed.',
     'settings.work_order_autosave' => 'Auto-save Work Order Changes',
     'settings.work_order_autosave_help' => 'Auto-saves work order attribute changes when work order content hasn\'t changed.',
+    'settings.work_order_days_under_date' => 'Display Work Order Days Open/Closed Under Date',
+    'settings.work_order_days_under_date_help' => 'Shows the days open or closed under the date opened in the work order list instead of in a tooltip.',
     'settings.disclaimer_ph' => 'Enter any legal disclaimers or terms that should appear on work orders...',
     'settings.disclaimer_help' => 'This text will appear at the bottom of printed work orders',
     'settings.print_customer_signature' => 'Show Customer Signature on printed work orders',
