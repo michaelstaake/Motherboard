@@ -74,6 +74,14 @@ class Controller {
     }
 
     /**
+     * The fixed four-segment placeholder for code written against the old version scheme.
+     */
+    public static function legacyAppVersion(): string {
+        require ROOT_PATH . '/version.php';
+        return (string) $legacyVersion;
+    }
+
+    /**
      * The first authenticated request after a version change queues the "updated" notice
      * for the next full page (an API call may get here first, so the layout shows it, not
      * this request). The version is recorded as seen either way, so turning the setting

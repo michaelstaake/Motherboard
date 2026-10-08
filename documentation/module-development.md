@@ -2,7 +2,9 @@
 
 Motherboard loads every subdirectory of `public_html/modules/` that contains an `index.php`. Several modules ship with the core (see [module-catalog.md](../module-catalog.md)) and are useful as working examples; this file is the contract for building them.
 
-Version constraints are compared with PHP `version_compare()`, against the `$version` value in `public_html/version.php`.
+Version constraints are compared with PHP `version_compare()`, against the `$version` value in `public_html/version.php` (for example `26.100`).
+
+Releases before 26.100 used a four-segment scheme (`26.10.8.6`). A four-segment constraint is still accepted, but it is compared against the fixed legacy version `26.10.8.7` (`$legacyVersion`, or `Controller::legacyAppVersion()`) rather than the current one, so older modules keep loading and a four-segment maximum never accidentally excludes them. New modules should use the current scheme.
 
 ## Module layout
 
@@ -26,7 +28,7 @@ return [
     'name' => 'My Module',
     'slug' => 'my-module',
     'description' => 'Short summary',
-    'min_motherboard_version' => '26.8.14.1', // required
+    'min_motherboard_version' => '26.100',    // required
     'max_motherboard_version' => null,        // optional
     'min_php_version' => '8.1',               // required
     'max_php_version' => null,                // optional

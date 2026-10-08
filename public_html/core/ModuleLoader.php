@@ -2,14 +2,16 @@
 class ModuleLoader {
     private static ?ModuleLoader $instance = null;
     private string $appVersion;
+    private string $legacyAppVersion;
     private string $phpVersion;
     private array $discovered = [];
     private array $loaded = [];
     private array $skipped = [];
     private array $enabledSlugs = [];
 
-    public function __construct(string $appVersion) {
+    public function __construct(string $appVersion, string $legacyAppVersion = '26.10.8.7') {
         $this->appVersion = $appVersion;
+        $this->legacyAppVersion = $legacyAppVersion;
         $this->phpVersion = PHP_VERSION;
         self::$instance = $this;
     }
@@ -168,11 +170,11 @@ class ModuleLoader {
             return;
         }
 
-        if (version_compare($this->appVersion, (string) $minApp, '<')) {
+        if ($this->compareAppVersion((string) $minApp) < 0) {
             $this->skipped[] = ['slug' => $slug, 'reason' => t('modules.skip.app_min', ['version' => $minApp])];
             return;
         }
-        if ($maxApp !== null && $maxApp !== '' && version_compare($this->appVersion, (string) $maxApp, '>')) {
+        if ($maxApp !== null && $maxApp !== '' && $this->compareAppVersion((string) $maxApp) > 0) {
             $this->skipped[] = ['slug' => $slug, 'reason' => t('modules.skip.app_max', ['version' => $maxApp])];
             return;
         }
@@ -188,6 +190,16 @@ class ModuleLoader {
         $definition['slug'] = $definition['slug'] ?? $slug;
         $definition['path'] = $dir;
         $this->discovered[$definition['slug']] = $definition;
+    }
+
+    /**
+     * Compares the running app version against a module constraint, in the scheme the
+     * constraint was written in. Four-segment constraints (e.g. 26.9.28.2) predate the
+     * current scheme, so they're checked against the fixed legacy version instead.
+     */
+    private function compareAppVersion(string $constraint): int {
+        $current = count(explode('.', $constraint)) === 4 ? $this->legacyAppVersion : $this->appVersion;
+        return version_compare($current, $constraint);
     }
 
     private function bootModule(array $definition): void {

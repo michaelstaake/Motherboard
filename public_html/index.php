@@ -118,7 +118,7 @@ if ($installed) {
     $settingsModel = new Settings($database);
 }
 
-$moduleLoader = new ModuleLoader($version);
+$moduleLoader = new ModuleLoader($version, $legacyVersion);
 Hooks::doAction('app.boot', $router, $database);
 $moduleLoader->loadAll($installed ? $settingsModel : null);
 
