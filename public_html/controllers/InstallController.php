@@ -138,7 +138,9 @@ class InstallController extends Controller {
                 reset_token VARCHAR(255) NULL,
                 reset_expires DATETIME NULL,
                 created_at DATETIME NOT NULL,
-                last_login DATETIME NULL
+                last_login DATETIME NULL,
+                quick_nav_trigger_key VARCHAR(1) NOT NULL DEFAULT '/',
+                last_seen_version VARCHAR(32) NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
             
             "CREATE TABLE IF NOT EXISTS customers (
@@ -285,6 +287,7 @@ class InstallController extends Controller {
             'attachment_destination' => 'local',
             'attachment_max_size_mb' => '10',
             'attachment_allowed_extensions' => 'png,jpg,pdf,md,txt',
+            'update_notice_enabled' => '1',
             'schema_version' => (string) Schema::VERSION,
         ];
 

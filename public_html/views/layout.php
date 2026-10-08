@@ -450,6 +450,81 @@
                 </div>
             </div>
         </div>
+        <?php
+            $updateNoticeVersion = $_SESSION['update_notice_version'] ?? null;
+            unset($_SESSION['update_notice_version']);
+        ?>
+        <?php if ($updateNoticeVersion !== null): ?>
+            <div id="update-notice" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="update-notice-title" data-modal-dismissable>
+                <div class="flex min-h-full items-center justify-center p-4">
+                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75" data-update-notice-close aria-hidden="true"></div>
+                    <div class="relative w-full max-w-lg overflow-hidden rounded-lg bg-white text-left shadow-xl">
+                        <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <div class="sm:flex sm:items-start">
+                                <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                                    <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                </div>
+                                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                    <h3 id="update-notice-title" class="text-lg font-medium leading-6 text-gray-900"><?= t('update_notice.title', ['name' => t('app.name')]) ?></h3>
+                                    <p class="mt-2 text-sm text-gray-600"><?= t('update_notice.version', ['version' => '<span class="font-semibold text-gray-900">' . htmlspecialchars($updateNoticeVersion) . '</span>']) ?></p>
+                                    <p class="mt-3 text-sm text-gray-600">
+                                        <?= t('update_notice.refresh_hint') ?>
+                                        <span id="update-notice-shortcut" class="mt-2 block font-medium text-gray-900"><?= t('update_notice.refresh_generic') ?></span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                            <button type="button" data-update-notice-close class="inline-flex w-full justify-center rounded-md border border-transparent bg-primary-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"><?= t('common.close') ?></button>
+                            <a href="https://github.com/michaelstaake/Motherboard/releases" target="_blank" rel="noopener noreferrer" class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm"><?= t('update_notice.release_notes') ?></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function () {
+                    var notice = document.getElementById('update-notice');
+                    var platform = ((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent || '').toLowerCase();
+                    var isMobile = /android|iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase())
+                        || (platform.indexOf('mac') !== -1 && navigator.maxTouchPoints > 1);
+                    var shortcuts = {
+                        mac: <?= json_encode(t('update_notice.refresh_mac')) ?>,
+                        windows: <?= json_encode(t('update_notice.refresh_windows')) ?>,
+                        linux: <?= json_encode(t('update_notice.refresh_linux')) ?>
+                    };
+                    var shortcut = null;
+                    if (!isMobile) {
+                        if (platform.indexOf('mac') !== -1) {
+                            shortcut = shortcuts.mac;
+                        } else if (platform.indexOf('win') !== -1) {
+                            shortcut = shortcuts.windows;
+                        } else if (platform.indexOf('linux') !== -1 || platform.indexOf('cros') !== -1 || platform.indexOf('chrome os') !== -1) {
+                            shortcut = shortcuts.linux;
+                        }
+                    }
+                    if (shortcut) {
+                        document.getElementById('update-notice-shortcut').textContent = shortcut;
+                    }
+
+                    function close() {
+                        notice.remove();
+                        document.removeEventListener('keydown', onKeydown);
+                    }
+                    function onKeydown(e) {
+                        if (e.key === 'Escape') {
+                            close();
+                        }
+                    }
+                    notice.querySelectorAll('[data-update-notice-close]').forEach(function (el) {
+                        el.addEventListener('click', close);
+                    });
+                    document.addEventListener('keydown', onKeydown);
+                    notice.querySelector('button[data-update-notice-close]').focus();
+                })();
+            </script>
+        <?php endif; ?>
     <?php endif; ?>
 
     <div class="pointer-events-none fixed inset-x-0 top-4 z-[60]" aria-live="polite">

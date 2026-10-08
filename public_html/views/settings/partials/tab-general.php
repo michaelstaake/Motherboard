@@ -59,6 +59,14 @@
                 <p class="mt-1 text-sm text-gray-500"><?= t('settings.work_order_days_under_date_help') ?></p>
             </div>
         </div>
+
+        <div class="flex items-start">
+            <input id="update_notice_enabled" name="update_notice_enabled" type="checkbox" value="1" <?= ($settings['update_notice_enabled'] ?? '1') === '1' ? 'checked' : '' ?> class="h-4 w-4 mt-0.5 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
+            <div class="ml-2">
+                <label for="update_notice_enabled" class="block text-sm text-gray-700"><?= t('settings.update_notice_enabled') ?></label>
+                <p class="mt-1 text-sm text-gray-500"><?= t('settings.update_notice_enabled_help') ?></p>
+            </div>
+        </div>
     </div>
 
     <div class="mt-6 flex justify-end">

@@ -36,6 +36,7 @@ class SettingsController extends Controller {
                         'nav_always_expanded' => isset($_POST['nav_always_expanded']) ? '1' : '0',
                         'work_order_autosave' => isset($_POST['work_order_autosave']) ? '1' : '0',
                         'work_order_days_under_date' => isset($_POST['work_order_days_under_date']) ? '1' : '0',
+                        'update_notice_enabled' => isset($_POST['update_notice_enabled']) ? '1' : '0',
                     ];
                     $this->settingsModel->updateCompanyInfo($companyData);
                     $this->logger->log('settings_updated', 'Company information updated', $_SESSION['user_id']);

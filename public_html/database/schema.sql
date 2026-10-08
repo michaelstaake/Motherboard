@@ -27,6 +27,7 @@ CREATE TABLE `users` (
   `created_at` datetime NOT NULL,
   `last_login` datetime DEFAULT NULL,
   `quick_nav_trigger_key` varchar(1) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '/',
+  `last_seen_version` varchar(32) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`),
   UNIQUE KEY `email` (`email`)

@@ -135,6 +135,12 @@ class AuthController extends Controller {
         $this->userModel->recordLogin($userId, $ip);
         $this->userModel->recordLoginAttempt($ip, $user['username'], true);
         
+        // A first-ever login has nothing to have been updated from, so start the account
+        // on the current version instead of greeting it with an update notice.
+        if (empty($user['last_login']) && array_key_exists('last_seen_version', $user)) {
+            $this->userModel->updateUser($userId, ['last_seen_version' => self::appVersion()]);
+        }
+
         // Update last login
         $this->userModel->updateLastLogin($userId);
         

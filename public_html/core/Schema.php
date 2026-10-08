@@ -2,7 +2,7 @@
 require_once ROOT_PATH . '/core/Crypto.php';
 
 class Schema {
-    public const VERSION = 2;
+    public const VERSION = 3;
 
     public static function needsMigration(Database $database): bool {
         $pdo = $database->connect();
@@ -57,6 +57,10 @@ class Schema {
         $columns = self::tableColumns($pdo, 'users');
         if (!in_array('quick_nav_trigger_key', $columns, true)) {
             $pdo->exec("ALTER TABLE users ADD COLUMN quick_nav_trigger_key VARCHAR(1) NOT NULL DEFAULT '/' AFTER last_login");
+            $columns[] = 'quick_nav_trigger_key';
+        }
+        if (!in_array('last_seen_version', $columns, true)) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN last_seen_version VARCHAR(32) NULL AFTER quick_nav_trigger_key");
         }
     }
 
@@ -156,6 +160,7 @@ class Schema {
             'print_hide_notes' => '0',
             'print_hide_attachments' => '0',
             'print_condensed' => '0',
+            'update_notice_enabled' => '1',
         ];
 
         $stmt = $pdo->prepare(

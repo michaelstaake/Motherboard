@@ -65,6 +65,32 @@ class Controller {
 
         $_SESSION['user_group'] = $user['user_group'];
         $_SESSION['quick_nav_trigger_key'] = $user['quick_nav_trigger_key'] ?? '/';
+        $this->trackSeenVersion($user);
+    }
+
+    public static function appVersion(): string {
+        require ROOT_PATH . '/version.php';
+        return (string) $version;
+    }
+
+    /**
+     * The first authenticated request after a version change queues the "updated" notice
+     * for the next full page (an API call may get here first, so the layout shows it, not
+     * this request). The version is recorded as seen either way, so turning the setting
+     * back on later doesn't replay an update the user has long since been using.
+     */
+    private function trackSeenVersion(array $user): void {
+        if (!array_key_exists('last_seen_version', $user)) {
+            return;
+        }
+        $current = self::appVersion();
+        if ((string) $user['last_seen_version'] === $current) {
+            return;
+        }
+        if ($this->settingsModel->getSetting('update_notice_enabled', '1') === '1') {
+            $_SESSION['update_notice_version'] = $current;
+        }
+        (new User())->updateUser($user['id'], ['last_seen_version' => $current]);
     }
     
     protected function requireAdmin() {
