@@ -84,6 +84,7 @@ return [
     'inventory.wo_edit_price' => 'Редактиране на цена',
     'inventory.wo_edit_price_inventory' => 'Цена в склада: {price}',
     'inventory.wo_confirm_remove' => 'Да се премахне ли този продукт от сервизната задача?',
+    'inventory.wo_remove' => 'Премахни продукта',
     'inventory.quantity' => 'Количество',
     'inventory.line_total' => 'Сума за позицията',
     'inventory.select_product' => 'Изберете продукт',

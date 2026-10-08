@@ -85,6 +85,7 @@ return [
     'inventory.wo_edit_price' => 'Preis bearbeiten',
     'inventory.wo_edit_price_inventory' => 'Inventarpreis: {price}',
     'inventory.wo_confirm_remove' => 'Dieses Produkt vom Arbeitsauftrag entfernen?',
+    'inventory.wo_remove' => 'Produkt entfernen',
     'inventory.quantity' => 'Menge',
     'inventory.line_total' => 'Zeilensumme',
     'inventory.select_product' => 'Produkt auswählen',

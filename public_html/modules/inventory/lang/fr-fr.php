@@ -85,6 +85,7 @@ return [
     'inventory.wo_edit_price' => 'Modifier le prix',
     'inventory.wo_edit_price_inventory' => 'Prix dans l’inventaire : {price}',
     'inventory.wo_confirm_remove' => 'Retirer ce produit de l’ordre de travail ?',
+    'inventory.wo_remove' => 'Retirer le produit',
     'inventory.quantity' => 'Quantité',
     'inventory.line_total' => 'Total de ligne',
     'inventory.select_product' => 'Sélectionnez un produit',

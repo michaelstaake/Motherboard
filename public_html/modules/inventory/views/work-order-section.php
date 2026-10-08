@@ -77,10 +77,11 @@ $totals = motherboard_inventory_work_order_totals($assigned);
                                     <td class="px-2 py-3 text-sm text-gray-900"><?= htmlspecialchars(motherboard_inventory_format_money($line['line_total'])) ?></td>
                                     <?php if ($canEdit): ?>
                                         <td class="px-2 py-3 text-right">
-                                            <form method="POST" action="<?= BASE_URL ?>/work-orders/view/<?= $workOrderId ?>/products/<?= (int) $line['id'] ?>/delete" onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('inventory.wo_confirm_remove')), ENT_QUOTES) ?>)">
-                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
-                                                <button type="submit" class="text-sm text-red-600 hover:text-red-500"><?= t('common.delete') ?></button>
-                                            </form>
+                                            <button type="button"
+                                                    class="text-sm text-red-600 hover:text-red-500"
+                                                    data-action="<?= htmlspecialchars(BASE_URL . '/work-orders/view/' . $workOrderId . '/products/' . (int) $line['id'] . '/delete') ?>"
+                                                    data-name="<?= htmlspecialchars($line['product_name']) ?>"
+                                                    onclick="openRemoveInventoryProductModal(this)"><?= t('common.delete') ?></button>
                                         </td>
                                     <?php endif; ?>
                                 </tr>
@@ -232,7 +233,46 @@ $totals = motherboard_inventory_work_order_totals($assigned);
         </div>
     </div>
 </div>
+<div id="removeInventoryProductModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+        </div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div class="sm:flex sm:items-start">
+                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                </div>
+                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left min-w-0">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900"><?= t('inventory.wo_remove') ?></h3>
+                    <p class="mt-2 text-sm text-gray-500"><?= t('inventory.wo_confirm_remove') ?></p>
+                    <p id="removeInventoryProductName" class="mt-1 text-sm font-medium text-gray-900 break-words"></p>
+                </div>
+            </div>
+            <form id="removeInventoryProductForm" method="POST" action="" class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+                <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm">
+                    <?= t('inventory.wo_remove') ?>
+                </button>
+                <button type="button" onclick="closeRemoveInventoryProductModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+                    <?= t('common.cancel') ?>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 <script>
+function openRemoveInventoryProductModal(button) {
+    document.getElementById('removeInventoryProductForm').action = button.dataset.action;
+    document.getElementById('removeInventoryProductName').textContent = button.dataset.name;
+    document.getElementById('removeInventoryProductModal').classList.remove('hidden');
+}
+function closeRemoveInventoryProductModal() {
+    document.getElementById('removeInventoryProductModal').classList.add('hidden');
+}
 function openEditInventoryPriceModal(button) {
     document.getElementById('editInventoryPriceForm').action = button.dataset.action;
     document.getElementById('editInventoryPriceName').textContent = button.dataset.name;

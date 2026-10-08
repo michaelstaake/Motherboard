@@ -16,7 +16,7 @@ if ($searchQuery !== '') {
 }
 // Products in a single category do not need their category repeated on each row.
 $showCategoryColumn = $categoryParam === '';
-$listColumnCount = $showCategoryColumn ? 7 : 6;
+$listColumnCount = $showCategoryColumn ? 6 : 5;
 [$sortColumn, $sortDirection] = $sort ?? ['item_number', 'asc'];
 // Clicking a column header sorts by it A to Z, or flips the direction if it is already sorted by it.
 $sortHeader = static function (string $column, string $label) use ($sortColumn, $sortDirection, $categoryParam, $searchQuery): string {
@@ -107,10 +107,7 @@ $sortHeader = static function (string $column, string $label) use ($sortColumn, 
                                                 <button type="button" onclick="closeSplitMenus(); openCategoryModal(null, '', <?= (int) $category['id'] ?>)" class="block w-full whitespace-nowrap text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><?= t('inventory.add_subcategory') ?></button>
                                             <?php endif; ?>
                                             <button type="button" onclick="closeSplitMenus(); openCategoryModal(<?= (int) $category['id'] ?>, <?= htmlspecialchars(json_encode($category['name']), ENT_QUOTES) ?>, <?= $category['parent_id'] !== null ? (int) $category['parent_id'] : 'null' ?>)" class="block w-full whitespace-nowrap text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"><?= t('common.edit') ?></button>
-                                            <form method="POST" action="<?= BASE_URL ?>/inventory/categories/<?= (int) $category['id'] ?>/delete" onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('inventory.confirm_delete_category')), ENT_QUOTES) ?>)">
-                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
-                                                <button type="submit" class="block w-full whitespace-nowrap text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"><?= t('common.delete') ?></button>
-                                            </form>
+                                            <button type="button" onclick="closeSplitMenus(); openDeleteCategoryModal(<?= (int) $category['id'] ?>, <?= htmlspecialchars(json_encode($category['name']), ENT_QUOTES) ?>)" class="block w-full whitespace-nowrap text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"><?= t('common.delete') ?></button>
                                         </div>
                                     </div>
                                 </div>
@@ -152,7 +149,6 @@ $sortHeader = static function (string $column, string $label) use ($sortColumn, 
                             <?= $sortHeader('price', t('inventory.price')) ?>
                             <?= $sortHeader('stock', t('inventory.stock')) ?>
                             <?= $sortHeader('sold', t('inventory.sold')) ?>
-                            <th scope="col" class="relative px-4 py-3"><span class="sr-only"><?= t('common.actions') ?></span></th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -164,7 +160,17 @@ $sortHeader = static function (string $column, string $label) use ($sortColumn, 
                             </tr>
                         <?php else: ?>
                             <?php foreach ($products as $product): ?>
-                                <tr class="hover:bg-gray-50">
+                                <?php // Clicking anywhere on a product row opens it for editing. ?>
+                                <tr class="hover:bg-gray-50 cursor-pointer focus:outline-none focus:bg-gray-50" tabindex="0" role="button" aria-label="<?= htmlspecialchars(t('inventory.edit_product') . ': ' . $product['name']) ?>" data-product='<?= json_encode([
+                                    'id' => (int) $product['id'],
+                                    'name' => $product['name'],
+                                    'item_number' => $product['item_number'] ?? '',
+                                    'description' => $product['description'] ?? '',
+                                    'category_id' => $product['category_id'] !== null ? (int) $product['category_id'] : '',
+                                    'price' => $product['price'],
+                                    'stock' => (int) $product['stock'],
+                                    'taxable' => !empty($product['taxable']),
+                                ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>'>
                                     <td class="px-4 py-4 text-sm text-gray-500 break-words"><?= htmlspecialchars($product['item_number'] ?? '') ?></td>
                                     <td class="px-4 py-4 relative group text-sm font-medium text-gray-900 <?= !empty($product['description']) ? 'cursor-help' : '' ?>">
                                         <?= htmlspecialchars($product['name']) ?>
@@ -183,23 +189,6 @@ $sortHeader = static function (string $column, string $label) use ($sortColumn, 
                                     </td>
                                     <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900"><?= htmlspecialchars(motherboard_inventory_format_stock($product['stock'])) ?></td>
                                     <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900"><?= (int) $product['sold_count'] ?></td>
-                                    <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                                        <button type="button" class="text-primary-600 hover:text-primary-900" onclick='openProductModal(<?= json_encode([
-                                            'id' => (int) $product['id'],
-                                            'name' => $product['name'],
-                                            'item_number' => $product['item_number'] ?? '',
-                                            'description' => $product['description'] ?? '',
-                                            'category_id' => $product['category_id'] !== null ? (int) $product['category_id'] : '',
-                                            'price' => $product['price'],
-                                            'stock' => (int) $product['stock'],
-                                            'taxable' => !empty($product['taxable']),
-                                        ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?>)'><?= t('common.edit') ?></button>
-                                        <form method="POST" action="<?= BASE_URL ?>/inventory/products/<?= (int) $product['id'] ?>/delete" class="inline" onsubmit="return confirm(<?= htmlspecialchars(json_encode(t('inventory.confirm_delete_product')), ENT_QUOTES) ?>)">
-                                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
-                                            <?= $returnFields ?>
-                                            <button type="submit" class="text-red-600 hover:text-red-900"><?= t('common.delete') ?></button>
-                                        </form>
-                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -275,7 +264,29 @@ $sortHeader = static function (string $column, string $label) use ($sortColumn, 
     </div>
 </div>
 
-<div id="productModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 1000;">
+<div id="deleteCategoryModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 1000;">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div class="sm:flex sm:items-start">
+            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+            </div>
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left min-w-0">
+                <h3 class="text-lg leading-6 font-medium text-gray-900"><?= t('inventory.delete_category') ?></h3>
+                <p id="deleteCategoryName" class="mt-2 text-sm font-medium text-gray-900 break-words"></p>
+                <p class="mt-1 text-sm text-gray-500"><?= t('inventory.confirm_delete_category') ?></p>
+            </div>
+        </div>
+        <form id="deleteCategoryForm" method="POST" action="" class="mt-5 flex justify-end space-x-3">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+            <button type="button" onclick="closeDeleteCategoryModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"><?= t('common.cancel') ?></button>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"><?= t('inventory.delete_category') ?></button>
+        </form>
+    </div>
+</div>
+
+<div id="productModal"class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 1000;">
     <div class="relative top-10 mx-auto p-5 border w-full max-w-lg shadow-lg rounded-md bg-white">
         <h3 id="productModalTitle" class="text-lg font-medium text-gray-900 mb-4"><?= t('inventory.add_product') ?></h3>
         <form id="productForm" method="POST" action="<?= BASE_URL ?>/inventory/products">
@@ -323,10 +334,38 @@ $sortHeader = static function (string $column, string $label) use ($sortColumn, 
                     <span class="ml-2 text-sm text-gray-700"><?= t('inventory.taxable') ?></span>
                 </label>
             </div>
-            <div class="flex justify-end space-x-3">
-                <button type="button" onclick="closeProductModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"><?= t('common.cancel') ?></button>
-                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700"><?= t('common.save') ?></button>
+            <div class="flex items-center justify-between gap-3">
+                <div>
+                    <button type="button" id="productDeleteButton" onclick="openDeleteProductModal()" class="hidden px-4 py-2 text-sm font-medium text-red-700 bg-white border border-red-300 rounded-md hover:bg-red-50"><?= t('common.delete') ?></button>
+                </div>
+                <div class="flex space-x-3">
+                    <button type="button" onclick="closeProductModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"><?= t('common.cancel') ?></button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md hover:bg-primary-700"><?= t('common.save') ?></button>
+                </div>
             </div>
+        </form>
+    </div>
+</div>
+
+<div id="deleteProductModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" style="z-index: 1010;">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div class="sm:flex sm:items-start">
+            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+            </div>
+            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left min-w-0">
+                <h3 class="text-lg leading-6 font-medium text-gray-900"><?= t('inventory.delete_product') ?></h3>
+                <p class="mt-2 text-sm text-gray-500"><?= t('inventory.confirm_delete_product') ?></p>
+                <p id="deleteProductName" class="mt-1 text-sm font-medium text-gray-900 break-words"></p>
+            </div>
+        </div>
+        <form id="deleteProductForm" method="POST" action="" class="mt-5 flex justify-end space-x-3">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+            <?= $returnFields ?>
+            <button type="button" onclick="closeDeleteProductModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"><?= t('common.cancel') ?></button>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"><?= t('inventory.delete_product') ?></button>
         </form>
     </div>
 </div>
@@ -377,6 +416,14 @@ function closeCategoryModal() {
     document.getElementById('categoryModal').classList.add('hidden');
     document.getElementById('categoryForm').reset();
 }
+function openDeleteCategoryModal(id, name) {
+    document.getElementById('deleteCategoryForm').action = <?= json_encode(BASE_URL . '/inventory/categories/') ?> + id + '/delete';
+    document.getElementById('deleteCategoryName').textContent = name;
+    document.getElementById('deleteCategoryModal').classList.remove('hidden');
+}
+function closeDeleteCategoryModal() {
+    document.getElementById('deleteCategoryModal').classList.add('hidden');
+}
 function closeSplitMenus() {
     document.querySelectorAll('[data-split-menu] > div:last-child').forEach(function (menu) {
         menu.classList.add('hidden');
@@ -401,10 +448,26 @@ document.addEventListener('keydown', function (event) {
         closeSplitMenus();
     }
 });
+let editingProduct = null;
+document.querySelectorAll('tr[data-product]').forEach(function (row) {
+    const product = JSON.parse(row.dataset.product);
+    row.addEventListener('click', function () {
+        openProductModal(product);
+    });
+    row.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            openProductModal(product);
+        }
+    });
+});
 function openProductModal(product, categoryId) {
     const form = document.getElementById('productForm');
     const title = document.getElementById('productModalTitle');
     form.reset();
+    editingProduct = product || null;
+    // Only an existing product can be deleted.
+    document.getElementById('productDeleteButton').classList.toggle('hidden', !editingProduct);
     document.getElementById('product_taxable').checked = <?= json_encode(!empty($defaultTaxable)) ?>;
     if (product) {
         form.action = <?= json_encode(BASE_URL . '/inventory/products/') ?> + product.id;
@@ -428,6 +491,17 @@ function openProductModal(product, categoryId) {
 function closeProductModal() {
     document.getElementById('productModal').classList.add('hidden');
     document.getElementById('productForm').reset();
+}
+function openDeleteProductModal() {
+    if (!editingProduct) {
+        return;
+    }
+    document.getElementById('deleteProductForm').action = <?= json_encode(BASE_URL . '/inventory/products/') ?> + editingProduct.id + '/delete';
+    document.getElementById('deleteProductName').textContent = editingProduct.name;
+    document.getElementById('deleteProductModal').classList.remove('hidden');
+}
+function closeDeleteProductModal() {
+    document.getElementById('deleteProductModal').classList.add('hidden');
 }
 (function () {
     const field = document.getElementById('product_item_number');

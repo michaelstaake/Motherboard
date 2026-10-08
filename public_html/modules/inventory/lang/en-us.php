@@ -85,6 +85,7 @@ return [
     'inventory.wo_edit_price' => 'Edit Price',
     'inventory.wo_edit_price_inventory' => 'Inventory price: {price}',
     'inventory.wo_confirm_remove' => 'Remove this product from the work order?',
+    'inventory.wo_remove' => 'Remove Product',
     'inventory.quantity' => 'Quantity',
     'inventory.line_total' => 'Line total',
     'inventory.select_product' => 'Select a product',

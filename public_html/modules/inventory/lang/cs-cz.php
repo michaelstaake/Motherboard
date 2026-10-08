@@ -85,6 +85,7 @@ return [
     'inventory.wo_edit_price' => 'Upravit cenu',
     'inventory.wo_edit_price_inventory' => 'Cena ve skladu: {price}',
     'inventory.wo_confirm_remove' => 'Odebrat tento produkt ze zakázky?',
+    'inventory.wo_remove' => 'Odebrat produkt',
     'inventory.quantity' => 'Množství',
     'inventory.line_total' => 'Součet řádku',
     'inventory.select_product' => 'Vyberte produkt',
