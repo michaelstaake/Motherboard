@@ -69,7 +69,7 @@ ob_start();
 
     <!-- Filters -->
     <div class="bg-white rounded-lg shadow mb-6">
-        <div class="px-6 pt-3 sm:pt-0 border-b border-gray-200 flex flex-col-reverse gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div class="px-6 pt-3 xl:pt-0 border-b border-gray-200 flex flex-col-reverse gap-3 xl:flex-row xl:items-end xl:justify-between">
             <!-- Status Tabs -->
             <nav class="-mb-px flex gap-6 overflow-x-auto">
                 <?php foreach ($tabs as $tab => $count):
@@ -84,7 +84,7 @@ ob_start();
                 <?php endforeach; ?>
             </nav>
 
-            <div class="flex items-center gap-3 sm:py-3">
+            <div class="flex items-center gap-3 xl:py-3">
                 <!-- Priority Toggle -->
                 <a href="<?= htmlspecialchars($listUrl(['priority' => $priority ? '' : 'Priority'])) ?>"
                    aria-pressed="<?= $priority ? 'true' : 'false' ?>"
@@ -96,7 +96,7 @@ ob_start();
                 </a>
 
                 <!-- Search -->
-                <form method="GET" class="flex-1 sm:flex-none sm:w-80">
+                <form method="GET" class="flex-1 xl:flex-none xl:w-80">
                     <input type="hidden" name="status" value="<?= htmlspecialchars($status) ?>">
                     <?php if ($priority): ?>
                         <input type="hidden" name="priority" value="<?= htmlspecialchars($priority) ?>">
