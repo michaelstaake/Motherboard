@@ -192,11 +192,11 @@ ob_start();
                                     <div class="flex items-center gap-2">
                                         <span class="text-base font-medium text-gray-900">#<?= $workOrder['id'] ?></span>
                                         <?php if ($workOrder['priority'] === 'Priority'): ?>
-                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border bg-red-50 border-red-300 text-red-700">
-                                                <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                            <span title="<?= htmlspecialchars(t('priority.Priority')) ?>">
+                                                <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2z"></path>
                                                 </svg>
-                                                <?= t('priority.Priority') ?>
+                                                <span class="sr-only"><?= t('priority.Priority') ?></span>
                                             </span>
                                         <?php endif; ?>
                                     </div>
